@@ -27,11 +27,11 @@ export async function apiRequest<TResponse>(path: string, init: RequestInit = {}
         message = body.detail
       }
     } catch {
-      // Conserva el mensaje HTTP si la respuesta no trae JSON.
+      console.log("No se pudo analizar la respuesta JSON del error")
     }
     throw new Error(message)
   }
 
   if (response.status === 204) return undefined as TResponse
   return response.json() as Promise<TResponse>
-}
+} 
