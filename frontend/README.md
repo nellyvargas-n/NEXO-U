@@ -1,16 +1,29 @@
-# React + Vite
+# Nexo U · Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Landing inicial y demostración interactiva de Nexo U, una billetera estudiantil que conecta credenciales, oportunidades y apoyo financiero.
 
-Currently, two official plugins are available:
+## Desarrollo local
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+```bash
+npm install
+npm run dev
+```
 
-## React Compiler
+La landing usa datos de ejemplo. En la demo, el botón **Simular validación del emisor** muestra cómo una oportunidad pasa de 4/5 a 5/5 requisitos.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Las pantallas de acceso están disponibles en `/login` y `/register`. Por ahora solo incluyen la interfaz y validación local de los campos; aún no envían ni guardan credenciales.
 
-## Expanding the ESLint configuration
+## Estructura
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```text
+src/
+├── features/
+│   ├── auth/          # Inicio de sesión y registro
+│   ├── landing/       # Página pública, secciones y datos de demostración
+│   └── navigation/   # Navegación pública y navegación autenticada
+└── shared/
+    ├── api/           # Cliente compartido para conectar el backend
+    └── components/    # Componentes de marca compartidos
+```
+
+El cliente API toma su URL de `VITE_API_BASE_URL`. Copia `.env.example` a `.env.local` si necesitas apuntarlo a otro backend.
