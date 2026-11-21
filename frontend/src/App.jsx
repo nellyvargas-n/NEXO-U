@@ -5,10 +5,11 @@ import SignInPage from './features/auth/pages/SignInPage.jsx'
 function App() {
   const path = window.location.pathname.replace(/\/+$/, '') || '/'
 
-  if (path === '/login') return <SignInPage />
-  if (path === '/register') return <RegisterPage />
-
-  return <LandingPage />
+  return (
+    <div className="min-h-screen overflow-hidden pt-[76px] max-[700px]:pt-[66px]">
+      {path === '/login' ? <SignInPage /> : path === '/register' ? <RegisterPage /> : <LandingPage />}
+    </div>
+  )
 }
 
 export default App
