@@ -1,5 +1,5 @@
 .site-header {
-  position: sticky;
+  position: fixed;
   z-index: 20;
   top: 0;
   width: 100%;
@@ -122,11 +122,6 @@
   display: inline-flex;
   align-items: center;
   padding-inline: 14px;
-  border-bottom: 2px solid transparent;
-}
-
-.app-nav a.is-active {
-  border-bottom-color: var(--green);
 }
 
 .student-menu {

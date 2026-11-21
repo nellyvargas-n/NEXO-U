@@ -1,4 +1,5 @@
 import BrandMark from '../../../shared/components/BrandMark.jsx'
+import '../styles/navigation.css'
 
 function AuthenticatedNavbar({ active = 'Inicio', studentName = 'Camila R.' }) {
   const links = [
@@ -18,11 +19,18 @@ function AuthenticatedNavbar({ active = 'Inicio', studentName = 'Camila R.' }) {
             </a>
           ))}
         </nav>
-        <button className="student-menu" type="button" aria-label={`Menú de ${studentName}`}>
-          <span className="student-menu__avatar" aria-hidden="true">{studentName.slice(0, 1)}</span>
-          <span className="student-menu__name">{studentName}</span>
-          <span className="student-menu__chevron" aria-hidden="true">⌄</span>
-        </button>
+        <details className="student-dropdown">
+          <summary className="student-menu" aria-label={`Abrir menú de ${studentName}`}>
+            <span className="student-menu__avatar" aria-hidden="true">{studentName.slice(0, 1)}</span>
+            <span className="student-menu__name">{studentName}</span>
+            <span className="student-menu__chevron" aria-hidden="true">⌄</span>
+          </summary>
+          <nav className="student-dropdown__menu" aria-label="Menú de cuenta">
+            <a className="dropdown-item" href="/app/perfil">Mi perfil <span aria-hidden="true">↗</span></a>
+            <a className="dropdown-item" href="/app/privacidad">Privacidad <span aria-hidden="true">↗</span></a>
+            <a className="dropdown-item" href="/app/configuracion">Configuración <span aria-hidden="true">↗</span></a>
+          </nav>
+        </details>
       </div>
     </header>
   )
