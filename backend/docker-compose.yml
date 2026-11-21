@@ -1,0 +1,10 @@
+services:
+  api:
+    build: .
+    ports: ["8000:8000"]
+    environment:
+      DATABASE_URL: sqlite:////data/nexo_u.db
+      DEMO_EMITTER_KEY: change-me-for-local-demo
+    volumes: ["nexo_data:/data"]
+volumes:
+  nexo_data:
