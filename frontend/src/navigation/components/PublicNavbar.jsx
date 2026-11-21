@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
-import BrandMark from '../../../shared/components/BrandMark.jsx'
-import Icon from '../../../shared/components/Icon.jsx'
+import BrandMark from '../../shared/components/BrandMark.jsx'
+import Icon from '../../shared/components/Icon.jsx'
 
 function PublicNavbar({ currentPage = 'landing' }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -31,6 +31,7 @@ function PublicNavbar({ currentPage = 'landing' }) {
             <>
               <a className="text-sm font-medium text-[#4d6458] transition-colors hover:text-[#236b4d] focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#236b4d]" href="#como-funciona">Cómo funciona</a>
               <a className="text-sm font-medium text-[#4d6458] transition-colors hover:text-[#236b4d] focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#236b4d]" href="#privacidad">Privacidad</a>
+              <a className="text-sm font-medium text-[#4d6458] transition-colors hover:text-[#236b4d] focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#236b4d]" href="/app">Espacio estudiantil</a>
             </>
           ) : (
             <a className="text-sm font-medium text-[#4d6458] transition-colors hover:text-[#236b4d] focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#236b4d]" href="/">Inicio</a>
@@ -71,6 +72,7 @@ function PublicNavbar({ currentPage = 'landing' }) {
             <a className="flex min-h-12 items-center rounded-xl px-4 text-sm font-medium text-[#47655b] transition hover:bg-[#eff6ed]" href="#como-funciona" onClick={closeMenu}>Cómo funciona</a>
             <a className="flex min-h-12 items-center rounded-xl px-4 text-sm font-medium text-[#47655b] transition hover:bg-[#eff6ed]" href="#privacidad" onClick={closeMenu}>Privacidad</a>
             <a className="flex min-h-12 items-center rounded-xl px-4 text-sm font-medium text-[#47655b] transition hover:bg-[#eff6ed]" href="#demo" onClick={closeMenu}>Ver demo</a>
+            <a className="flex min-h-12 items-center rounded-xl px-4 text-sm font-medium text-[#47655b] transition hover:bg-[#eff6ed]" href="/app" onClick={closeMenu}>Espacio estudiantil</a>
             <a className="flex min-h-12 items-center rounded-xl px-4 text-sm font-medium text-[#47655b] transition hover:bg-[#eff6ed]" href="/login" onClick={closeMenu}>Iniciar sesión</a>
             <a className="flex min-h-12 items-center rounded-xl px-4 text-sm font-medium text-[#47655b] transition hover:bg-[#eff6ed]" href="/register" onClick={closeMenu}>Crear cuenta</a>
           </>

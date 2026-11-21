@@ -1,5 +1,5 @@
-import BrandMark from '../../../shared/components/BrandMark.jsx'
-import Icon from '../../../shared/components/Icon.jsx'
+import BrandMark from '../../shared/components/BrandMark.jsx'
+import Icon from '../../shared/components/Icon.jsx'
 
 const links = [
   { label: 'Inicio', href: '/app' },

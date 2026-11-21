@@ -42,7 +42,7 @@ function OpportunityDemo() {
               <p className="m-0 text-sm text-[#687b70]">requisitos cumplidos</p>
             </div>
             <span className={`rounded-full px-3 py-1.5 text-sm font-semibold ${verified ? 'bg-[#e6f0d4] text-[#315d43]' : 'bg-[#e4f2e5] text-[#4b795c]'}`}>
-              {verified ? 'Listo para postular' : 'Buen match'}
+              {verified ? '5/5 requisitos' : 'Buen match'}
             </span>
           </div>
           <div

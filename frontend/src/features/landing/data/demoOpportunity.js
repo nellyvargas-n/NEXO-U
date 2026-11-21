@@ -1,7 +1,7 @@
 export const demoOpportunity = {
   title: 'Pasantía de desarrollo',
   category: 'Tecnología · Experiencia profesional',
-  deadline: '30 nov',
+  deadline: '15 ene 2027',
   requirements: [
     { label: 'Estudiante universitario', met: true },
     { label: 'Fundamentos de programación', met: true },
