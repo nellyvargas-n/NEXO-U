@@ -25,7 +25,10 @@ function PublicNavbar() {
           <a href="#como-funciona">Cómo funciona</a>
           <a href="#privacidad">Privacidad</a>
         </nav>
-        <a className="header-cta" href="#demo">Ver demo <span aria-hidden="true">↗</span></a>
+        <div className="site-header__actions">
+          <a className="header-login" href="/login">Iniciar sesión</a>
+          <a className="header-cta" href="/register">Crear cuenta <span aria-hidden="true">↗</span></a>
+        </div>
         <button
           className="mobile-nav-toggle"
           type="button"
@@ -42,6 +45,8 @@ function PublicNavbar() {
         <a href="#como-funciona" onClick={closeMenu}>Cómo funciona <span aria-hidden="true">↗</span></a>
         <a href="#privacidad" onClick={closeMenu}>Privacidad <span aria-hidden="true">↗</span></a>
         <a href="#demo" onClick={closeMenu}>Ver demo <span aria-hidden="true">↗</span></a>
+        <a href="/login" onClick={closeMenu}>Iniciar sesión <span aria-hidden="true">↗</span></a>
+        <a href="/register" onClick={closeMenu}>Crear cuenta <span aria-hidden="true">↗</span></a>
       </nav>
     </header>
   )

@@ -84,6 +84,24 @@
   transition: transform 180ms ease, background 180ms ease;
 }
 
+.site-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 19px;
+}
+
+.header-login {
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 160ms ease;
+}
+
+.header-login:hover {
+  color: var(--green);
+}
+
 .header-cta:hover {
   transform: translateY(-2px);
   background: #20634f;
@@ -439,6 +457,19 @@
 
   .site-header .header-cta {
     margin-left: auto;
+  }
+
+  .site-header__actions {
+    gap: 10px;
+    margin-left: auto;
+  }
+
+  .site-header__actions .header-login {
+    display: none;
+  }
+
+  .site-header .header-cta {
+    margin-left: 0;
   }
 
   .app-nav a::after {
