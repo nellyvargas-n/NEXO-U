@@ -1,13 +1,13 @@
 const ACCESS_TOKEN_KEY = 'nexo-u.access-token'
 
-export function getAccessToken() {
+export function getAccessToken(): string | null {
   if (typeof window === 'undefined') return null
 
   return window.sessionStorage.getItem(ACCESS_TOKEN_KEY)
     ?? window.localStorage.getItem(ACCESS_TOKEN_KEY)
 }
 
-export function saveAccessToken(token, remember = false) {
+export function saveAccessToken(token: string, remember = false): void {
   if (typeof window === 'undefined') return
 
   clearAccessToken()
@@ -15,7 +15,7 @@ export function saveAccessToken(token, remember = false) {
   storage.setItem(ACCESS_TOKEN_KEY, token)
 }
 
-export function clearAccessToken() {
+export function clearAccessToken(): void {
   if (typeof window === 'undefined') return
 
   window.sessionStorage.removeItem(ACCESS_TOKEN_KEY)

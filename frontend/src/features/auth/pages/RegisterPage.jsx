@@ -2,7 +2,7 @@ import { useState } from 'react'
 import AuthLayout from '../components/AuthLayout.jsx'
 import PasswordField from '../components/PasswordField.jsx'
 import Icon from '../../../shared/components/Icon.jsx'
-import { getAuthErrorMessage, registerStudentAccount } from '../api/authApi.js'
+import { getAuthErrorMessage, registerStudentAccount } from '../../../shared/api/auth.ts'
 
 const passwordMismatchMessage = 'Las contraseñas no coinciden.'
 
