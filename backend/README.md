@@ -1,3 +1,7 @@
+# NEXO U Backend (Docker + Neon)
+
+**Primero lee [README-NEON-3-ROLES.md](README-NEON-3-ROLES.md)**.
+
 # NEXO U — Backend MVP (Docker)
 
 **Solo backend**, sin React. Incluye una página de prueba integrada en FastAPI.
