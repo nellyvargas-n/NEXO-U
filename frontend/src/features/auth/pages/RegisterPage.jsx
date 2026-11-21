@@ -53,14 +53,14 @@ function RegisterPage() {
           <div className="grid grid-cols-1 gap-3 min-[430px]:grid-cols-2">
             <label className="relative cursor-pointer">
               <input className="peer sr-only" type="radio" name="studentType" value="school" required />
-              <span className="flex min-h-12 items-center gap-2 rounded-xl border border-[#d8e2d7] bg-white px-3 py-2 text-sm text-[#526357] transition peer-checked:border-[#438c61] peer-checked:bg-[#eff7ef] peer-checked:text-[#235a3d] peer-checked:ring-2 peer-checked:ring-[#438c61]/15 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[#438c61] hover:border-[#a9c8ad] max-[390px]:gap-1 max-[390px]:px-2">
+              <span className="flex min-h-12 items-center gap-2 rounded-xl border border-[#d8e2d7] bg-white px-3 py-2 text-sm text-[#526357] transition peer-checked:border-[#438c61] peer-checked:bg-[#eff7ef] peer-checked:text-[#235a3d] peer-checked:ring-2 peer-checked:ring-[#438c61]/15 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[#438c61] max-[390px]:gap-1 max-[390px]:px-2">
                 <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-[#eff6ed] text-[#347a57]"><Icon name="book-open" className="size-4" /></span>
                 <strong className="font-semibold">En el colegio</strong>
               </span>
             </label>
             <label className="relative cursor-pointer">
               <input className="peer sr-only" type="radio" name="studentType" value="university" required />
-              <span className="flex min-h-12 items-center gap-2 rounded-xl border border-[#d8e2d7] bg-white px-3 py-2 text-sm text-[#526357] transition peer-checked:border-[#438c61] peer-checked:bg-[#eff7ef] peer-checked:text-[#235a3d] peer-checked:ring-2 peer-checked:ring-[#438c61]/15 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[#438c61] hover:border-[#a9c8ad] max-[390px]:gap-1 max-[390px]:px-2">
+              <span className="flex min-h-12 items-center gap-2 rounded-xl border border-[#d8e2d7] bg-white px-3 py-2 text-sm text-[#526357] transition peer-checked:border-[#438c61] peer-checked:bg-[#eff7ef] peer-checked:text-[#235a3d] peer-checked:ring-2 peer-checked:ring-[#438c61]/15 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[#438c61] max-[390px]:gap-1 max-[390px]:px-2">
                 <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-[#eff6ed] text-[#347a57]"><Icon name="building" className="size-4" /></span>
                 <strong className="font-semibold">En la universidad</strong>
               </span>
