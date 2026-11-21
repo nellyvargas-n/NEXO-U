@@ -5,7 +5,6 @@ import { landingStyles as styles } from '../landingStyles.js'
 function OpportunityDemo() {
   const [verified, setVerified] = useState(false)
   const completedCount = demoOpportunity.match + Number(verified)
-  const progress = (completedCount / demoOpportunity.totalRequirements) * 100
 
   return (
     <div className={styles.demoShell} id="demo">
@@ -37,7 +36,7 @@ function OpportunityDemo() {
             {verified ? 'Listo para postular' : 'Buen match'}
           </span>
           <div className={styles.matchBar} aria-label={`${completedCount} de ${demoOpportunity.totalRequirements} requisitos cumplidos`}>
-            <span className={styles.matchBarFill} style={{ width: `${progress}%` }} />
+            <span className={`${styles.matchBarFill} ${verified ? 'w-full' : 'w-4/5'}`} />
           </div>
         </div>
 
