@@ -4,14 +4,16 @@ from fastapi.responses import HTMLResponse
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.core.database import Base,engine,SessionLocal
+from app.models import access  # noqa: F401
 from app.models import entities  # noqa: F401 — registra modelos
 from app.core.seed import seed
 from app.api.v1.router import router
 
 @asynccontextmanager
 async def lifespan(app:FastAPI):
-    Base.metadata.create_all(bind=engine)
-    with SessionLocal() as db: seed(db)
+    if settings.demo_mode:
+        Base.metadata.create_all(bind=engine)
+        with SessionLocal() as db: seed(db)
     yield
 
 app=FastAPI(title="NEXO U MVP",version="0.1.0",lifespan=lifespan)
