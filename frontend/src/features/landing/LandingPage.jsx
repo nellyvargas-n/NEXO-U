@@ -2,33 +2,43 @@ import HowItWorks from './components/HowItWorks.jsx'
 import OpportunityDemo from './components/OpportunityDemo.jsx'
 import PrivacySection from './components/PrivacySection.jsx'
 import SiteFooter from './components/SiteFooter.jsx'
-import { landingStyles as styles } from './landingStyles.js'
+import Icon from '../../shared/components/Icon.jsx'
 
 function LandingPage() {
   return (
     <>
       <main id="inicio">
-        <section className={styles.hero}>
-          <div className={styles.heroOrbit} />
-          <div className={styles.heroInner}>
-            <div className={styles.heroCopy}>
-              <p className={styles.eyebrow}><span className={styles.eyebrowDot} /> TU SIGUIENTE PASO EMPIEZA AQUÍ</p>
-              <h1 className={styles.heroTitle}>Encuentra oportunidades hechas <em className={styles.heroAccent}>para ti.</em></h1>
-              <p className={styles.heroDescription}>Nexo U conecta tus credenciales con becas y pasantías, y te muestra qué te falta para postular.</p>
-              <div className={styles.actions}>
-                <a className={`${styles.buttonBase} ${styles.buttonPrimary}`} href="#demo">Explorar la demo <span className="text-[17px]" aria-hidden="true">→</span></a>
-                <a className={`${styles.buttonBase} ${styles.buttonText}`} href="#como-funciona">Conoce cómo funciona <span aria-hidden="true">↓</span></a>
+        <section className="relative isolate overflow-hidden bg-[#f5f7f2]" aria-labelledby="hero-title">
+          <div className="mx-auto grid min-h-[calc(100vh-76px)] max-w-7xl grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] items-center gap-12 px-6 py-14 max-[1000px]:grid-cols-1 max-[1000px]:gap-12 max-[1000px]:py-16 max-[700px]:min-h-[calc(100vh-66px)] max-[700px]:gap-10 max-[700px]:px-5 max-[700px]:py-12 max-[390px]:px-4">
+            <div className="relative z-10 max-w-xl">
+              <p className="inline-flex items-center gap-2 rounded-full border border-[#d7e6d8] bg-white/80 px-3 py-2 text-xs font-semibold text-[#426b53] shadow-sm">
+                <span className="size-2 rounded-full bg-[#55a875]" />
+                Becas y pasantías para estudiantes
+              </p>
+              <h1 className="mt-6 max-w-[600px] font-display text-[clamp(2.75rem,5.6vw,4.75rem)] font-semibold leading-[1.02] tracking-[-0.055em] text-[#173b31] max-[700px]:text-[clamp(2.7rem,11vw,4rem)]" id="hero-title">
+                Becas y pasantías para tu perfil.
+              </h1>
+              <p className="mt-6 max-w-lg text-base leading-7 text-[#617267] sm:text-lg sm:leading-8">
+                Nexo U reúne tus credenciales y compara tus requisitos con becas y pasantías. Mira qué ya cumples y qué te falta para postular.
+              </p>
+              <div className="mt-8 flex flex-wrap items-center gap-3 max-[430px]:items-stretch">
+                <a className="inline-flex min-h-12 items-center justify-center gap-3 rounded-xl bg-[#1c5a42] px-5 text-sm font-semibold text-white shadow-lg shadow-[#1c5a42]/15 transition hover:-translate-y-0.5 hover:bg-[#247452] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1c5a42] active:translate-y-0 max-[430px]:w-full" href="#demo">
+                Ver la demo <Icon name="arrow-right" className="size-5" />
+                </a>
+                <a className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold text-[#466555] transition hover:bg-white/70 hover:text-[#1c5a42] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#438c61] max-[430px]:w-full" href="#como-funciona">
+                  Cómo funciona
+                </a>
               </div>
-              <div className={styles.heroProof}><span className={styles.proofIcon} aria-hidden="true">✓</span><span>Tu perfil, tus credenciales, tus próximas oportunidades.</span></div>
+              <p className="mt-7 flex items-center gap-2 text-sm text-[#718075]">
+                <span className="grid size-6 place-items-center rounded-full bg-[#e4f1e5] text-[#347a57]" aria-hidden="true"><Icon name="check" className="size-4" /></span>
+                La demo usa datos de ejemplo y no guarda información.
+              </p>
             </div>
-            <div className={styles.heroVisual}>
-              <div className={styles.visualOrbitOne} />
-              <div className={styles.visualOrbitTwo} />
+
+            <div className="relative z-10 mx-auto w-full max-w-[590px]">
               <OpportunityDemo />
-              <div className={styles.floatingNote}><span className={styles.floatingIcon} aria-hidden="true">✳</span><span className={styles.floatingCopy}><strong className={styles.floatingTitle}>Hay una ruta</strong><small className={styles.floatingDescription}>para cada requisito</small></span></div>
             </div>
           </div>
-          <div className={styles.heroFoot}><span>OPORTUNIDADES CONECTADAS A TU PERFIL</span><span className="text-[13px] text-[#73867b]" aria-hidden="true">↓</span></div>
         </section>
         <HowItWorks />
         <PrivacySection />
