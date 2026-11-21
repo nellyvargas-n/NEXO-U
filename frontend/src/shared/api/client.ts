@@ -1,3 +1,5 @@
+import { getAccessToken } from './session.js'
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/'
 
 export async function apiRequest<TResponse>(path: string, init: RequestInit = {}): Promise<TResponse> {
@@ -5,8 +7,12 @@ export async function apiRequest<TResponse>(path: string, init: RequestInit = {}
   const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL : `${API_BASE_URL}/`
   const url = new URL(normalizedPath, baseUrl)
   const headers = new Headers(init.headers)
+  const accessToken = getAccessToken()
 
   headers.set('Accept', 'application/json')
+  if (accessToken && !headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${accessToken}`)
+  }
   if (init.body && !headers.has('Content-Type') && !(init.body instanceof FormData)) {
     headers.set('Content-Type', 'application/json')
   }
