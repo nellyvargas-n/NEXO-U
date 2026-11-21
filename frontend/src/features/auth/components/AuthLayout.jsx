@@ -1,11 +1,8 @@
-import BrandMark from '../../../shared/components/BrandMark.jsx'
-import { authStyles } from './authStyles.js'
+import Icon from '../../../shared/components/Icon.jsx'
 
 function AuthLayout({
   pageType,
   eyebrow,
-  title,
-  description,
   switchText,
   switchLabel,
   switchHref,
@@ -14,55 +11,69 @@ function AuthLayout({
   const isRegister = pageType === 'register'
 
   return (
-    <div className={authStyles.page}>
-      <aside className={authStyles.story} aria-label="Acerca de Nexo U">
-        <div className="relative z-10">
-          <BrandMark href="/" inverse size="large" />
+    <main className="grid min-h-[calc(100vh-76px)] bg-[#f5f7f2] text-[#173b31] max-[700px]:min-h-[calc(100vh-66px)] lg:grid-cols-2">
+      <aside className="relative hidden min-h-[calc(100vh-76px)] overflow-hidden bg-[#153c32] px-10 py-9 text-white lg:flex lg:flex-col xl:px-16">
+        <div className="relative z-10 mt-[clamp(56px,10vh,112px)] max-w-xl">
+          <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-2 text-xs font-semibold text-[#c8e6d2]">
+            <span className="size-2 rounded-full bg-[#8ed3a5]" />
+            Nexo U para estudiantes
+          </p>
+          <h2 className="max-w-lg font-display text-[clamp(2.25rem,4.1vw,3.75rem)] font-semibold leading-[1.04] tracking-[-0.045em] text-white">
+            Tu experiencia y tus cursos cuentan.
+          </h2>
+          <p className="mt-5 max-w-md text-base leading-7 text-[#c2d5ca]">
+            Organiza tus credenciales y encuentra becas y pasantías que se ajusten a tu perfil.
+          </p>
         </div>
 
-        <div className={authStyles.storyCopy}>
-          <p className={authStyles.eyebrow}><span className="size-1.5 rounded-full bg-[#8dd1a4] shadow-[0_0_0_4px_rgba(141,209,164,0.12)]" /> TU RUTA, A TU RITMO</p>
-          <h1 className={authStyles.storyTitle}>{title}</h1>
-          <p className={authStyles.storyDescription}>{description}</p>
-        </div>
-
-        <div className={authStyles.showcase} aria-label="Vista ilustrativa de Nexo U">
-          <div className={authStyles.showcaseGlow} />
-          <div className={authStyles.showcaseProfile}>
-            <span className={authStyles.showcaseLabel}>BILLETERA ESTUDIANTIL</span>
-            <strong className={authStyles.showcaseTitle}>Lo que sabes<br />también cuenta.</strong>
-            <div className={authStyles.showcaseChips}>
-              <span className={authStyles.showcaseChip}>Habilidades</span><span className={authStyles.showcaseChip}>Cursos</span><span className={authStyles.showcaseChip}>Credenciales</span>
+        <div className="relative z-10 mt-auto w-full max-w-xl rounded-2xl border border-white/15 bg-white/[0.08] p-5 shadow-2xl shadow-black/10 backdrop-blur-sm">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold text-[#b7d8c2]">Billetera estudiantil</p>
+              <p className="mt-2 font-display text-xl font-semibold text-white">Habilidades, cursos y credenciales</p>
             </div>
+            <span className="grid size-12 shrink-0 place-items-center rounded-xl bg-[#c9efd9] text-[#174a39]"><Icon name="check" className="size-6" /></span>
           </div>
-          <div className={authStyles.showcaseOpportunity}>
-            <span className={authStyles.showcaseOpportunityIcon} aria-hidden="true">↗</span>
-            <span className={authStyles.showcaseOpportunityCopy}><small className={authStyles.showcaseOpportunityEyebrow}>OPORTUNIDADES</small><strong className={authStyles.showcaseOpportunityTitle}>Un siguiente paso claro</strong></span>
+          <div className="mt-5 flex flex-wrap gap-2">
+            {['Habilidades', 'Cursos', 'Credenciales'].map((item) => (
+              <span className="rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-sm text-[#d6e8dc]" key={item}>{item}</span>
+            ))}
           </div>
-          <span className={authStyles.showcaseCaption}>Vista ilustrativa</span>
         </div>
-
-        <p className={authStyles.storyFooter}>Credenciales, oportunidades y apoyo para tu camino.</p>
       </aside>
 
-      <main className={authStyles.main}>
-        <div className={authStyles.mobileBrand}><BrandMark href="/" /></div>
-        <section className={`${authStyles.content} ${isRegister ? authStyles.contentRegister : ''}`} aria-labelledby="auth-form-title">
-          <div className={authStyles.switch}>
-            <span>{switchText}</span>
-            <a className={authStyles.switchLink} href={switchHref}>{switchLabel}</a>
+      <section className="flex min-h-[calc(100vh-76px)] items-center justify-center px-4 py-8 sm:px-8 lg:px-12 max-[700px]:min-h-[calc(100vh-66px)]">
+        <div className="w-full max-w-[460px]">
+          <div className="rounded-3xl border border-[#e1e9df] bg-white p-6 shadow-[0_20px_60px_rgba(24,58,43,0.08)] sm:p-9">
+            <div className="flex items-center justify-end gap-1.5 text-sm text-[#6e7e73]">
+              <span>{switchText}</span>
+              <a className="rounded-sm font-semibold text-[#236b4d] underline-offset-4 transition-colors hover:text-[#174d38] hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#236b4d]" href={switchHref}>
+                {switchLabel}
+              </a>
+            </div>
+
+            <div className={`mt-8 ${isRegister ? 'mb-6' : 'mb-8'}`}>
+              <p className="mb-2 text-sm font-semibold text-[#347a57]">{eyebrow}</p>
+              <h1 className="font-display text-3xl font-semibold leading-tight tracking-[-0.04em] text-[#173b31] sm:text-4xl" id="auth-form-title">
+                {isRegister ? 'Crea tu cuenta' : 'Inicia sesión'}
+              </h1>
+              <p className="mt-3 text-base leading-6 text-[#68776d]">
+                {isRegister ? 'Un perfil para tus próximos pasos.' : 'Ingresa tus datos para continuar.'}
+              </p>
+            </div>
+
+            {children}
+
+            <p className="mt-7 flex items-center justify-center gap-2 text-center text-sm text-[#748278]">
+              <span className="text-lg text-[#4d8c64]" aria-hidden="true">⌁</span>
+              Tu información es tuya. Tú decides qué compartir.
+            </p>
           </div>
-          <div className={`${authStyles.formHeading} ${isRegister ? authStyles.formHeadingRegister : ''}`}>
-            <p className={authStyles.formEyebrow}>{eyebrow}</p>
-            <h2 className={`${authStyles.formTitle} ${isRegister ? authStyles.formTitleRegister : ''}`} id="auth-form-title">{isRegister ? 'Crea tu cuenta' : 'Inicia sesión'}</h2>
-            <p className={authStyles.formDescription}>{isRegister ? 'Un perfil para tus próximos pasos.' : 'Ingresa tus datos para continuar.'}</p>
-          </div>
-          {children}
-          <p className={authStyles.privacy}><span className={authStyles.privacyIcon} aria-hidden="true">⌁</span> Tu información es tuya. Tú decides qué compartir.</p>
-        </section>
-        <footer className={authStyles.footer}>© Nexo U · Tu camino, tus oportunidades.</footer>
-      </main>
-    </div>
+
+          <p className="mt-5 text-center text-xs text-[#87948a]">© Nexo U · Tu camino, tus oportunidades.</p>
+        </div>
+      </section>
+    </main>
   )
 }
 
