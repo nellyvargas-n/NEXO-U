@@ -601,6 +601,92 @@
   min-height: 44px;
 }
 
+@media (min-width: 791px) {
+  .auth-page--register .auth-main {
+    padding-inline: clamp(32px, 4.4vw, 78px);
+  }
+
+  .auth-page--register .auth-content {
+    width: min(100%, 550px);
+    padding: 36px 40px 30px;
+    border-radius: 18px;
+    box-shadow: 0 26px 72px rgb(26 64 47 / 9%);
+  }
+
+  .auth-page--register .auth-switch {
+    font-size: 10px;
+  }
+
+  .auth-page--register .auth-form-heading {
+    margin-top: 29px;
+    margin-bottom: 21px;
+  }
+
+  .auth-page--register .auth-form-heading__eyebrow {
+    font-size: 9px;
+  }
+
+  .auth-page--register .auth-form-heading h2 {
+    font-size: 36px;
+  }
+
+  .auth-page--register .auth-form-heading > p:last-child {
+    font-size: 13px;
+  }
+
+  .auth-page--register .auth-form--register {
+    gap: 15px;
+  }
+
+  .auth-page--register .role-fieldset legend,
+  .auth-page--register .auth-field > label {
+    font-size: 11px;
+  }
+
+  .auth-page--register .role-option__content {
+    min-height: 56px;
+    gap: 10px;
+    padding-inline: 13px;
+  }
+
+  .auth-page--register .role-option__content > span {
+    width: 29px;
+    height: 29px;
+    flex-basis: 29px;
+  }
+
+  .auth-page--register .role-option__content strong {
+    font-size: 10px;
+  }
+
+  .auth-page--register .auth-form--register .auth-input-wrap input {
+    height: 49px;
+    font-size: 12px;
+  }
+
+  .auth-page--register .password-toggle {
+    font-size: 10px;
+  }
+
+  .auth-page--register .auth-field__hint {
+    font-size: 9px;
+  }
+
+  .auth-page--register .auth-form--register .auth-submit {
+    min-height: 50px;
+    font-size: 12px;
+  }
+
+  .auth-page--register .auth-demo-note,
+  .auth-page--register .auth-privacy-note {
+    font-size: 9px;
+  }
+
+  .auth-page--register .auth-main__footer {
+    font-size: 9px;
+  }
+}
+
 @media (max-width: 1050px) {
   .auth-page {
     grid-template-columns: minmax(310px, 0.78fr) minmax(475px, 1.22fr);
