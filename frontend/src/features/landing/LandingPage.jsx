@@ -16,11 +16,7 @@ function LandingPage() {
           <div className="mx-auto grid min-h-[calc(100vh-76px)] max-w-7xl grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] items-center gap-12 px-6 py-14 max-[1000px]:grid-cols-1 max-[1000px]:gap-12 max-[1000px]:py-16 max-[700px]:min-h-[calc(100vh-66px)] max-[700px]:gap-10 max-[700px]:px-5 max-[700px]:py-12 max-[390px]:px-4">
             <div className="relative z-10 max-w-xl">
               <span className="pointer-events-none absolute -inset-x-8 -inset-y-10 -z-10 rounded-full bg-white/65 blur-3xl" aria-hidden="true" />
-              <p className="inline-flex items-center gap-2 rounded-full border border-[#d7e6d8] bg-white/80 px-3 py-2 text-xs font-semibold text-[#426b53] shadow-sm">
-                <span className="size-2 rounded-full bg-[#55a875]" />
-                Becas y pasantías para estudiantes
-              </p>
-              <h1 className="mt-6 max-w-[600px] font-display text-[clamp(2.75rem,5.6vw,4.75rem)] font-semibold leading-[1.02] tracking-[-0.055em] text-[#111111] max-[700px]:text-[clamp(2.7rem,11vw,4rem)]" id="hero-title">
+              <h1 className="mt-0 max-w-[600px] font-display text-[clamp(2.75rem,5.6vw,4.75rem)] font-semibold leading-[1.02] tracking-[-0.055em] text-[#111111] max-[700px]:text-[clamp(2.7rem,11vw,4rem)]" id="hero-title">
                 Becas y pasantías para tu perfil.
               </h1>
               <p className="mt-6 max-w-lg text-base leading-7 text-[#242824] sm:text-lg sm:leading-8">
