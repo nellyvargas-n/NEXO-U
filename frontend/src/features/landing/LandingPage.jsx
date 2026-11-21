@@ -15,10 +15,11 @@ function LandingPage() {
           <div className="mx-auto flex min-h-[calc(100vh-76px)] max-w-7xl items-center justify-center px-6 py-20 text-center max-[700px]:min-h-[calc(100vh-66px)] max-[700px]:px-5 max-[700px]:py-16 max-[390px]:px-4">
             <div className="relative z-10 max-w-4xl">
               <span className="pointer-events-none absolute -inset-x-10 -inset-y-14 -z-10 rounded-full bg-white/65 blur-3xl" aria-hidden="true" />
-              <h1 className="mx-auto mt-0 max-w-[900px] font-display text-[clamp(3rem,6.8vw,5.5rem)] font-semibold leading-[0.98] tracking-[-0.055em] text-[#111111] max-[700px]:text-[clamp(2.7rem,11vw,4rem)]" id="hero-title">
+              <h1 className="mx-auto mt-0 max-w-[1000px] font-serif text-[clamp(3.25rem,7vw,6.25rem)] font-medium leading-[0.98] tracking-[-0.045em] text-[#111111] max-[700px]:text-[clamp(2.7rem,11vw,4rem)]" id="hero-title">
                 <span className="block">Becas y pasantías</span>
                 <span className="mt-1 block text-[#1c5a42]">para tu perfil.</span>
               </h1>
+              <span className="mx-auto mt-6 block h-1 w-16 rounded-full bg-[#1c5a42]" aria-hidden="true" />
               <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-[#242824] sm:text-lg sm:leading-8">
                 Nexo U reúne tus credenciales y compara tus requisitos con becas y pasantías. Mira qué ya cumples y qué te falta para postular.
               </p>
