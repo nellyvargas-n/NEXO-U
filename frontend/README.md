@@ -11,11 +11,14 @@ npm run dev
 
 La landing usa datos de ejemplo. En la demo, el botón **Simular validación del emisor** muestra cómo una oportunidad pasa de 4/5 a 5/5 requisitos.
 
+Las pantallas de acceso están disponibles en `/login` y `/register`. Por ahora solo incluyen la interfaz y validación local de los campos; aún no envían ni guardan credenciales.
+
 ## Estructura
 
 ```text
 src/
 ├── features/
+│   ├── auth/          # Inicio de sesión y registro
 │   ├── landing/       # Página pública, secciones y datos de demostración
 │   └── navigation/   # Navegación pública y navegación autenticada
 └── shared/
