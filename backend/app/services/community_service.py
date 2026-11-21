@@ -1,1 +1,2 @@
-"""Reservado para una fase posterior. No implementado en este MVP."""
+"""Compatibilidad de servicios; la API activa implementa la lógica en app.api.v1.endpoints.community_features."""
+from app.api.v1.endpoints.community_features import list_posts

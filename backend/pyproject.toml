@@ -1,0 +1,11 @@
+[project]
+name = "nexo-u-backend"
+version = "1.0.0"
+requires-python = ">=3.12"
+
+[tool.vercel]
+entrypoint = "app:app"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

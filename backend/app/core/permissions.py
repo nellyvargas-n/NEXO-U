@@ -1,1 +1,2 @@
-"""Reservado para una fase posterior. No implementado en este MVP."""
+"""Utilidad compartida de backend."""
+from app.core.auth_jwt import require_role

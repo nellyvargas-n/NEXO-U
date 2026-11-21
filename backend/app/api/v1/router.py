@@ -32,6 +32,9 @@ def credentials(db:Session=Depends(get_db)):
 
 @router.get("/opportunities")
 def opportunities(db:Session=Depends(get_db)):
+    if not settings.demo_mode:
+        from app.api.v1.endpoints.institution_features import public_opportunities
+        return public_opportunities(db=db)
     return [{"id":o.id,"title":o.title,"category":o.category,"deadline":o.deadline,"official_url":o.official_url,"amount_bob":o.amount_bob} for o in db.scalars(select(Opportunity)).all()]
 
 @router.get("/match", dependencies=[Depends(demo_access)])
@@ -40,6 +43,9 @@ def match(db:Session=Depends(get_db)):
 
 @router.get("/courses")
 def courses(db:Session=Depends(get_db)):
+    if not settings.demo_mode:
+        from app.api.v1.endpoints.institution_features import public_courses
+        return public_courses(db=db)
     return [{"id":c.id,"title":c.title,"end_date":c.end_date,"cost_bob":c.cost_bob,"issuer":c.issuer} for c in db.scalars(select(Course)).all()]
 
 @router.post("/courses/{course_id}/complete", dependencies=[Depends(demo_access)])
@@ -76,3 +82,13 @@ def reset(x_emitter_key:str|None=Header(default=None),db:Session=Depends(get_db)
 
 from app.api.v1.endpoints.role_access import router as role_router
 router.include_router(role_router)
+
+from app.api.v1.endpoints.secure_workspace import router as secure_router
+router.include_router(secure_router)
+
+from app.api.v1.endpoints.student_features import router as student_features_router
+router.include_router(student_features_router)
+from app.api.v1.endpoints.institution_features import router as institution_features_router
+router.include_router(institution_features_router)
+from app.api.v1.endpoints.community_features import router as community_features_router
+router.include_router(community_features_router)

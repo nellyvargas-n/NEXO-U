@@ -1,1 +1,2 @@
-"""Reservado para una fase posterior. No implementado en este MVP."""
+"""Adaptador legado: handlers reales definidos en secure_workspace.py."""
+from app.api.v1.endpoints.secure_workspace import publish, add_requirement

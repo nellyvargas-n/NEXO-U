@@ -1,1 +1,2 @@
-"""Reservado para una fase posterior. No implementado en este MVP."""
+"""Compatibilidad con la estructura original: modelos persistentes en un único esquema."""
+from app.models.entities import Enrollment

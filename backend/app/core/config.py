@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:5173"
     jwt_secret: str = ""
     jwt_exp_minutes: int = 120
-    demo_mode: bool = True
+    demo_mode: bool = False
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 settings = Settings()

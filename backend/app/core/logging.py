@@ -1,1 +1,4 @@
-"""Reservado para una fase posterior. No implementado en este MVP."""
+"""Utilidad compartida de backend."""
+import logging
+logger = logging.getLogger("nexo_u")
+

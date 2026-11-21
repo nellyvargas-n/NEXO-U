@@ -1,10 +1,11 @@
 from datetime import datetime, timezone
-from sqlalchemy import Integer, BigInteger, String, Boolean, ForeignKey, DateTime, Text
+from sqlalchemy import Integer, BigInteger, String, Boolean, ForeignKey, DateTime, Text, CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 from app.core.database import Base
 
 class AppUser(Base):
     __tablename__ = "app_users"
+    __table_args__ = (CheckConstraint("role IN ('usuario','empresa','admin')", name="ck_app_roles"),)
     id: Mapped[int] = mapped_column(BigInteger().with_variant(Integer, "sqlite"), primary_key=True, autoincrement=True)
     email: Mapped[str] = mapped_column(Text, unique=True, nullable=False)
     password_hash: Mapped[str] = mapped_column(Text, nullable=False)
