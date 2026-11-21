@@ -1,4 +1,4 @@
-function BrandMark({ compact = false, href = '#inicio', inverse = false, size = 'default', className = '' }) {
+function BrandMark({ compact = false, compactOnNarrow = false, href = '#inicio', inverse = false, size = 'default', className = '' }) {
   const symbolSize = size === 'small'
     ? 'size-[29px] rounded-[9px] [&_svg]:size-[22px]'
     : size === 'large'
@@ -13,7 +13,7 @@ function BrandMark({ compact = false, href = '#inicio', inverse = false, size = 
           <circle cx="28" cy="27" r="3" fill="currentColor" />
         </svg>
       </span>
-      {!compact && <span className={`font-display font-semibold tracking-[-1.1px] ${size === 'small' ? 'text-[17px]' : inverse ? 'text-xl' : 'text-xl'} ${inverse ? 'text-[#f7fbf7]' : 'text-[#15312f]'}`}>nexo <strong className={`font-extrabold ${inverse ? 'text-[#99d6ac]' : 'text-[#247858]'}`}>U</strong></span>}
+      {!compact && <span className={`font-display font-semibold tracking-[-1.1px] ${size === 'small' ? 'text-[17px]' : 'text-xl'} ${inverse ? 'text-[#f7fbf7]' : 'text-[#15312f]'} ${compactOnNarrow ? 'max-[360px]:hidden' : ''}`}>nexo <strong className={`font-extrabold ${inverse ? 'text-[#99d6ac]' : 'text-[#247858]'}`}>U</strong></span>}
     </a>
   )
 }

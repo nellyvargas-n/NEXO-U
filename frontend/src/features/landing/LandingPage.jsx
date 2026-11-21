@@ -2,13 +2,11 @@ import HowItWorks from './components/HowItWorks.jsx'
 import OpportunityDemo from './components/OpportunityDemo.jsx'
 import PrivacySection from './components/PrivacySection.jsx'
 import SiteFooter from './components/SiteFooter.jsx'
-import PublicNavbar from '../navigation/components/PublicNavbar.jsx'
 import { landingStyles as styles } from './landingStyles.js'
 
 function LandingPage() {
   return (
     <>
-      <PublicNavbar />
       <main id="inicio">
         <section className={styles.hero}>
           <div className={styles.heroOrbit} />
