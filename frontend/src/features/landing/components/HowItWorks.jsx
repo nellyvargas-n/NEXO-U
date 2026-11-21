@@ -5,13 +5,13 @@ const steps = [
     number: '01',
     title: 'Arma tu perfil',
     body: 'Reúne tus habilidades, cursos y credenciales en una sola billetera estudiantil.',
-    icon: 'wallet',
+    icon: 'user',
   },
   {
     number: '02',
     title: 'Compara requisitos',
     body: 'Revisa cómo tu perfil coincide con los requisitos de becas y pasantías.',
-    icon: 'search',
+    icon: 'list',
   },
   {
     number: '03',
