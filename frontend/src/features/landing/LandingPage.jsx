@@ -10,8 +10,8 @@ function LandingPage() {
       <main id="inicio">
         <section className="relative isolate overflow-hidden bg-[#f5f7f2]" aria-labelledby="hero-title">
           <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
-            <img className="absolute inset-0 size-full scale-105 object-cover object-center opacity-50 blur-[3px]" src="/fondo.png" alt="" />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#f5f7f2]/90 via-[#f5f7f2]/78 to-[#f5f7f2]/66" />
+            <img className="absolute inset-0 size-full scale-105 object-cover object-center opacity-100 blur-[1px]" src="/fondo.png" alt="" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#f5f7f2]/50 via-[#f5f7f2]/28 to-[#f5f7f2]/18" />
           </div>
           <div className="mx-auto grid min-h-[calc(100vh-76px)] max-w-7xl grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] items-center gap-12 px-6 py-14 max-[1000px]:grid-cols-1 max-[1000px]:gap-12 max-[1000px]:py-16 max-[700px]:min-h-[calc(100vh-66px)] max-[700px]:gap-10 max-[700px]:px-5 max-[700px]:py-12 max-[390px]:px-4">
             <div className="relative z-10 max-w-xl">
