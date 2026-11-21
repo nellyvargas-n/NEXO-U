@@ -3,33 +3,34 @@ import OpportunityDemo from './components/OpportunityDemo.jsx'
 import PrivacySection from './components/PrivacySection.jsx'
 import SiteFooter from './components/SiteFooter.jsx'
 import PublicNavbar from '../navigation/components/PublicNavbar.jsx'
-import './styles/landing.css'
+import { landingStyles as styles } from './landingStyles.js'
 
 function LandingPage() {
   return (
     <>
       <PublicNavbar />
       <main id="inicio">
-        <section className="hero-section">
-          <div className="hero-section__inner">
-            <div className="hero-copy">
-              <p className="eyebrow"><span /> TU SIGUIENTE PASO EMPIEZA AQUÍ </p>
-              <h1>Encuentra oportunidades hechas <em>para ti.</em></h1>
-              <p className="hero-copy__description">Nexo U conecta tus credenciales con becas y pasantías, y te muestra qué te falta para postular.</p>
-              <div className="hero-actions">
-                <a className="button button--primary" href="#demo">Explorar la demo <span aria-hidden="true">→</span></a>
-                <a className="button button--text" href="#como-funciona">Conoce cómo funciona <span aria-hidden="true">↓</span></a>
+        <section className={styles.hero}>
+          <div className={styles.heroOrbit} />
+          <div className={styles.heroInner}>
+            <div className={styles.heroCopy}>
+              <p className={styles.eyebrow}><span className={styles.eyebrowDot} /> TU SIGUIENTE PASO EMPIEZA AQUÍ</p>
+              <h1 className={styles.heroTitle}>Encuentra oportunidades hechas <em className={styles.heroAccent}>para ti.</em></h1>
+              <p className={styles.heroDescription}>Nexo U conecta tus credenciales con becas y pasantías, y te muestra qué te falta para postular.</p>
+              <div className={styles.actions}>
+                <a className={`${styles.buttonBase} ${styles.buttonPrimary}`} href="#demo">Explorar la demo <span className="text-[17px]" aria-hidden="true">→</span></a>
+                <a className={`${styles.buttonBase} ${styles.buttonText}`} href="#como-funciona">Conoce cómo funciona <span aria-hidden="true">↓</span></a>
               </div>
-              <div className="hero-proof"><span className="hero-proof__icon" aria-hidden="true">✓</span><span>Tu perfil, tus credenciales, tus próximas oportunidades.</span></div>
+              <div className={styles.heroProof}><span className={styles.proofIcon} aria-hidden="true">✓</span><span>Tu perfil, tus credenciales, tus próximas oportunidades.</span></div>
             </div>
-            <div className="hero-visual">
-              <div className="visual-orbit visual-orbit--one" />
-              <div className="visual-orbit visual-orbit--two" />
+            <div className={styles.heroVisual}>
+              <div className={styles.visualOrbitOne} />
+              <div className={styles.visualOrbitTwo} />
               <OpportunityDemo />
-              <div className="floating-note"><span className="floating-note__icon" aria-hidden="true">✳</span><span><strong>Hay una ruta</strong><small>para cada requisito</small></span></div>
+              <div className={styles.floatingNote}><span className={styles.floatingIcon} aria-hidden="true">✳</span><span className={styles.floatingCopy}><strong className={styles.floatingTitle}>Hay una ruta</strong><small className={styles.floatingDescription}>para cada requisito</small></span></div>
             </div>
           </div>
-          <div className="hero-section__foot"><span>OPORTUNIDADES CONECTADAS A TU PERFIL</span><span aria-hidden="true">↓</span></div>
+          <div className={styles.heroFoot}><span>OPORTUNIDADES CONECTADAS A TU PERFIL</span><span className="text-[13px] text-[#73867b]" aria-hidden="true">↓</span></div>
         </section>
         <HowItWorks />
         <PrivacySection />

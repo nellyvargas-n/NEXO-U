@@ -27,3 +27,7 @@ src/
 ```
 
 El cliente API toma su URL de `VITE_API_BASE_URL`. Copia `.env.example` a `.env.local` si necesitas apuntarlo a otro backend.
+
+## Estilos
+
+El frontend usa Tailwind CSS 4 con el plugin de Vite. Las clases de utilidad viven en los componentes y `src/index.css` es la entrada global que carga Tailwind y define las familias tipográficas. No hay hojas CSS por feature.

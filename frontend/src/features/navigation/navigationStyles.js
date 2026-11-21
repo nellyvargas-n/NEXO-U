@@ -1,0 +1,28 @@
+const navUnderline = 'relative transition-colors duration-200 after:absolute after:bottom-[-7px] after:left-0 after:h-0.5 after:w-full after:origin-left after:scale-x-0 after:rounded-sm after:bg-[#4e9a70] after:transition-transform after:duration-200 hover:text-[#247858] hover:after:scale-x-100 focus-visible:after:scale-x-100'
+
+export const navigationStyles = {
+  header: 'fixed top-0 z-50 w-full border-b border-[#15312f]/[0.07] bg-[#fbfcf8]/[0.93] backdrop-blur-2xl',
+  inner: 'mx-auto flex min-h-[76px] w-[min(1192px,calc(100%-80px))] items-center justify-between max-[1000px]:w-[min(calc(100%-56px),820px)] max-[700px]:min-h-[66px] max-[700px]:w-[calc(100%-40px)] max-[700px]:gap-3',
+  siteNav: 'flex items-center gap-[34px] max-[700px]:hidden',
+  navLink: `${navUnderline} text-[13px] font-medium text-[#42615c] no-underline`,
+  appNavLink: `${navUnderline} flex items-center px-[14px] text-[13px] font-medium text-[#42615c] no-underline after:bottom-[-1px] after:right-3 after:left-3`,
+  actions: 'flex items-center gap-5 max-[700px]:ml-auto max-[700px]:gap-[10px]',
+  loginLink: 'text-[12px] font-medium text-[#42615c] no-underline transition-colors hover:text-[#247858] max-[700px]:hidden',
+  cta: 'inline-flex min-h-[42px] items-center justify-center gap-[11px] rounded-[7px] bg-[#16493e] px-[17px] text-xs font-semibold text-white no-underline transition-[transform,background] duration-200 hover:-translate-y-0.5 hover:bg-[#20634f] max-[700px]:min-h-[38px] max-[700px]:px-[13px] max-[700px]:text-[11px]',
+  mobileToggle: 'hidden size-10 items-center justify-center rounded-lg border border-[#e2eae1] bg-white text-[#16493e] transition-colors hover:border-[#cfe1d1] hover:bg-[#eff6ed] max-[700px]:inline-flex',
+  menuIcon: 'grid w-4 gap-1',
+  menuLine: 'block h-px w-4 rounded-sm bg-current transition-[transform,opacity] duration-200',
+  mobileMenu: 'absolute top-[calc(100%+1px)] right-0 left-0 gap-1 border-b border-[#e3eae1] bg-[#fbfcf8] px-[max(20px,calc((100vw-1192px)/2))] pt-[10px] pb-[14px] shadow-[0_14px_22px_rgba(21,49,47,0.08)]',
+  mobileLink: 'flex min-h-[43px] items-center justify-between rounded-[7px] px-3 text-xs font-medium text-[#47655b] no-underline transition-[color,background,transform] duration-150 hover:translate-x-[3px] hover:bg-[#eff6ed] hover:text-[#226b4d] focus-visible:translate-x-[3px] focus-visible:bg-[#eff6ed] focus-visible:text-[#226b4d]',
+  appInner: 'gap-7 max-[700px]:gap-[10px]',
+  appNav: 'flex flex-1 items-stretch justify-center gap-2 max-[700px]:justify-end max-[700px]:gap-0',
+  activeAppLink: 'text-[#247858] after:scale-x-100',
+  studentDropdown: 'relative',
+  studentMenu: 'inline-flex cursor-pointer list-none items-center gap-[9px] rounded-[9px] border-0 bg-transparent py-[5px] pl-[10px] text-[#42615c] transition-colors hover:bg-[#eff6ed] group-open:bg-[#eff6ed] max-[700px]:pl-0',
+  avatar: 'grid size-8 place-items-center rounded-full bg-[#c9efd9] text-xs font-bold text-[#16493e]',
+  studentName: 'text-xs font-semibold text-[#42615c] max-[700px]:hidden',
+  chevron: 'text-base text-[#71827c] transition-transform group-open:rotate-180 max-[700px]:hidden',
+  dropdown: 'absolute top-[calc(100%+12px)] right-0 z-[60] grid w-56 origin-top-right gap-[3px] rounded-[10px] border border-[#e4ebe2] bg-white p-[7px] shadow-[0_16px_36px_rgba(21,49,47,0.13)] max-[700px]:top-[calc(100%+10px)] max-[700px]:right-[-5px] max-[700px]:w-[min(224px,calc(100vw-32px))]',
+  dropdownLink: 'flex min-h-[39px] items-center justify-between rounded-md px-[10px] text-[11px] font-medium text-[#536c60] no-underline transition-[transform,color,background] duration-150 hover:translate-x-0.5 hover:bg-[#eff6ed] hover:text-[#226b4d] focus-visible:rounded',
+  dropdownArrow: 'text-xs text-[#89a18e] opacity-0 transition-[opacity,transform] duration-150 group-hover:translate-x-0 group-hover:opacity-100',
+}

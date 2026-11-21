@@ -1,5 +1,5 @@
 import BrandMark from '../../../shared/components/BrandMark.jsx'
-import './auth.css'
+import { authStyles } from './authStyles.js'
 
 function AuthLayout({
   pageType,
@@ -11,54 +11,56 @@ function AuthLayout({
   switchHref,
   children,
 }) {
+  const isRegister = pageType === 'register'
+
   return (
-    <div className={`auth-page auth-page--${pageType}`}>
-      <aside className="auth-story" aria-label="Acerca de Nexo U">
-        <div className="auth-story__brand">
-          <BrandMark href="/" />
+    <div className={authStyles.page}>
+      <aside className={authStyles.story} aria-label="Acerca de Nexo U">
+        <div className="relative z-10">
+          <BrandMark href="/" inverse size="large" />
         </div>
 
-        <div className="auth-story__copy">
-          <p className="auth-eyebrow"><span /> TU RUTA, A TU RITMO</p>
-          <h1>{title}</h1>
-          <p>{description}</p>
+        <div className={authStyles.storyCopy}>
+          <p className={authStyles.eyebrow}><span className="size-1.5 rounded-full bg-[#8dd1a4] shadow-[0_0_0_4px_rgba(141,209,164,0.12)]" /> TU RUTA, A TU RITMO</p>
+          <h1 className={authStyles.storyTitle}>{title}</h1>
+          <p className={authStyles.storyDescription}>{description}</p>
         </div>
 
-        <div className="auth-showcase" aria-label="Vista ilustrativa de Nexo U">
-          <div className="auth-showcase__glow" />
-          <div className="auth-showcase__profile">
-            <span className="auth-showcase__label">BILLETERA ESTUDIANTIL</span>
-            <strong>Lo que sabes<br />también cuenta.</strong>
-            <div className="auth-showcase__chips">
-              <span>Habilidades</span><span>Cursos</span><span>Credenciales</span>
+        <div className={authStyles.showcase} aria-label="Vista ilustrativa de Nexo U">
+          <div className={authStyles.showcaseGlow} />
+          <div className={authStyles.showcaseProfile}>
+            <span className={authStyles.showcaseLabel}>BILLETERA ESTUDIANTIL</span>
+            <strong className={authStyles.showcaseTitle}>Lo que sabes<br />también cuenta.</strong>
+            <div className={authStyles.showcaseChips}>
+              <span className={authStyles.showcaseChip}>Habilidades</span><span className={authStyles.showcaseChip}>Cursos</span><span className={authStyles.showcaseChip}>Credenciales</span>
             </div>
           </div>
-          <div className="auth-showcase__opportunity">
-            <span className="auth-showcase__opportunity-icon" aria-hidden="true">↗</span>
-            <span><small>OPORTUNIDADES</small><strong>Un siguiente paso claro</strong></span>
+          <div className={authStyles.showcaseOpportunity}>
+            <span className={authStyles.showcaseOpportunityIcon} aria-hidden="true">↗</span>
+            <span className={authStyles.showcaseOpportunityCopy}><small className={authStyles.showcaseOpportunityEyebrow}>OPORTUNIDADES</small><strong className={authStyles.showcaseOpportunityTitle}>Un siguiente paso claro</strong></span>
           </div>
-          <span className="auth-showcase__caption">Vista ilustrativa</span>
+          <span className={authStyles.showcaseCaption}>Vista ilustrativa</span>
         </div>
 
-        <p className="auth-story__footer">Credenciales, oportunidades y apoyo para tu camino.</p>
+        <p className={authStyles.storyFooter}>Credenciales, oportunidades y apoyo para tu camino.</p>
       </aside>
 
-      <main className="auth-main">
-        <div className="auth-mobile-brand"><BrandMark href="/" /></div>
-        <section className="auth-content" aria-labelledby="auth-form-title">
-          <div className="auth-switch">
+      <main className={authStyles.main}>
+        <div className={authStyles.mobileBrand}><BrandMark href="/" /></div>
+        <section className={`${authStyles.content} ${isRegister ? authStyles.contentRegister : ''}`} aria-labelledby="auth-form-title">
+          <div className={authStyles.switch}>
             <span>{switchText}</span>
-            <a href={switchHref}>{switchLabel}</a>
+            <a className={authStyles.switchLink} href={switchHref}>{switchLabel}</a>
           </div>
-          <div className="auth-form-heading">
-            <p className="auth-form-heading__eyebrow">{eyebrow}</p>
-            <h2 id="auth-form-title">{pageType === 'login' ? 'Inicia sesión' : 'Crea tu cuenta'}</h2>
-            <p>{pageType === 'login' ? 'Ingresa tus datos para continuar.' : 'Un perfil para tus próximos pasos.'}</p>
+          <div className={`${authStyles.formHeading} ${isRegister ? authStyles.formHeadingRegister : ''}`}>
+            <p className={authStyles.formEyebrow}>{eyebrow}</p>
+            <h2 className={`${authStyles.formTitle} ${isRegister ? authStyles.formTitleRegister : ''}`} id="auth-form-title">{isRegister ? 'Crea tu cuenta' : 'Inicia sesión'}</h2>
+            <p className={authStyles.formDescription}>{isRegister ? 'Un perfil para tus próximos pasos.' : 'Ingresa tus datos para continuar.'}</p>
           </div>
           {children}
-          <p className="auth-privacy-note"><span aria-hidden="true">⌁</span> Tu información es tuya. Tú decides qué compartir.</p>
+          <p className={authStyles.privacy}><span className={authStyles.privacyIcon} aria-hidden="true">⌁</span> Tu información es tuya. Tú decides qué compartir.</p>
         </section>
-        <footer className="auth-main__footer">© Nexo U · Tu camino, tus oportunidades.</footer>
+        <footer className={authStyles.footer}>© Nexo U · Tu camino, tus oportunidades.</footer>
       </main>
     </div>
   )

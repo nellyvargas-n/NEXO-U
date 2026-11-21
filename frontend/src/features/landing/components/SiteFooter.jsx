@@ -1,12 +1,13 @@
 import BrandMark from '../../../shared/components/BrandMark.jsx'
+import { landingStyles as styles } from '../landingStyles.js'
 
 function SiteFooter() {
   return (
-    <footer className="site-footer">
-      <div className="site-footer__inner">
-        <BrandMark />
-        <p>Credenciales, oportunidades y apoyo financiero para tu camino universitario.</p>
-        <span>Un proyecto en construcción para estudiantes.</span>
+    <footer className={styles.footer}>
+      <div className={styles.footerInner}>
+        <BrandMark size="small" />
+        <p className={styles.footerCopy}>Credenciales, oportunidades y apoyo financiero para tu camino universitario.</p>
+        <span className={styles.footerAside}>Un proyecto en construcción para estudiantes.</span>
       </div>
     </footer>
   )

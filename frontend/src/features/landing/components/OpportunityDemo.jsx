@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { demoOpportunity } from '../data/demoOpportunity.js'
+import { landingStyles as styles } from '../landingStyles.js'
 
 function OpportunityDemo() {
   const [verified, setVerified] = useState(false)
@@ -7,79 +8,79 @@ function OpportunityDemo() {
   const progress = (completedCount / demoOpportunity.totalRequirements) * 100
 
   return (
-    <div className="demo-shell" id="demo">
-      <div className="demo-shell__topline">
-        <span className="demo-shell__window-dots" aria-hidden="true"><i /><i /><i /></span>
+    <div className={styles.demoShell} id="demo">
+      <div className={styles.demoTopline}>
+        <span className={styles.demoWindowDots} aria-hidden="true"><i className="size-[5px] rounded-full bg-[#e5b39d]" /><i className="size-[5px] rounded-full bg-[#dfd68d]" /><i className={styles.demoDot} /></span>
         <span>Vista de oportunidades</span>
-        <span className="demo-label"><span /> DEMO</span>
+        <span className={styles.demoLabel}><span className={styles.demoLabelDot} /> DEMO</span>
       </div>
 
-      <div className="opportunity-card">
-        <div className="opportunity-card__eyebrow">
-          <span className="opportunity-card__icon" aria-hidden="true">↗</span>
+      <div className={styles.opportunityCard}>
+        <div className={styles.opportunityEyebrow}>
+          <span className={styles.opportunityIcon} aria-hidden="true">↗</span>
           <span>{demoOpportunity.category}</span>
         </div>
-        <div className="opportunity-card__title-row">
+        <div className={styles.opportunityTitleRow}>
           <div>
-            <p className="overline">CONVOCATORIA DE EJEMPLO</p>
-            <h2>{demoOpportunity.title}</h2>
+            <p className={styles.overline}>CONVOCATORIA DE EJEMPLO</p>
+            <h2 className={styles.opportunityTitle}>{demoOpportunity.title}</h2>
           </div>
-          <span className="deadline"><span aria-hidden="true">◷</span> Cierra {demoOpportunity.deadline}</span>
+          <span className={styles.deadline}><span className="text-xs" aria-hidden="true">◷</span> Cierra {demoOpportunity.deadline}</span>
         </div>
 
-        <div className="match-summary">
-          <div className="match-summary__copy">
-            <span className="match-summary__number">{completedCount}<small>/{demoOpportunity.totalRequirements}</small></span>
-            <span className="match-summary__label">requisitos cumplidos</span>
+        <div className={styles.matchSummary}>
+          <div className={styles.matchCopy}>
+            <span className={styles.matchNumber}>{completedCount}<small className={styles.matchDenominator}>/{demoOpportunity.totalRequirements}</small></span>
+            <span className={styles.matchText}>requisitos cumplidos</span>
           </div>
-          <span className={`match-badge${verified ? ' match-badge--complete' : ''}`}>
+          <span className={`${styles.matchBadge} ${verified ? styles.matchBadgeComplete : ''}`}>
             {verified ? 'Listo para postular' : 'Buen match'}
           </span>
-          <div className="match-bar" aria-label={`${completedCount} de ${demoOpportunity.totalRequirements} requisitos cumplidos`}>
-            <span style={{ width: `${progress}%` }} />
+          <div className={styles.matchBar} aria-label={`${completedCount} de ${demoOpportunity.totalRequirements} requisitos cumplidos`}>
+            <span className={styles.matchBarFill} style={{ width: `${progress}%` }} />
           </div>
         </div>
 
-        <div className="requirements">
-          <p className="section-label">LO QUE PIDE ESTA OPORTUNIDAD</p>
+        <div className={styles.requirements}>
+          <p className={styles.sectionLabel}>LO QUE PIDE ESTA OPORTUNIDAD</p>
           {demoOpportunity.requirements.map((requirement) => {
             const met = requirement.met || (verified && !requirement.met)
             return (
-              <div className={`requirement${met ? ' requirement--met' : ' requirement--missing'}`} key={requirement.label}>
-                <span className="requirement__check" aria-hidden="true">{met ? '✓' : '＋'}</span>
-                <span>{requirement.label}</span>
-                {!met && <span className="requirement__tag">Te falta</span>}
-                {met && !requirement.met && <span className="requirement__tag requirement__tag--verified">Verificada</span>}
+              <div className={styles.requirement} key={requirement.label}>
+                <span className={`${styles.requirementCheck} ${met ? styles.requirementMet : styles.requirementMissing}`} aria-hidden="true">{met ? '✓' : '＋'}</span>
+                <span className={met ? '' : styles.requirementMissingText}>{requirement.label}</span>
+                {!met && <span className={styles.requirementTag}>Te falta</span>}
+                {met && !requirement.met && <span className={`${styles.requirementTag} ${styles.requirementVerified}`}>Verificada</span>}
               </div>
             )
           })}
         </div>
 
         {!verified ? (
-          <div className="course-suggestion">
-            <span className="course-suggestion__icon" aria-hidden="true">↗</span>
-            <div className="course-suggestion__copy">
-              <span>UN SIGUIENTE PASO POSIBLE</span>
-              <strong>{demoOpportunity.suggestedCourse}</strong>
-              <small>{demoOpportunity.courseProvider} · termina antes del cierre</small>
+          <div className={styles.courseSuggestion}>
+            <span className={styles.courseIcon} aria-hidden="true">↗</span>
+            <div className={styles.courseCopy}>
+              <span className={styles.courseEyebrow}>UN SIGUIENTE PASO POSIBLE</span>
+              <strong className={styles.courseTitle}>{demoOpportunity.suggestedCourse}</strong>
+              <small className={styles.courseDescription}>{demoOpportunity.courseProvider} · termina antes del cierre</small>
             </div>
-            <span className="course-suggestion__arrow" aria-hidden="true">→</span>
+            <span className={styles.courseArrow} aria-hidden="true">→</span>
           </div>
         ) : (
-          <div className="success-note" role="status">
-            <span aria-hidden="true">✓</span> Credencial confirmada en esta demo. Ya cumples los 5 requisitos.
+          <div className={styles.successNote} role="status">
+            <span className={styles.successIcon} aria-hidden="true">✓</span> Credencial confirmada en esta demo. Ya cumples los 5 requisitos.
           </div>
         )}
 
         <button
-          className={`demo-button${verified ? ' demo-button--done' : ''}`}
+          className={`${styles.demoButton} ${verified ? styles.demoButtonDone : ''}`}
           type="button"
           onClick={() => setVerified((current) => !current)}
         >
           {verified ? 'Reiniciar demostración' : 'Simular validación del emisor'}
-          <span aria-hidden="true">{verified ? '↺' : '→'}</span>
+          <span className="text-sm" aria-hidden="true">{verified ? '↺' : '→'}</span>
         </button>
-        <p className="demo-disclaimer">Perfil, convocatoria y validación de ejemplo para la demo.</p>
+        <p className={styles.demoDisclaimer}>Perfil, convocatoria y validación de ejemplo para la demo.</p>
       </div>
     </div>
   )

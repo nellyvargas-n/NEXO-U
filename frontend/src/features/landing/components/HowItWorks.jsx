@@ -1,3 +1,5 @@
+import { landingStyles as styles } from '../landingStyles.js'
+
 const steps = [
   {
     number: '01',
@@ -21,18 +23,18 @@ const steps = [
 
 function HowItWorks() {
   return (
-    <section className="steps-section" id="como-funciona">
-      <div className="section-heading">
-        <p className="eyebrow"><span /> SIMPLE DESDE EL PRIMER DÍA</p>
-        <h2>Tu perfil también puede abrir puertas.</h2>
-        <p>Una ruta clara entre lo que ya sabes y la oportunidad que estás buscando.</p>
+    <section className={styles.section} id="como-funciona">
+      <div className={styles.sectionHeading}>
+        <p className={`${styles.eyebrow} ${styles.sectionEyebrow}`}><span className={styles.eyebrowDot} /> SIMPLE DESDE EL PRIMER DÍA</p>
+        <h2 className={styles.sectionTitle}>Tu perfil también puede abrir puertas.</h2>
+        <p className={styles.sectionDescription}>Una ruta clara entre lo que ya sabes y la oportunidad que estás buscando.</p>
       </div>
-      <div className="steps-grid">
+      <div className={styles.stepsGrid}>
         {steps.map((step) => (
-          <article className="step-card" key={step.number}>
-            <div className="step-card__top"><span className="step-card__icon" aria-hidden="true">{step.icon}</span><span>{step.number}</span></div>
-            <h3>{step.title}</h3>
-            <p>{step.body}</p>
+          <article className={styles.stepCard} key={step.number}>
+            <div className={styles.stepTop}><span className={styles.stepIcon} aria-hidden="true">{step.icon}</span><span>{step.number}</span></div>
+            <h3 className={styles.stepTitle}>{step.title}</h3>
+            <p className={styles.stepDescription}>{step.body}</p>
           </article>
         ))}
       </div>

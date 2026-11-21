@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import AuthLayout from '../components/AuthLayout.jsx'
 import PasswordField from '../components/PasswordField.jsx'
+import { authStyles } from '../components/authStyles.js'
 
 function RegisterPage() {
   const [notice, setNotice] = useState('')
@@ -29,42 +30,42 @@ function RegisterPage() {
       switchLabel="Inicia sesión"
       switchHref="/login"
     >
-      <form className="auth-form auth-form--register" onSubmit={handleSubmit}>
-        <fieldset className="role-fieldset">
-          <legend>¿Dónde estudias actualmente?</legend>
-          <div className="role-options">
-            <label className="role-option">
-              <input type="radio" name="studentType" value="school" required />
-              <span className="role-option__content"><span aria-hidden="true">◌</span><strong>En el colegio</strong></span>
+      <form className={authStyles.registerForm} onSubmit={handleSubmit}>
+        <fieldset className={authStyles.roleFieldset}>
+          <legend className={authStyles.roleLegend}>¿Dónde estudias actualmente?</legend>
+          <div className={authStyles.roleOptions}>
+            <label className={authStyles.roleOption}>
+              <input className={authStyles.roleInput} type="radio" name="studentType" value="school" required />
+              <span className={authStyles.roleContent}><span className={authStyles.roleIcon} aria-hidden="true">◌</span><strong className={authStyles.roleText}>En el colegio</strong></span>
             </label>
-            <label className="role-option">
-              <input type="radio" name="studentType" value="university" required />
-              <span className="role-option__content"><span aria-hidden="true">◎</span><strong>En la universidad</strong></span>
+            <label className={authStyles.roleOption}>
+              <input className={authStyles.roleInput} type="radio" name="studentType" value="university" required />
+              <span className={authStyles.roleContent}><span className={authStyles.roleIcon} aria-hidden="true">◎</span><strong className={authStyles.roleText}>En la universidad</strong></span>
             </label>
           </div>
         </fieldset>
 
-        <div className="auth-field">
-          <label htmlFor="register-name">Nombre completo</label>
-          <div className="auth-input-wrap">
-            <input id="register-name" name="fullName" type="text" autoComplete="name" placeholder="Tu nombre y apellido" required />
+        <div className={authStyles.field}>
+          <label className={authStyles.label} htmlFor="register-name">Nombre completo</label>
+          <div>
+            <input className={authStyles.input} id="register-name" name="fullName" type="text" autoComplete="name" placeholder="Tu nombre y apellido" required />
           </div>
         </div>
 
-        <div className="auth-field">
-          <label htmlFor="register-email">Correo electrónico</label>
-          <div className="auth-input-wrap">
-            <input id="register-email" name="email" type="email" autoComplete="email" placeholder="tu@correo.com" required />
+        <div className={authStyles.field}>
+          <label className={authStyles.label} htmlFor="register-email">Correo electrónico</label>
+          <div>
+            <input className={authStyles.input} id="register-email" name="email" type="email" autoComplete="email" placeholder="tu@correo.com" required />
           </div>
         </div>
 
         <PasswordField id="register-password" label="Crea una contraseña" autoComplete="new-password" minLength={8} hint="Mínimo 8 caracteres" />
         <PasswordField id="register-password-confirmation" label="Confirma tu contraseña" name="passwordConfirmation" autoComplete="new-password" minLength={8} />
 
-        {notice && <p className="auth-feedback" role="status">{notice}</p>}
+        {notice && <p className={authStyles.feedback} role="status">{notice}</p>}
 
-        <button className="auth-submit" type="submit">Crear mi cuenta <span aria-hidden="true">→</span></button>
-        <p className="auth-demo-note">Vista previa: este formulario todavía no crea una cuenta.</p>
+        <button className={authStyles.submit} type="submit">Crear mi cuenta <span className={authStyles.submitArrow} aria-hidden="true">→</span></button>
+        <p className={authStyles.demoNote}>Vista previa: este formulario todavía no crea una cuenta.</p>
       </form>
     </AuthLayout>
   )
