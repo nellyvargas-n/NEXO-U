@@ -11,7 +11,7 @@ function AuthLayout({
   const isRegister = pageType === 'register'
 
   return (
-    <main className="grid min-h-[calc(100vh-76px)] bg-[#f5f7f2] text-[#173b31] max-[700px]:min-h-[calc(100vh-66px)] lg:grid-cols-2">
+    <main className="grid min-h-[calc(100vh-76px)] bg-[#f5f7f2] text-[#173b31] max-[700px]:min-h-[calc(100vh-66px)] lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
       <aside className="relative hidden min-h-[calc(100vh-76px)] overflow-hidden bg-[#153c32] px-10 py-9 text-white lg:flex lg:flex-col xl:px-16">
         <div className="relative z-10 mt-[clamp(56px,10vh,112px)] max-w-xl">
           <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-2 text-xs font-semibold text-[#c8e6d2]">
@@ -42,16 +42,9 @@ function AuthLayout({
         </div>
       </aside>
 
-      <section className="flex min-h-[calc(100vh-76px)] items-center justify-center px-4 py-8 sm:px-8 lg:px-12 max-[700px]:min-h-[calc(100vh-66px)]">
-        <div className="w-full max-w-[460px]">
+      <section className="flex min-h-[calc(100vh-76px)] items-start justify-center px-4 py-6 sm:px-8 sm:py-8 lg:items-center lg:px-10 xl:px-12 max-[700px]:min-h-[calc(100vh-66px)]">
+        <div className={['w-full', isRegister ? 'max-w-[640px]' : 'max-w-[560px]'].join(' ')}>
           <div className="rounded-3xl border border-[#e1e9df] bg-white p-6 shadow-[0_20px_60px_rgba(24,58,43,0.08)] sm:p-9">
-            <div className="flex items-center justify-end gap-1.5 text-sm text-[#6e7e73]">
-              <span>{switchText}</span>
-              <a className="rounded-sm font-semibold text-[#236b4d] underline-offset-4 transition-colors hover:text-[#174d38] hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#236b4d]" href={switchHref}>
-                {switchLabel}
-              </a>
-            </div>
-
             <div className={`mt-8 ${isRegister ? 'mb-6' : 'mb-8'}`}>
               <p className="mb-2 text-sm font-semibold text-[#347a57]">{eyebrow}</p>
               <h1 className="font-display text-3xl font-semibold leading-tight tracking-[-0.04em] text-[#173b31] sm:text-4xl" id="auth-form-title">
@@ -63,6 +56,13 @@ function AuthLayout({
             </div>
 
             {children}
+
+            <div className="mt-5 flex flex-wrap items-center justify-center gap-1.5 text-sm text-[#6e7e73]">
+              <span>{switchText}</span>
+              <a className="rounded-sm font-semibold text-[#236b4d] underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#236b4d]" href={switchHref}>
+                {switchLabel}
+              </a>
+            </div>
 
             <p className="mt-7 flex items-center justify-center gap-2 text-center text-sm text-[#748278]">
               <span className="text-lg text-[#4d8c64]" aria-hidden="true">⌁</span>

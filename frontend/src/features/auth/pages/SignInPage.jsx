@@ -41,8 +41,8 @@ function SignInPage() {
 
         {notice && <p className="m-0 rounded-xl border border-[#d5e8d3] bg-[#f1f8ec] px-4 py-3 text-sm leading-5 text-[#365f43]" role="status">{notice}</p>}
 
-        <button className="inline-flex min-h-12 w-full items-center justify-between rounded-xl bg-[#1c5a42] px-5 text-base font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#247452] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1c5a42] active:translate-y-0" type="submit">
-          Iniciar sesión <Icon name="arrow-right" className="size-5" />
+        <button className="relative inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-[#1c5a42] px-5 text-base font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1c5a42] active:bg-[#174d38]" type="submit">
+          Iniciar sesión <Icon name="arrow-right" className="absolute right-5 size-5" />
         </button>
         <p className="m-0 text-center text-sm leading-5 text-[#718075]">Vista previa: este formulario todavía no se conecta a una cuenta.</p>
       </form>

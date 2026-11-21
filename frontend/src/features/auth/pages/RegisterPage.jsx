@@ -50,7 +50,7 @@ function RegisterPage() {
       <form className="grid gap-5" onSubmit={handleSubmit}>
         <fieldset className="m-0 grid gap-3 border-0 p-0">
           <legend className="mb-1 text-sm font-semibold text-[#344b3c]">¿Dónde estudias actualmente?</legend>
-          <div className="grid grid-cols-1 gap-3 min-[430px]:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label className="relative cursor-pointer">
               <input className="peer sr-only" type="radio" name="studentType" value="school" required />
               <span className="flex min-h-12 items-center gap-2 rounded-xl border border-[#d8e2d7] bg-white px-3 py-2 text-sm text-[#526357] transition peer-checked:border-[#438c61] peer-checked:bg-[#eff7ef] peer-checked:text-[#235a3d] peer-checked:ring-2 peer-checked:ring-[#438c61]/15 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[#438c61] max-[390px]:gap-1 max-[390px]:px-2">
@@ -83,8 +83,8 @@ function RegisterPage() {
 
         {notice && <p className="m-0 rounded-xl border border-[#d5e8d3] bg-[#f1f8ec] px-4 py-3 text-sm leading-5 text-[#365f43]" role="status">{notice}</p>}
 
-        <button className="inline-flex min-h-12 w-full items-center justify-between rounded-xl bg-[#1c5a42] px-5 text-base font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#247452] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1c5a42] active:translate-y-0" type="submit">
-          Crear mi cuenta <Icon name="arrow-right" className="size-5" />
+        <button className="relative inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-[#1c5a42] px-5 text-base font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1c5a42] active:bg-[#174d38]" type="submit">
+          Crear mi cuenta <Icon name="arrow-right" className="absolute right-5 size-5" />
         </button>
         <p className="m-0 text-center text-sm leading-5 text-[#718075]">Vista previa: este formulario todavía no crea una cuenta.</p>
       </form>
