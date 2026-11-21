@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import BrandMark from '../../../shared/components/BrandMark.jsx'
+import Icon from '../../../shared/components/Icon.jsx'
 
 function PublicNavbar({ currentPage = 'landing' }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -39,7 +40,7 @@ function PublicNavbar({ currentPage = 'landing' }) {
         <div className="ml-auto flex items-center gap-5 max-[700px]:gap-2">
           {isLanding && <a className="rounded-lg px-2 py-3 text-sm font-semibold text-[#4d6458] transition-colors hover:text-[#236b4d] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#236b4d] max-[700px]:hidden" href="/login">Iniciar sesión</a>}
           <a className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#1c5a42] px-4 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#247452] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1c5a42] active:translate-y-0 max-[390px]:px-3" href={primaryAction.href}>
-            {primaryAction.label}<span className="text-base" aria-hidden="true">↗</span>
+            {primaryAction.label}<Icon name="arrow-up-right" className="size-4" />
           </a>
           <button
             className="inline-flex size-11 items-center justify-center rounded-xl border border-[#d8e2d7] bg-white text-[#1c5a42] transition hover:bg-[#eff6ed] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#438c61] md:hidden"
@@ -67,16 +68,16 @@ function PublicNavbar({ currentPage = 'landing' }) {
       >
         {isLanding ? (
           <>
-            <a className="flex min-h-12 items-center justify-between rounded-xl px-4 text-sm font-medium text-[#47655b] transition hover:bg-[#eff6ed]" href="#como-funciona" onClick={closeMenu}>Cómo funciona <span aria-hidden="true">↗</span></a>
-            <a className="flex min-h-12 items-center justify-between rounded-xl px-4 text-sm font-medium text-[#47655b] transition hover:bg-[#eff6ed]" href="#privacidad" onClick={closeMenu}>Privacidad <span aria-hidden="true">↗</span></a>
-            <a className="flex min-h-12 items-center justify-between rounded-xl px-4 text-sm font-medium text-[#47655b] transition hover:bg-[#eff6ed]" href="#demo" onClick={closeMenu}>Ver demo <span aria-hidden="true">↗</span></a>
-            <a className="flex min-h-12 items-center justify-between rounded-xl px-4 text-sm font-medium text-[#47655b] transition hover:bg-[#eff6ed]" href="/login" onClick={closeMenu}>Iniciar sesión <span aria-hidden="true">↗</span></a>
-            <a className="flex min-h-12 items-center justify-between rounded-xl px-4 text-sm font-medium text-[#47655b] transition hover:bg-[#eff6ed]" href="/register" onClick={closeMenu}>Crear cuenta <span aria-hidden="true">↗</span></a>
+            <a className="flex min-h-12 items-center rounded-xl px-4 text-sm font-medium text-[#47655b] transition hover:bg-[#eff6ed]" href="#como-funciona" onClick={closeMenu}>Cómo funciona</a>
+            <a className="flex min-h-12 items-center rounded-xl px-4 text-sm font-medium text-[#47655b] transition hover:bg-[#eff6ed]" href="#privacidad" onClick={closeMenu}>Privacidad</a>
+            <a className="flex min-h-12 items-center rounded-xl px-4 text-sm font-medium text-[#47655b] transition hover:bg-[#eff6ed]" href="#demo" onClick={closeMenu}>Ver demo</a>
+            <a className="flex min-h-12 items-center rounded-xl px-4 text-sm font-medium text-[#47655b] transition hover:bg-[#eff6ed]" href="/login" onClick={closeMenu}>Iniciar sesión</a>
+            <a className="flex min-h-12 items-center rounded-xl px-4 text-sm font-medium text-[#47655b] transition hover:bg-[#eff6ed]" href="/register" onClick={closeMenu}>Crear cuenta</a>
           </>
         ) : (
           <>
-            <a className="flex min-h-12 items-center justify-between rounded-xl px-4 text-sm font-medium text-[#47655b] transition hover:bg-[#eff6ed]" href="/" onClick={closeMenu}>Inicio <span aria-hidden="true">↗</span></a>
-            <a className="flex min-h-12 items-center justify-between rounded-xl px-4 text-sm font-medium text-[#47655b] transition hover:bg-[#eff6ed]" href={primaryAction.href} onClick={closeMenu}>{primaryAction.label} <span aria-hidden="true">↗</span></a>
+            <a className="flex min-h-12 items-center rounded-xl px-4 text-sm font-medium text-[#47655b] transition hover:bg-[#eff6ed]" href="/" onClick={closeMenu}>Inicio</a>
+            <a className="flex min-h-12 items-center rounded-xl px-4 text-sm font-medium text-[#47655b] transition hover:bg-[#eff6ed]" href={primaryAction.href} onClick={closeMenu}>{primaryAction.label}</a>
           </>
         )}
       </nav>

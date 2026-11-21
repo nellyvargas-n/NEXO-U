@@ -1,4 +1,5 @@
 import BrandMark from '../../../shared/components/BrandMark.jsx'
+import Icon from '../../../shared/components/Icon.jsx'
 
 const links = [
   { label: 'Inicio', href: '/app' },
@@ -32,7 +33,7 @@ function AuthenticatedNavbar({ active = 'Inicio', studentName = 'Camila R.' }) {
           <summary className="flex min-h-11 cursor-pointer list-none items-center gap-2 rounded-xl px-2 text-[#344b3c] transition hover:bg-[#eff6ed] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#438c61]">
             <span className="grid size-9 place-items-center rounded-full bg-[#c9efd9] text-sm font-bold text-[#16493e]" aria-hidden="true">{studentName.slice(0, 1)}</span>
             <span className="text-sm font-semibold max-[700px]:hidden">{studentName}</span>
-            <span className="text-base text-[#71827c] transition-transform group-open:rotate-180" aria-hidden="true">⌄</span>
+            <Icon name="chevron-down" className="size-4 text-[#71827c] transition-transform group-open:rotate-180" />
           </summary>
           <nav className="absolute top-[calc(100%+10px)] right-0 z-[60] grid w-56 gap-1 rounded-2xl border border-[#e4ebe2] bg-white p-2 shadow-xl shadow-[#15312f]/10 max-[700px]:w-[min(224px,calc(100vw-32px))]" aria-label="Menú de cuenta">
             <a className="flex min-h-11 items-center rounded-xl px-3 text-sm font-medium text-[#536c60] transition hover:bg-[#eff6ed] hover:text-[#226b4d]" href="/app/billetera">Mi billetera</a>
