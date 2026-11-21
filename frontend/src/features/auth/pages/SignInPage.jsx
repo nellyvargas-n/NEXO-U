@@ -2,7 +2,7 @@ import { useState } from 'react'
 import AuthLayout from '../components/AuthLayout.jsx'
 import PasswordField from '../components/PasswordField.jsx'
 import Icon from '../../../shared/components/Icon.jsx'
-import { getAuthErrorMessage, signIn } from '../../../shared/api/auth.ts'
+import { getAuthErrorMessage, signIn } from '../../../shared/api/modules/auth.service.ts'
 
 function SignInPage() {
   const [notice, setNotice] = useState(() => (

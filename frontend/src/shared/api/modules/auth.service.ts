@@ -1,5 +1,5 @@
-import { apiRequest } from './client.ts'
-import { clearAccessToken, saveAccessToken } from './session.ts'
+import { apiRequest } from '../client.ts'
+import { clearAccessToken, saveAccessToken } from '../session.ts'
 
 export type AuthRole = 'usuario' | 'empresa' | 'admin'
 
