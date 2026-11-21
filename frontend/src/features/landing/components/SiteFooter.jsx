@@ -1,4 +1,4 @@
-import BrandMark from './BrandMark.jsx'
+import BrandMark from '../../../shared/components/BrandMark.jsx'
 
 function SiteFooter() {
   return (
