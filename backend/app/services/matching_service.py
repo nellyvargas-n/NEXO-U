@@ -59,7 +59,8 @@ def recommended_courses(req, courses, deadline):
         if course.credential_kind != req.kind or course.credential_value.casefold() != req.value.casefold(): continue
         if req.kind == "language" and LEVELS.get((course.credential_level or "").upper(), 0) < LEVELS.get(req.operator.upper(), 99): continue
         matches.append({"id": course.id, "title": course.title, "ends_on": course.end_date.isoformat() if course.end_date else None,
-                        "cost_bob": course.cost_bob, "credential_level": course.credential_level})
+                        "cost_bob": course.cost_bob, "credential_level": course.credential_level,
+                        "duration_hours": course.duration_hours, "delivery_mode": course.delivery_mode})
     return sorted(matches, key=lambda c: (c["cost_bob"], c["ends_on"] or "9999-12-31"))
 
 
@@ -78,6 +79,7 @@ def evaluate(db: Session, student_id: int | None = 1, student_user_id: int | Non
     if settings.demo_mode:
         opportunities = db.scalars(select(Opportunity).where(Opportunity.deadline >= date.today())).all()
         courses = db.scalars(select(Course).where(
+            *([Course.is_demo.is_(False)] if settings.environment == "production" else []),
             or_(Course.start_date.is_(None), Course.start_date >= date.today()),
             or_(Course.end_date.is_(None), Course.end_date >= date.today()))).all()
     else:
@@ -96,6 +98,7 @@ def evaluate(db: Session, student_id: int | None = 1, student_user_id: int | Non
             .where(Organization.verified.is_(True)))
         courses = db.scalars(
             select(Course).where(or_(Course.source_name.is_not(None), Course.id.in_(verified_courses)),
+                *([Course.is_demo.is_(False)] if settings.environment == "production" else []),
                 or_(Course.start_date.is_(None), Course.start_date >= date.today()),
                 or_(Course.end_date.is_(None), Course.end_date >= date.today()))
         ).all()

@@ -11,6 +11,9 @@ class CourseRead(BaseModel):
     credential_kind: str
     credential_value: str
     credential_level: str | None = None
+    duration_hours: int | None = None
+    delivery_mode: str = "asincrono"
+    is_demo: bool = False
     organization: str
     sponsored: bool = False
     summary: str | None = None

@@ -180,23 +180,27 @@ def public_opportunities(limit:int=Query(default=50,ge=1,le=100),db:Session=Depe
 
 @router.get('/cursos/publicos')
 def public_courses(limit:int=Query(default=50,ge=1,le=100),db:Session=Depends(get_db)):
+    from app.core.config import settings
     results=[]
     course_window=and_(or_(Course.start_date.is_(None),Course.start_date>=date.today()),
                        or_(Course.end_date.is_(None),Course.end_date>=date.today()))
+    production_filter=[Course.is_demo.is_(False)] if settings.environment == "production" else []
     q=(select(Course,Organization).join(OrganizationCourse,OrganizationCourse.course_id==Course.id)
        .join(Organization,Organization.id==OrganizationCourse.organization_id)
-       .where(Organization.verified.is_(True),Course.source_name.is_(None),course_window))
+       .where(Organization.verified.is_(True),Course.source_name.is_(None),course_window,*production_filter))
     for c,org in db.execute(q):
         sponsored=db.scalar(select(ReferralAgreement.id).where(ReferralAgreement.course_id==c.id,ReferralAgreement.active.is_(True),ReferralAgreement.disclosed.is_(True)).limit(1)) is not None
-        results.append({'id':c.id,'title':c.title,'start_date':c.start_date,'end_date':c.end_date,'cost_bob':c.cost_bob,
+        results.append({'id':c.id,'title':c.title,'start_date':c.start_date,'end_date':c.end_date,
+                        'duration_hours':c.duration_hours,'delivery_mode':c.delivery_mode,'is_demo':c.is_demo,'cost_bob':c.cost_bob,
                         'credential_kind':c.credential_kind,'credential_value':c.credential_value,
                         'credential_level':c.credential_level,'organization':org.name,'sponsored':sponsored,
                         'summary':c.summary,'official_url':c.official_url,'source_url':c.source_url,
                         'source_kind':'organizacion_verificada','source_checked_on':c.source_checked_on,
                         'is_curated':False})
-    curated_q=(select(Course).where(Course.source_name.is_not(None),course_window))
+    curated_q=(select(Course).where(Course.source_name.is_not(None),course_window,*production_filter))
     for c in db.scalars(curated_q).all():
-        results.append({'id':c.id,'title':c.title,'start_date':c.start_date,'end_date':c.end_date,'cost_bob':c.cost_bob,
+        results.append({'id':c.id,'title':c.title,'start_date':c.start_date,'end_date':c.end_date,
+                        'duration_hours':c.duration_hours,'delivery_mode':c.delivery_mode,'is_demo':c.is_demo,'cost_bob':c.cost_bob,
                         'credential_kind':c.credential_kind,'credential_value':c.credential_value,
                         'credential_level':c.credential_level,'organization':c.source_name,'sponsored':False,
                         'summary':c.summary,'official_url':c.official_url,'source_url':c.source_url,
@@ -212,7 +216,10 @@ def my_opportunities(u:AppUser=Depends(require_role('empresa')),db:Session=Depen
 @router.get('/empresa/cursos')
 def my_courses(u:AppUser=Depends(require_role('empresa')),db:Session=Depends(get_db)):
     q=(select(Course,Organization).join(OrganizationCourse,OrganizationCourse.course_id==Course.id).join(Organization,Organization.id==OrganizationCourse.organization_id).where(Organization.owner_user_id==u.id).order_by(Course.end_date))
-    return [{'id':c.id,'title':c.title,'organization_id':org.id,'end_date':c.end_date,'cost_bob':c.cost_bob,'credential_kind':c.credential_kind,'credential_value':c.credential_value,'credential_level':c.credential_level} for c,org in db.execute(q)]
+    return [{'id':c.id,'title':c.title,'organization_id':org.id,'start_date':c.start_date,'end_date':c.end_date,
+             'duration_hours':c.duration_hours,'delivery_mode':c.delivery_mode,'cost_bob':c.cost_bob,
+             'credential_kind':c.credential_kind,'credential_value':c.credential_value,
+             'credential_level':c.credential_level} for c,org in db.execute(q)]
 
 @router.get('/empresa/cursos/{course_id}/inscripciones')
 def company_course_enrollments(

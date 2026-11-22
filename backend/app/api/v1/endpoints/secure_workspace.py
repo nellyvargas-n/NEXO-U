@@ -1,5 +1,6 @@
 """Rutas autenticadas para la aplicación multiusuario (sin tocar endpoints demo)."""
 from datetime import date
+from typing import Literal
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field, HttpUrl, model_validator
 from sqlalchemy import select
@@ -71,7 +72,10 @@ class RequirementIn(BaseModel):
 class CourseIn(BaseModel):
     organization_id: int
     title: str = Field(min_length=3, max_length=200)
-    end_date: date
+    start_date: date | None = None
+    end_date: date | None = None
+    duration_hours: int | None = Field(default=None, ge=1, le=2000)
+    delivery_mode: Literal["asincrono", "sincronico", "mixto"] = "asincrono"
     cost_bob: float = Field(ge=0)
     credential_kind: str = Field(pattern="^(skill|language|certificate)$")
     credential_value: str = Field(min_length=1, max_length=120)
@@ -200,8 +204,11 @@ def create_course(body:CourseIn,user:AppUser=Depends(require_role("empresa")),db
     from sqlalchemy import text
     org=owned_org(db,user,body.organization_id)
     if not org.verified: raise HTTPException(403,"La organización debe ser verificada")
-    if body.end_date < date.today():raise HTTPException(422,"El curso debe terminar en el futuro")
-    row=Course(title=body.title,end_date=body.end_date,cost_bob=body.cost_bob,credential_kind=body.credential_kind,credential_value=body.credential_value,credential_level=body.credential_level,issuer=org.name)
+    if body.start_date is not None and body.start_date < date.today():raise HTTPException(422,"El curso no puede empezar en el pasado")
+    if body.end_date is not None and body.end_date < date.today():raise HTTPException(422,"El curso debe terminar en el futuro")
+    row=Course(title=body.title,start_date=body.start_date,end_date=body.end_date,duration_hours=body.duration_hours,
+               delivery_mode=body.delivery_mode,cost_bob=body.cost_bob,credential_kind=body.credential_kind,
+               credential_value=body.credential_value,credential_level=body.credential_level,issuer=org.name)
     db.add(row);db.flush()
     db.execute(text('INSERT INTO organization_courses (organization_id,course_id) VALUES (:org,:course)'),{'org':org.id,'course':row.id})
     db.commit()

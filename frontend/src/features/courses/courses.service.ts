@@ -10,6 +10,9 @@ export interface PublicCourse {
   credential_kind: 'skill' | 'language' | 'certificate' | string
   credential_value: string
   credential_level: string | null
+  duration_hours: number | null
+  delivery_mode: 'asincrono' | 'sincronico' | 'mixto' | string
+  is_demo: boolean
   organization: string
   sponsored: boolean
   is_curated: boolean

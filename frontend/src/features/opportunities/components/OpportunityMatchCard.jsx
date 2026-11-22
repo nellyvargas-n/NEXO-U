@@ -29,6 +29,7 @@ function formatAmount(value) {
 }
 
 function sourceLabel(opportunity) {
+  if (opportunity.source_kind === 'demostracion') return 'Oferta de demostración'
   if (opportunity.source_kind === 'bolsa_trabajo') return 'Bolsa de trabajo consultada'
   if (opportunity.is_curated) return opportunity.source_kind === 'canal_oficial' ? 'Canal oficial consultado' : 'Fuente institucional consultada'
   return opportunity.verified_organization ? 'Emisor verificado' : 'Emisor sin verificar'
@@ -88,7 +89,7 @@ function OpportunityMatchCard({ opportunity, maxRequirements = 4 }) {
               <div className="h-full rounded-full bg-[#67ad7e]" style={{ width: `${Math.max(0, Math.min(100, match.percent))}%` }} />
             </div>
           )}
-          {hasMatchScore && opportunity.is_curated && <p className="mb-0 mt-2 text-xs leading-5 text-[#7b897e]">La institución puede exigir otras condiciones; revisa la convocatoria antes de postular.</p>}
+          {hasMatchScore && opportunity.is_curated && opportunity.source_kind !== 'demostracion' && <p className="mb-0 mt-2 text-xs leading-5 text-[#7b897e]">La institución puede exigir otras condiciones; revisa la convocatoria antes de postular.</p>}
         </div>
 
         {visibleRequirements.length > 0 && (
@@ -104,7 +105,7 @@ function OpportunityMatchCard({ opportunity, maxRequirements = 4 }) {
                       <span className={`grid size-6 shrink-0 place-items-center rounded-full ${met ? 'bg-[#e4f2e5] text-[#328052]' : 'bg-[#fbf2dd] text-[#947333]'}`}>
                         <Icon name={met ? 'check' : 'plus'} className="size-3.5" />
                       </span>
-                      <span className="font-medium text-[#344f40]">{requirementLabels[requirement.kind] ?? requirement.kind}: {requirement.required}</span>
+                      <span className="font-medium text-[#344f40]">{requirementLabels[requirement.kind] ?? requirement.kind}: {requirement.required}{requirement.kind === 'language' ? ` (${requirement.operator})` : ''}</span>
                       <span className={`ml-auto text-xs font-semibold ${met ? 'text-[#548164]' : 'text-[#927d49]'}`}>{met ? 'Cumples' : 'Pendiente'}</span>
                     </div>
                     {!met && suggestedCourse && (
