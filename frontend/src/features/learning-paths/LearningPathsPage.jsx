@@ -1,5 +1,5 @@
 import Surface from '../student-app/components/Surface.jsx'
-import CourseCard from '../courses/components/CourseCard.jsx'
+import CourseCardWithEnrollment from '../courses/components/CourseCardWithEnrollment.jsx'
 import { useCourses } from '../courses/useCourses.js'
 
 function isEnglishB1(course) {
@@ -19,6 +19,7 @@ function LearningPathsPage() {
     enrollingCourseId,
     enrollmentFeedback,
     enroll,
+    refreshNow,
   } = useCourses()
   const recommendedCourses = courses.filter((course) => course.recommended)
 
@@ -46,7 +47,7 @@ function LearningPathsPage() {
       {recommendedCourses.length > 0 ? (
         <div className="grid gap-4">
           {recommendedCourses.map((course) => (
-            <CourseCard
+            <CourseCardWithEnrollment
               course={course}
               detailHref={isEnglishB1(course) ? `/app/rutas/ingles-b1?course=${course.id}` : undefined}
               enrollmentAction={enrollmentAction}
@@ -54,6 +55,7 @@ function LearningPathsPage() {
               enrollingCourseId={enrollingCourseId}
               key={course.id}
               onEnroll={enroll}
+              onRefresh={refreshNow}
             />
           ))}
         </div>

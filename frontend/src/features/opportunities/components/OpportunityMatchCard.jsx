@@ -35,6 +35,20 @@ function sourceLabel(opportunity) {
   return opportunity.verified_organization ? 'Emisor verificado' : 'Emisor sin verificar'
 }
 
+function isLearnableRequirement(kind) {
+  return ['skill', 'language', 'certificate'].includes(kind)
+}
+
+function coursesHref(requirement, course) {
+  const params = new URLSearchParams()
+  if (course?.id) params.set('course', String(course.id))
+  const search = [requirement.required, requirement.kind === 'language' ? requirement.operator : '']
+    .filter(Boolean)
+    .join(' ')
+  if (search) params.set('skill', search)
+  return `/app/cursos?${params.toString()}`
+}
+
 function OpportunityMatchCard({ opportunity, maxRequirements = 4 }) {
   const { match } = opportunity
   const requirements = match?.requirements ?? []
@@ -108,8 +122,17 @@ function OpportunityMatchCard({ opportunity, maxRequirements = 4 }) {
                       <span className="font-medium text-[#344f40]">{requirementLabels[requirement.kind] ?? requirement.kind}: {requirement.required}{requirement.kind === 'language' ? ` (${requirement.operator})` : ''}</span>
                       <span className={`ml-auto text-xs font-semibold ${met ? 'text-[#548164]' : 'text-[#927d49]'}`}>{met ? 'Cumples' : 'Pendiente'}</span>
                     </div>
-                    {!met && suggestedCourse && (
-                      <p className="mb-0 ml-8 mt-2 text-xs leading-5 text-[#718075]">Curso sugerido: <a className="font-semibold text-[#246b4a] underline-offset-4 hover:underline" href="/app/cursos">{suggestedCourse.title}</a></p>
+                    {!met && isLearnableRequirement(requirement.kind) && (
+                      <p className="mb-0 ml-8 mt-2 text-xs leading-5 text-[#718075]">
+                        {suggestedCourse ? (
+                          <>Curso sugerido: <a className="font-semibold text-[#246b4a] underline-offset-4 hover:underline" href={coursesHref(requirement, suggestedCourse)}>{suggestedCourse.title}</a></>
+                        ) : (
+                          <>Sin curso vinculado. <a className="font-semibold text-[#246b4a] underline-offset-4 hover:underline" href={coursesHref(requirement)}>Buscar {requirement.required}</a></>
+                        )}
+                      </p>
+                    )}
+                    {!met && !isLearnableRequirement(requirement.kind) && (
+                      <p className="mb-0 ml-8 mt-2 text-xs leading-5 text-[#718075]">Confirma este requisito en la convocatoria.</p>
                     )}
                   </li>
                 )
@@ -125,8 +148,8 @@ function OpportunityMatchCard({ opportunity, maxRequirements = 4 }) {
             {opportunity.official_url && <a className="font-semibold text-[#246b4a] underline-offset-4 hover:underline" href={opportunity.official_url} target="_blank" rel="noreferrer">{opportunity.category === 'beca' ? 'Postular o revisar' : 'Ver convocatoria'} <span aria-hidden="true">↗</span></a>}
             {opportunity.source_url && opportunity.source_url !== opportunity.official_url && <a className="font-semibold text-[#246b4a] underline-offset-4 hover:underline" href={opportunity.source_url} target="_blank" rel="noreferrer">Consultar fuente <span aria-hidden="true">↗</span></a>}
           </div>
-          {match?.requirements?.some((requirement) => requirement.status === 'falta' && requirement.courses?.length > 0) && (
-            <a className="inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-[#246b4a] underline-offset-4 hover:underline" href="/app/cursos">Ver cursos <span aria-hidden="true">→</span></a>
+          {match?.requirements?.some((requirement) => requirement.status !== 'cumple' && isLearnableRequirement(requirement.kind)) && (
+            <a className="inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-[#246b4a] underline-offset-4 hover:underline" href={coursesHref(match.requirements.find((requirement) => requirement.status !== 'cumple' && isLearnableRequirement(requirement.kind)))}>Preparar habilidades <span aria-hidden="true">→</span></a>
           )}
         </div>
       </div>

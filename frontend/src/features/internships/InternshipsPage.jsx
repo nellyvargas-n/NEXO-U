@@ -36,7 +36,7 @@ function InternshipsPage() {
 
       {internships.length > 0 ? (
         <div className="grid gap-4">
-          {internships.map((opportunity) => <OpportunityMatchCard key={opportunity.id} opportunity={opportunity} />)}
+          {internships.map((opportunity) => <OpportunityMatchCard key={opportunity.id} opportunity={opportunity} maxRequirements={opportunity.match?.requirements?.length ?? 4} />)}
         </div>
       ) : (
         <Surface className="py-9 text-center">

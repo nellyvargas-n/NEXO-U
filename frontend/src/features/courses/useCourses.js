@@ -61,6 +61,13 @@ export function useCourses() {
     }
   }
 
+  async function refreshNow() {
+    const result = await getCourseData()
+    setData(result)
+    setError('')
+    return result
+  }
+
   return {
     ...data,
     isLoading,
@@ -68,5 +75,6 @@ export function useCourses() {
     enrollingCourseId,
     enrollmentFeedback,
     enroll,
+    refreshNow,
   }
 }

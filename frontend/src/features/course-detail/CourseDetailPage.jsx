@@ -1,5 +1,5 @@
 import Surface from '../student-app/components/Surface.jsx'
-import CourseCard from '../courses/components/CourseCard.jsx'
+import CourseCardWithEnrollment from '../courses/components/CourseCardWithEnrollment.jsx'
 import { useCourses } from '../courses/useCourses.js'
 
 function isEnglishB1(course) {
@@ -19,6 +19,7 @@ function CourseDetailPage() {
     enrollingCourseId,
     enrollmentFeedback,
     enroll,
+    refreshNow,
   } = useCourses()
   const requestedCourseId = new URLSearchParams(window.location.search).get('course')
   const selectedCourse = requestedCourseId
@@ -44,12 +45,13 @@ function CourseDetailPage() {
 
       {selectedCourse ? (
         <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.25fr)_minmax(260px,0.75fr)]">
-          <CourseCard
+          <CourseCardWithEnrollment
             course={selectedCourse}
             enrollmentAction={enrollmentAction}
             enrollmentFeedback={enrollmentFeedback}
             enrollingCourseId={enrollingCourseId}
             onEnroll={enroll}
+            onRefresh={refreshNow}
           />
           <div className="grid gap-5">
             <Surface>
