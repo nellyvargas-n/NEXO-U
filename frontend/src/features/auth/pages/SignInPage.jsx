@@ -24,7 +24,11 @@ function SignInPage() {
     setIsSubmitting(true)
 
     try {
-      await signIn({ email, password }, formData.has('remember'))
+      const session = await signIn({ email, password }, formData.has('remember'))
+      if (session.role === 'empresa') {
+        window.location.assign('/empresa/cursos/validar')
+        return
+      }
       const isNewRegistration = new URLSearchParams(window.location.search).get('registered') === '1'
       window.location.assign(isNewRegistration ? '/app/perfil?setup=1' : '/app')
     } catch (requestError) {

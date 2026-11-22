@@ -21,6 +21,13 @@ export interface RegisteredUser {
   active: boolean
 }
 
+export interface CurrentUser {
+  id: number
+  email: string
+  role: AuthRole
+  active: boolean
+}
+
 export function registerStudentAccount({ email, password }: AuthCredentials): Promise<RegisteredUser> {
   clearAccessToken()
 
@@ -44,6 +51,10 @@ export async function signIn({ email, password }: AuthCredentials, remember = fa
 
   saveAccessToken(session.access_token, remember)
   return session
+}
+
+export function getCurrentUser(): Promise<CurrentUser> {
+  return apiRequest<CurrentUser>('v1/auth/me')
 }
 
 export function getAuthErrorMessage(error: unknown): string {

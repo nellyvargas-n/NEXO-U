@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getAccessToken } from '../../shared/api/session.ts'
+import { getCurrentUser } from '../../shared/api/modules/auth.service.ts'
 import Surface from '../student-app/components/Surface.jsx'
 import { clearOnboardingDraft, getOnboardingDraft } from './onboardingDraft.ts'
 import { getStudentProfiles, saveSchoolProfile, saveUniversityProfile } from './profile.service.ts'
@@ -31,6 +32,8 @@ function getErrorMessage(error) {
 function ProfilePage() {
   const [studentType, setStudentType] = useState(null)
   const [hasSavedProfile, setHasSavedProfile] = useState(false)
+  const [studentAccountId, setStudentAccountId] = useState(null)
+  const [copyMessage, setCopyMessage] = useState('')
   const [university, setUniversity] = useState({ name: '', career: '', semester: '', age: '', city: '' })
   const [school, setSchool] = useState({ full_name: '', city: '', graduation_year: '', average_grade: '', math_grade: '' })
   const [isLoading, setIsLoading] = useState(true)
@@ -64,8 +67,13 @@ function ProfilePage() {
       }
 
       try {
-        const profiles = await getStudentProfiles()
+        const [profiles, currentUser] = await Promise.all([
+          getStudentProfiles(),
+          getCurrentUser().catch(() => null),
+        ])
         if (!isCurrent) return
+
+        if (currentUser?.role === 'usuario') setStudentAccountId(currentUser.id)
 
         if (profiles.university) {
           setStudentType('university')
@@ -147,6 +155,17 @@ function ProfilePage() {
     setSchool((current) => ({ ...current, [field]: value }))
   }
 
+  async function copyStudentAccountId() {
+    if (!studentAccountId) return
+
+    try {
+      await navigator.clipboard.writeText(String(studentAccountId))
+      setCopyMessage('ID copiado. Compártelo solo con la organización que ofrece el curso.')
+    } catch {
+      setCopyMessage(`Copia este ID manualmente: ${studentAccountId}`)
+    }
+  }
+
   return (
     <div className="max-w-3xl">
       <Surface className="p-0">
@@ -194,9 +213,16 @@ function ProfilePage() {
               )}
 
               {hasSavedProfile && (
-                <p className="mb-6 rounded-xl bg-[#f3f7f1] px-4 py-3 text-sm text-[#526357]">
-                  Tipo de perfil: <strong className="text-[#235a3d]">{studentType === 'school' ? 'Estudiante de colegio' : 'Estudiante universitario'}</strong>. El tipo se mantiene para evitar mezclar datos académicos.
-                </p>
+                <div className="mb-6 grid gap-3 rounded-xl bg-[#f3f7f1] px-4 py-3 text-sm text-[#526357] sm:flex sm:items-center sm:justify-between">
+                  <p className="m-0">Tipo de perfil: <strong className="text-[#235a3d]">{studentType === 'school' ? 'Estudiante de colegio' : 'Estudiante universitario'}</strong>. El tipo se mantiene para evitar mezclar datos académicos.</p>
+                  {studentType === 'university' && studentAccountId && (
+                    <div className="flex shrink-0 flex-wrap items-center gap-2">
+                      <span className="font-semibold text-[#365340]">ID para validar cursos: {studentAccountId}</span>
+                      <button className="min-h-9 rounded-lg border border-[#d1dfd0] px-3 text-xs font-semibold text-[#246b4a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#347a57]" type="button" onClick={copyStudentAccountId}>Copiar ID</button>
+                    </div>
+                  )}
+                  {copyMessage && <p className="m-0 text-xs text-[#526b5a]" role="status">{copyMessage}</p>}
+                </div>
               )}
 
               {studentType && (
