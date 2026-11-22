@@ -2,6 +2,13 @@ import { getAccessToken } from './session.ts'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/'
 
+export class ApiError extends Error {
+  constructor(message: string, public readonly status: number) {
+    super(message)
+    this.name = 'ApiError'
+  }
+}
+
 export async function apiRequest<TResponse>(path: string, init: RequestInit = {}): Promise<TResponse> {
   const normalizedPath = path.replace(/^\/+/, '')
   const baseUrl = API_BASE_URL.endsWith('/') ? API_BASE_URL : `${API_BASE_URL}/`
@@ -29,7 +36,7 @@ export async function apiRequest<TResponse>(path: string, init: RequestInit = {}
     } catch {
       console.log("No se pudo analizar la respuesta JSON del error")
     }
-    throw new Error(message)
+    throw new ApiError(message, response.status)
   }
 
   if (response.status === 204) return undefined as TResponse

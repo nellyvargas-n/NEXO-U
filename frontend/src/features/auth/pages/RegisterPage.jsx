@@ -3,6 +3,7 @@ import AuthLayout from '../components/AuthLayout.jsx'
 import PasswordField from '../components/PasswordField.jsx'
 import Icon from '../../../shared/components/Icon.jsx'
 import { getAuthErrorMessage, registerStudentAccount } from '../../../shared/api/modules/auth.service.ts'
+import { saveOnboardingDraft } from '../../profile/onboardingDraft.ts'
 
 const passwordMismatchMessage = 'Las contraseñas no coinciden.'
 
@@ -30,6 +31,8 @@ function RegisterPage() {
     const email = String(formData.get('email') ?? '').trim()
     const password = String(formData.get('password') ?? '')
     const passwordConfirmation = String(formData.get('passwordConfirmation') ?? '')
+    const fullName = String(formData.get('fullName') ?? '').trim()
+    const studentType = formData.get('studentType')
     setError('')
 
     if (password !== passwordConfirmation) {
@@ -43,6 +46,9 @@ function RegisterPage() {
 
     try {
       await registerStudentAccount({ email, password })
+      if (studentType === 'school' || studentType === 'university') {
+        saveOnboardingDraft({ fullName, studentType })
+      }
       window.location.assign('/login?registered=1')
     } catch (requestError) {
       setError(getAuthErrorMessage(requestError))
@@ -98,6 +104,7 @@ function RegisterPage() {
         <button className="relative inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-[#1c5a42] px-5 text-base font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1c5a42] active:bg-[#174d38] disabled:cursor-wait disabled:opacity-70" type="submit" disabled={isSubmitting}>
           {isSubmitting ? 'Creando cuenta…' : 'Crear mi cuenta'} <Icon name="arrow-right" className="absolute right-5 size-5" />
         </button>
+        <p className="-mt-2 text-xs leading-5 text-[#718075]">Después de iniciar sesión, completarás tus datos académicos para activar las recomendaciones.</p>
       </form>
     </AuthLayout>
   )

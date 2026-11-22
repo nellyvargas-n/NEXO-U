@@ -24,7 +24,7 @@ export const studentAppRoutes = [
     path: '/app/perfil',
     group: 'Tu espacio',
     title: 'Mi perfil',
-    description: 'La información de ejemplo que el motor compara con los requisitos de cada oportunidad.',
+    description: 'Completa y actualiza los datos que se usan para calcular la compatibilidad con cada oportunidad.',
     activePath: '/app/perfil',
     component: ProfilePage,
   },
