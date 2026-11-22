@@ -1,62 +1,141 @@
-"""Crea cuentas ficticias explícitamente en Neon/SQLite, nunca al iniciar el servidor.
+"""Poblar únicamente una base DE PRUEBAS; las claves se generan al ejecutarlo.
 
 Uso: ALLOW_DEMO_SEED=true python -m scripts.seed_demo_accounts
-      (después de ejecutar sql/NEON_CONSOLE_TODO.sql en Neon Console)
+Opcional: --rotate-demo para restablecer solo cuentas @nexou.demo explícitamente.
+Se imprimen claves nuevas una sola vez y se guardan fuera de Git.
 """
 from pathlib import Path
 from datetime import date, timedelta
-import json, os
+import os, sys, secrets
 from sqlalchemy import select
+from app.core.config import settings
 from app.core.database import SessionLocal
 from app.core.auth_jwt import hash_password
-from app.models.access import AppUser, Organization, StudentAccount, AuditLog
+from app.models.access import AppUser, Organization, StudentAccount
 from app.models.entities import Profile, Credential, Opportunity, Requirement, Course
-from app.models.extended import OrganizationOpportunity, OrganizationCourse
+from app.models.extended import OrganizationOpportunity, OrganizationCourse, SchoolProfile
 
-root=Path(__file__).resolve().parents[1]
-if os.getenv('ALLOW_DEMO_SEED','').strip().lower()!='true':
-    raise SystemExit('BLOQUEADO. Define ALLOW_DEMO_SEED=true solo si tu base es de PRUEBAS. Nunca en producción.')
-with open(root/'credenciales'/'demo_accounts.json',encoding='utf-8') as handle:
-    credentials=json.load(handle)
-
+if os.getenv('ALLOW_DEMO_SEED', '').lower() != 'true':
+    raise SystemExit('BLOQUEADO: define ALLOW_DEMO_SEED=true solo en una base de pruebas')
+if settings.environment == 'production':
+    raise SystemExit('BLOQUEADO: no sembrar cuentas de demostración en producción')
+rotate = '--rotate-demo' in sys.argv
+specs = [('usuario', 'estudiante@nexou.demo'), ('empresa', 'empresa@nexou.demo'),
+         ('admin', 'admin@nexou.demo'), ('usuario', 'colegial@nexou.demo')]
+created_credentials = []
 with SessionLocal() as db:
-    for account in credentials['accounts']:
-        user=db.scalar(select(AppUser).where(AppUser.email==account['email']))
-        if user:
-            print('EXISTE (sin cambiar contraseña):', account['email'])
-            continue
-        user=AppUser(email=account['email'],password_hash=hash_password(account['password']),role=account['role'],active=True)
-        db.add(user);db.flush()
-        if account['role']=='usuario':db.add(StudentAccount(user_id=user.id))
-        print('CREADO:',account['email'],account['role'])
+    for role, email in specs:
+        u = db.scalar(select(AppUser).where(AppUser.email == email))
+        if u and u.role != role:
+            raise SystemExit(f'CONFLICTO: {email} existe con un rol distinto; no se altera')
+        if not u or rotate:
+            password = secrets.token_urlsafe(24)
+            if not u:
+                u = AppUser(email=email, role=role, password_hash=hash_password(password), active=True)
+                db.add(u)
+                db.flush()
+                if role == 'usuario':
+                    db.add(StudentAccount(user_id=u.id))
+            else:
+                u.password_hash = hash_password(password)
+                u.token_version += 1
+            created_credentials.append((role, email, password))
     db.commit()
-    def get(email):return db.scalar(select(AppUser).where(AppUser.email==email))
-    company=get('empresa@nexou.demo');student=get('estudiante@nexou.demo');admin=get('admin@nexou.demo')
-    org=db.scalar(select(Organization).where(Organization.owner_user_id==company.id,Organization.name=='Academia Nexo DEMO'))
+
+    def by_email(email):
+        return db.scalar(select(AppUser).where(AppUser.email == email))
+
+    company = by_email('empresa@nexou.demo')
+    student = by_email('estudiante@nexou.demo')
+    school_user = by_email('colegial@nexou.demo')
+    org = db.scalar(select(Organization).where(Organization.owner_user_id == company.id,
+                                               Organization.name == 'Academia Nexo DEMO'))
     if org is None:
-        org=Organization(owner_user_id=company.id,name='Academia Nexo DEMO',verified=True)
-        db.add(org);db.flush()
-    account=db.get(StudentAccount,student.id)
-    if account.profile_id is None:
-        p=Profile(name='Camila — DEMOSTRACIÓN',career='Ingeniería de Sistemas',semester=6,age=21,city='La Paz')
-        db.add(p);db.flush();account.profile_id=p.id
-        db.add(Credential(student_id=p.id,kind='skill',value='Python',level=None,verified=False,issuer=None))
-    opp=db.scalar(select(Opportunity).where(Opportunity.title=='Pasantía Sistemas — DEMO FICTICIA'))
+        org = Organization(owner_user_id=company.id, name='Academia Nexo DEMO', verified=True)
+        db.add(org)
+        db.flush()
+    else:
+        org.verified = True  # solo el emisor ficticio en modo demo explícito
+    account = db.get(StudentAccount, student.id)
+    if account is None:
+        account = StudentAccount(user_id=student.id)
+        db.add(account)
+    if not account.profile_id:
+        p = Profile(name='Camila — DEMOSTRACIÓN', career='Ingeniería de Sistemas',
+                    semester=6, age=21, city='La Paz')
+        db.add(p)
+        db.flush()
+        account.profile_id = p.id
+        db.add(Credential(student_id=p.id, student_user_id=student.id, kind='skill', value='Python', level=None,
+                          verified=False, issuer=None))
+    if db.get(SchoolProfile, school_user.id) is None:
+        db.add(SchoolProfile(user_id=school_user.id,full_name='Alex — ESTUDIANTE FICTICIO',
+                             city='La Paz',graduation_year=date.today().year,
+                             average_grade=90,math_grade=85))
+    opp = db.scalar(select(Opportunity).where(Opportunity.title == 'Pasantía Sistemas — DEMO FICTICIA'))
     if opp is None:
-        opp=Opportunity(title='Pasantía Sistemas — DEMO FICTICIA',category='pasantia',deadline=date.today()+timedelta(days=30),official_url='https://example.org/nexo-u-ejemplo-no-oficial',amount_bob=1500)
-        db.add(opp);db.flush()
-        db.add(OrganizationOpportunity(organization_id=org.id,opportunity_id=opp.id))
-        for kind,operator,val in [('career','in','Ingeniería de Sistemas|Informática'),('semester','>=','5'),('age','between','18-25'),('skill','has','Python'),('language','B1','Inglés')]:
-            db.add(Requirement(opportunity_id=opp.id,kind=kind,operator=operator,value=val,mandatory=True))
-    course=db.scalar(select(Course).where(Course.title=='Inglés B1 — DEMO FICTICIO'))
+        opp = Opportunity(title='Pasantía Sistemas — DEMO FICTICIA', category='pasantia',
+                          deadline=date.today() + timedelta(days=30),is_demo=True,
+                          official_url='https://example.org/nexo-u-demo-ficticio', amount_bob=1500)
+        db.add(opp)
+        db.flush()
+        db.add(OrganizationOpportunity(organization_id=org.id, opportunity_id=opp.id))
+        for kind, operator, value in [
+            ('career', 'in', 'Ingeniería de Sistemas|Informática'), ('semester', '>=', '5'),
+            ('age', 'between', '18-25'), ('skill', 'has', 'Python'), ('language', 'B1', 'Inglés')]:
+            db.add(Requirement(opportunity_id=opp.id, kind=kind, operator=operator, value=value,
+                               mandatory=True))
+    else:
+        opp.is_demo=True
+        if opp.deadline < date.today(): opp.deadline=date.today()+timedelta(days=30)
+    # Becas escolares de DEMOSTRACIÓN: no se presentan como convocatorias reales.
+    school_opp=db.scalar(select(Opportunity).where(Opportunity.title=='Beca escolar — DEMO FICTICIA'))
+    if school_opp is None:
+        school_opp=Opportunity(title='Beca escolar — DEMO FICTICIA',category='beca',
+                               deadline=date.today()+timedelta(days=30),is_demo=True,
+                               official_url='https://example.org/nexo-u-beca-demo-ficticia',amount_bob=0)
+        db.add(school_opp);db.flush()
+        db.add(OrganizationOpportunity(organization_id=org.id,opportunity_id=school_opp.id))
+        for kind,operator,value in [('average_grade','>=','85'),('math_grade','>=','80'),
+                                    ('graduation_year','eq',str(date.today().year)),('language','B1','Inglés')]:
+            db.add(Requirement(opportunity_id=school_opp.id,kind=kind,operator=operator,value=value,mandatory=True))
+    else:
+        school_opp.is_demo=True
+        if school_opp.deadline < date.today(): school_opp.deadline=date.today()+timedelta(days=30)
+    course = db.scalar(select(Course).where(Course.title == 'Inglés B1 — DEMO FICTICIO'))
     if course is None:
-        course=Course(title='Inglés B1 — DEMO FICTICIO',end_date=date.today()+timedelta(days=14),cost_bob=0,credential_kind='language',credential_value='Inglés',credential_level='B1',issuer=org.name)
-        db.add(course);db.flush()
+        course = Course(title='Inglés B1 — DEMO FICTICIO', end_date=date.today() + timedelta(days=14),
+                        cost_bob=0, credential_kind='language', credential_value='Inglés',
+                        credential_level='B1', issuer=org.name)
+        db.add(course)
+        db.flush()
+        db.add(OrganizationCourse(organization_id=org.id, course_id=course.id))
+    else:
+        if course.end_date < date.today(): course.end_date=date.today()+timedelta(days=14)
+    db.flush()  # persistir asociaciones nuevas antes de comprobar si ya existen
+    for op in (opp,school_opp):
+        if db.get(OrganizationOpportunity,(org.id,op.id)) is None:
+            db.add(OrganizationOpportunity(organization_id=org.id,opportunity_id=op.id))
+    if db.get(OrganizationCourse,(org.id,course.id)) is None:
         db.add(OrganizationCourse(organization_id=org.id,course_id=course.id))
     db.commit()
-    print('\nDEMO LISTA: estudiante_user_id=',student.id,'organizacion_id=',org.id,'oportunidad_id=',opp.id,'curso_id=',course.id)
-    print('Los datos de oportunidad/curso son ficticios; reemplázalos por fuentes oficiales para tu presentación.')
-    print('1) Login estudiante -> GET /api/v1/usuario/match (4/5)')
-    print('2) POST /api/v1/usuario/cursos/'+str(course.id)+'/inscribir')
-    print('3) Login empresa -> POST /api/v1/empresa/cursos/'+str(course.id)+'/validar, student_user_id='+str(student.id))
-    print('4) Login estudiante -> GET /api/v1/usuario/match (5/5)')
+
+print('Datos de demostración preparados. La pasantía y el curso NO son convocatorias reales.')
+print('IDs: estudiante=', student.id, 'empresa=', company.id, 'oportunidad=', opp.id, 'curso=', course.id)
+if created_credentials:
+    lines = ['# Credenciales locales de NEXO U — SOLO PRUEBAS',
+             '', 'NO subir este archivo a GitHub ni usar en producción.', '',
+             '| Rol | Correo | Contraseña temporal |', '|---|---|---|']
+    lines.extend(f'| {role} | {email} | `{password}` |' for role, email, password in created_credentials)
+    content = '\n'.join(lines) + '\n'
+    secret_dir = Path(__file__).resolve().parents[1] / '.local_credentials'
+    secret_dir.mkdir(mode=0o700, exist_ok=True)
+    output = secret_dir / 'CREDENCIALES_GENERADAS.md'
+    output.write_text(content, encoding='utf-8')
+    try: output.chmod(0o600)
+    except OSError: pass
+    print('\n' + content)
+    print('Copia privada guardada en el contenedor:', output)
+else:
+    print('Las cuentas ya existían: NO se cambiaron sus contraseñas.')
+    print('Si perdiste las claves DEMO, ejecuta este comando nuevamente con --rotate-demo (solo en pruebas).')

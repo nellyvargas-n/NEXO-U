@@ -156,8 +156,15 @@ def audit(limit:int=Query(default=50,ge=1,le=100),u:AppUser=Depends(require_role
 
 @router.get('/oportunidades/publicas')
 def public_opportunities(limit:int=Query(default=50,ge=1,le=100),db:Session=Depends(get_db)):
-    q=(select(Opportunity,Organization).join(OrganizationOpportunity,OrganizationOpportunity.opportunity_id==Opportunity.id).join(Organization,Organization.id==OrganizationOpportunity.organization_id).where(Organization.verified.is_(True),Opportunity.deadline>=date.today()).order_by(Opportunity.deadline,Opportunity.id).limit(limit))
-    return [{'id':o.id,'title':o.title,'category':o.category,'deadline':o.deadline,'official_url':o.official_url,'amount_bob':o.amount_bob,'organization':org.name,'verified_organization':org.verified} for o,org in db.execute(q)]
+    from app.core.config import settings
+    q=(select(Opportunity,Organization).join(OrganizationOpportunity,OrganizationOpportunity.opportunity_id==Opportunity.id)
+       .join(Organization,Organization.id==OrganizationOpportunity.organization_id)
+       .where(Organization.verified.is_(True),Opportunity.deadline>=date.today(),
+              *([Opportunity.is_demo.is_(False)] if settings.environment == "production" else []))
+       .order_by(Opportunity.deadline,Opportunity.id).limit(limit))
+    return [{'id':o.id,'title':o.title,'category':o.category,'deadline':o.deadline,
+             'official_url':o.official_url,'amount_bob':o.amount_bob,'organization':org.name,
+             'verified_organization':org.verified,'is_demo':o.is_demo} for o,org in db.execute(q)]
 
 @router.get('/cursos/publicos')
 def public_courses(limit:int=Query(default=50,ge=1,le=100),db:Session=Depends(get_db)):
@@ -176,7 +183,44 @@ def my_opportunities(u:AppUser=Depends(require_role('empresa')),db:Session=Depen
 @router.get('/empresa/cursos')
 def my_courses(u:AppUser=Depends(require_role('empresa')),db:Session=Depends(get_db)):
     q=(select(Course,Organization).join(OrganizationCourse,OrganizationCourse.course_id==Course.id).join(Organization,Organization.id==OrganizationCourse.organization_id).where(Organization.owner_user_id==u.id).order_by(Course.end_date))
-    return [{'id':c.id,'title':c.title,'organization_id':org.id,'end_date':c.end_date,'cost_bob':c.cost_bob,'credential_kind':c.credential_kind,'credential_value':c.credential_value} for c,org in db.execute(q)]
+    return [{'id':c.id,'title':c.title,'organization_id':org.id,'end_date':c.end_date,'cost_bob':c.cost_bob,'credential_kind':c.credential_kind,'credential_value':c.credential_value,'credential_level':c.credential_level} for c,org in db.execute(q)]
+
+@router.get('/empresa/cursos/{course_id}/inscripciones')
+def company_course_enrollments(
+    course_id:int,
+    limit:int=Query(default=100,ge=1,le=200),
+    offset:int=Query(default=0,ge=0),
+    u:AppUser=Depends(require_role('empresa')),
+    db:Session=Depends(get_db)
+):
+    """Solo propietario del curso. Devuelve identidad mínima para validar inscripción."""
+    owned=(select(OrganizationCourse.course_id).join(Organization, Organization.id==OrganizationCourse.organization_id)
+           .where(OrganizationCourse.course_id==course_id, Organization.owner_user_id==u.id))
+    if db.scalar(owned) is None:
+        # 404 impide distinguir un curso ajeno de uno que no existe.
+        raise HTTPException(404,'Curso no encontrado en tus organizaciones')
+    from app.models.access import StudentAccount
+    from app.models.entities import Profile
+    from app.models.extended import SchoolProfile
+    rows=db.scalars(select(Enrollment).where(Enrollment.course_id==course_id)
+                    .order_by(Enrollment.id).offset(offset).limit(limit)).all()
+    result=[]
+    for enrollment in rows:
+        user_id=enrollment.student_user_id
+        if user_id is None and enrollment.student_id is not None:
+            account=db.scalar(select(StudentAccount).where(StudentAccount.profile_id==enrollment.student_id))
+            user_id=account.user_id if account else None
+        if user_id is None: continue  # fila antigua de demo sin cuenta real
+        school=db.get(SchoolProfile,user_id)
+        account=db.get(StudentAccount,user_id)
+        university=db.get(Profile,account.profile_id) if account and account.profile_id else None
+        if not school and not university: continue
+        result.append({'enrollment_id':enrollment.id, 'student_user_id':user_id,
+                       'student_name':school.full_name if school else university.name,
+                       'profile_type':'colegial' if school else 'universitario',
+                       'completed':enrollment.completed,
+                       'validation_status':'validado' if enrollment.completed else 'pendiente'})
+    return result
 
 @router.get('/admin/organizaciones')
 def admin_orgs(u:AppUser=Depends(require_role('admin')),db:Session=Depends(get_db)):

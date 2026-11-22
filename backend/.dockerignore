@@ -9,3 +9,6 @@ __pycache__/
 *.sqlite*
 *.db
 .vercel/
+
+.local_credentials
+*.env

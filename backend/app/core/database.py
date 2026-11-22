@@ -6,7 +6,9 @@ from app.core.config import settings
 class Base(DeclarativeBase):
     pass
 
-url=settings.database_url
+url=settings.database_url.strip()
+if not url:
+    raise RuntimeError("DATABASE_URL no configurada. Crea backend/.env con tu conexión de Neon. No se creó ninguna base local.")
 if url.startswith('postgres://'):
     url='postgresql+psycopg://'+url[len('postgres://'):]
 elif url.startswith('postgresql://'):

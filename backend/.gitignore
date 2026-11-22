@@ -14,3 +14,8 @@ CREDENCIALES.m
 credenciales/
 *.pem
 .vercel/
+
+.local_credentials/
+.env.local
+.env.production
+*.sqlite3

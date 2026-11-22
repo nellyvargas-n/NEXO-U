@@ -1,5 +1,5 @@
 from datetime import date
-from sqlalchemy import String, Integer, Float, Boolean, ForeignKey, Date, UniqueConstraint
+from sqlalchemy import String, Integer, BigInteger, Float, Boolean, ForeignKey, Date, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 from app.core.database import Base
 
@@ -15,7 +15,8 @@ class Profile(Base):
 class Credential(Base):
     __tablename__ = "credentials"
     id: Mapped[int] = mapped_column(primary_key=True)
-    student_id: Mapped[int] = mapped_column(ForeignKey("profiles.id"))
+    student_id: Mapped[int | None] = mapped_column(ForeignKey("profiles.id"), nullable=True)
+    student_user_id: Mapped[int | None] = mapped_column(BigInteger, ForeignKey("app_users.id", ondelete="CASCADE"), nullable=True, index=True)
     kind: Mapped[str] = mapped_column(String(30))
     value: Mapped[str] = mapped_column(String(120))
     level: Mapped[str | None] = mapped_column(String(20), nullable=True)
@@ -30,6 +31,7 @@ class Opportunity(Base):
     deadline: Mapped[date] = mapped_column(Date)
     official_url: Mapped[str] = mapped_column(String(500))
     amount_bob: Mapped[float] = mapped_column(Float, default=0)
+    is_demo: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
 class Requirement(Base):
     __tablename__ = "requirements"
@@ -53,9 +55,10 @@ class Course(Base):
 
 class Enrollment(Base):
     __tablename__ = "enrollments"
-    __table_args__ = (UniqueConstraint("student_id", "course_id"),)
+    __table_args__ = (UniqueConstraint("student_id", "course_id"), UniqueConstraint("student_user_id", "course_id", name="uq_enrollments_user_course"))
     id: Mapped[int] = mapped_column(primary_key=True)
-    student_id: Mapped[int] = mapped_column(ForeignKey("profiles.id"))
+    student_id: Mapped[int | None] = mapped_column(ForeignKey("profiles.id"), nullable=True)
+    student_user_id: Mapped[int | None] = mapped_column(BigInteger, ForeignKey("app_users.id", ondelete="CASCADE"), nullable=True, index=True)
     course_id: Mapped[int] = mapped_column(ForeignKey("courses.id"))
     completed: Mapped[bool] = mapped_column(Boolean, default=False)
 

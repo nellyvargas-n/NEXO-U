@@ -1,6 +1,7 @@
 -- NEXO U - SCRIPT ÚNICO PARA NEON CONSOLE (PostgreSQL)
--- Ejecutar UNA SOLA VEZ o repetir con IF NOT EXISTS. Compatible con Neon Console.
+-- Ejecutar preferiblemente en una RAMA DE PRUEBA de Neon. IF NOT EXISTS no repara esquemas incompatibles.
 -- Contiene tablas del backend anterior + extensiones; NO crea contraseñas ni usuarios demo.
+-- Modifica tres políticas RLS de tablas financieras (DROP POLICY no borra filas ni tablas).
 -- No concede roles PostgreSQL de superusuario. Los 3 roles son roles de la API JWT.
 -- Ejecutar en la base de datos correcta (por ejemplo neondb) con una cuenta de propietario.
 -- IMPORTANTE: no usar conexión directa desde el frontend. Solo FastAPI conoce DATABASE_URL.
@@ -13,6 +14,7 @@ CREATE TABLE IF NOT EXISTS app_users (
 	password_hash TEXT NOT NULL, 
 	role TEXT NOT NULL, 
 	active BOOLEAN NOT NULL, 
+	token_version INTEGER NOT NULL DEFAULT 0,
 	created_at TIMESTAMP WITH TIME ZONE NOT NULL, 
 	PRIMARY KEY (id), 
 	CONSTRAINT ck_app_roles CHECK (role IN ('usuario','empresa','admin')), 
@@ -322,6 +324,7 @@ CREATE INDEX IF NOT EXISTS ix_finance_obligations_user_id ON finance_obligations
 CREATE INDEX IF NOT EXISTS ix_notifications_user_id ON notifications (user_id);
 
 -- Ampliación no destructiva sobre bases instaladas con scripts anteriores.
+ALTER TABLE app_users ADD COLUMN IF NOT EXISTS token_version INTEGER NOT NULL DEFAULT 0;
 ALTER TABLE opportunities ADD COLUMN IF NOT EXISTS organization_id BIGINT REFERENCES organizations(id);
 ALTER TABLE opportunities ADD COLUMN IF NOT EXISTS sponsored BOOLEAN NOT NULL DEFAULT FALSE;
 ALTER TABLE courses ADD COLUMN IF NOT EXISTS organization_id BIGINT REFERENCES organizations(id);
@@ -332,6 +335,49 @@ CREATE INDEX IF NOT EXISTS idx_course_end_date ON courses(end_date);
 CREATE INDEX IF NOT EXISTS idx_school_bands_opp ON scholarship_bands(opportunity_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id);
 COMMIT;
+
+-- INTEGRACIÓN EDUCATIVA v1.2: seguro para instalar desde cero o actualizar.
+-- NEXO U v1.2 - MIGRACIÓN ADITIVA PARA NEON EXISTENTE
+-- IMPORTANTE: hacer una rama/backup de Neon; probar allí antes de aplicar a main.
+-- No elimina datos, tablas, perfiles, cuentas, ni contraseñas.
+-- Ejecutar UNA VEZ después del esquema original (NEON_CONSOLE_TODO.sql).
+-- Se puede ejecutar más veces: las instrucciones son idempotentes.
+BEGIN;
+
+ALTER TABLE opportunities ADD COLUMN IF NOT EXISTS is_demo BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE credentials ADD COLUMN IF NOT EXISTS student_user_id BIGINT;
+ALTER TABLE enrollments ADD COLUMN IF NOT EXISTS student_user_id BIGINT;
+-- Un colegial no tiene profiles.id, pero sí app_users.id y school_profiles.user_id.
+ALTER TABLE credentials ALTER COLUMN student_id DROP NOT NULL;
+ALTER TABLE enrollments ALTER COLUMN student_id DROP NOT NULL;
+
+-- Recuperar asociación con la cuenta para datos universitarios antiguos.
+UPDATE credentials AS c SET student_user_id = sa.user_id
+FROM student_accounts AS sa
+WHERE c.student_id = sa.profile_id AND c.student_user_id IS NULL;
+UPDATE enrollments AS e SET student_user_id = sa.user_id
+FROM student_accounts AS sa
+WHERE e.student_id = sa.profile_id AND e.student_user_id IS NULL;
+
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_credentials_app_user'
+                   AND conrelid = 'credentials'::regclass) THEN
+        ALTER TABLE credentials ADD CONSTRAINT fk_credentials_app_user
+            FOREIGN KEY (student_user_id) REFERENCES app_users(id) ON DELETE CASCADE;
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'fk_enrollments_app_user'
+                   AND conrelid = 'enrollments'::regclass) THEN
+        ALTER TABLE enrollments ADD CONSTRAINT fk_enrollments_app_user
+            FOREIGN KEY (student_user_id) REFERENCES app_users(id) ON DELETE CASCADE;
+    END IF;
+END $$;
+
+CREATE INDEX IF NOT EXISTS ix_credentials_student_user_id ON credentials(student_user_id);
+CREATE INDEX IF NOT EXISTS ix_enrollments_student_user_id ON enrollments(student_user_id);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_enrollments_user_course
+    ON enrollments(student_user_id, course_id);
+COMMIT;
+
 
 -- POLÍTICAS RLS DE FINANZAS: aplicar DESPUÉS de que existan las tablas.
 -- Las consultas deben correr por FastAPI después de set_config('nexou.user_id', ... , true).

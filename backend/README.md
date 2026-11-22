@@ -1,3 +1,11 @@
+# VERSIÓN v1.2 — Actualización del contrato React/Neon
+
+Lee **`INTEGRACION_FRONTEND_v1.2.md`** antes de hacer cambios en Neon. Incluye el script **`sql/05_integracion_escolar_neon.sql`** para bases existentes, las nuevas rutas de colegios y la siembra opcional de oportunidades para demo. **No borres tus tablas antiguas**.
+
+---
+
+> **Versión de mejoras 1.1:** revisión de permisos, CORS, cambio de contraseña con revocación de JWT, validación de criterios de matching, rutas React `/api/v1/{rol}/dashboard`, `/README.md`, `sql/00_REVISAR_ANTES_DE_INSTALAR.sql`, `sql/02_COMPROBAR_DESPUES.sql`. No contiene contraseñas. Lee `INICIO_AQUI.md` antes de ejecutar SQL en Neon.
+
 # NEXO U — Backend ampliado con Neon PostgreSQL
 
 **FastAPI + PostgreSQL Neon + Docker + Vercel.** Se conservó la estructura del backend previo, se reforzaron los 3 roles (`usuario`, `empresa`, `admin`) y se añadieron módulos reales para la propuesta de billetera estudiantil.

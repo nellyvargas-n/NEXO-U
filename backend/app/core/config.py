@@ -1,12 +1,18 @@
+from typing import Literal
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
-    database_url: str = "sqlite:///./nexo_u.db"
+    database_url: str = ""
     demo_emitter_key: str = "change-me-for-local-demo"
     cors_origins: str = "http://localhost:5173"
     jwt_secret: str = ""
-    jwt_exp_minutes: int = 120
+    jwt_algorithm: Literal["HS256"] = "HS256"
+    # Acepta el nombre del .env del usuario y el nombre usado por versiones anteriores.
+    jwt_exp_minutes: int = Field(default=60, ge=5, le=10080,
+                                 validation_alias=AliasChoices("JWT_EXP_MINUTES", "ACCESS_TOKEN_EXPIRE_MINUTES"))
     demo_mode: bool = False
+    environment: Literal["development", "testing", "production"] = "development"
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
 settings = Settings()

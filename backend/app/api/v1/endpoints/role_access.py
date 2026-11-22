@@ -15,6 +15,10 @@ class Register(BaseModel):
 class Login(BaseModel):
     email:EmailStr
     password:str
+class PasswordChange(BaseModel):
+    current_password: str = Field(min_length=1)
+    new_password: str = Field(min_length=12,max_length=128)
+
 class NewOrganization(BaseModel):
     name:str=Field(min_length=2,max_length=150)
 class Status(BaseModel):
@@ -47,6 +51,18 @@ def login(body:Login,db:Session=Depends(get_db)):
 
 @router.get('/auth/me')
 def me(u:AppUser=Depends(current_user)):return public_user(u)
+
+@router.post('/auth/cambiar-clave')
+def change_password(body:PasswordChange,u:AppUser=Depends(current_user),db:Session=Depends(get_db)):
+    if not verify_password(body.current_password,u.password_hash):
+        raise HTTPException(400,'Contraseña actual incorrecta')
+    if body.new_password == body.current_password:
+        raise HTTPException(422,'La nueva contraseña debe ser diferente')
+    u.password_hash=hash_password(body.new_password)
+    u.token_version=(u.token_version or 0)+1
+    db.add(AuditLog(actor_user_id=u.id,action='change_password',target_type='app_users',target_id=str(u.id)))
+    db.commit()
+    return {'changed':True,'message':'Sesiones anteriores revocadas. Vuelve a iniciar sesión.'}
 
 @router.get('/usuario/panel')
 def usuario(u:AppUser=Depends(require_role('usuario'))):return {'message':'Panel estudiante','user':public_user(u)}

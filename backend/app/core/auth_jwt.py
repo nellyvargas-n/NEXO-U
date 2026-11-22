@@ -22,7 +22,7 @@ def verify_password(password: str, hashed: str)->bool:
 def issue_token(user:AppUser)->str:
     if len(settings.jwt_secret)<32 or settings.jwt_secret.startswith(('REEMPLAZA','CAMBIA','GENERAR')):raise HTTPException(503,'Configura un JWT_SECRET aleatorio de al menos 32 caracteres')
     now=datetime.now(timezone.utc)
-    return jwt.encode({'sub':str(user.id),'role':user.role,'iat':now,'exp':now+timedelta(minutes=settings.jwt_exp_minutes)},settings.jwt_secret,algorithm='HS256')
+    return jwt.encode({'sub':str(user.id),'role':user.role,'ver':user.token_version,'iat':now,'exp':now+timedelta(minutes=settings.jwt_exp_minutes)},settings.jwt_secret,algorithm='HS256')
 
 def current_user(credentials:HTTPAuthorizationCredentials|None=Depends(bearer),db:Session=Depends(get_db))->AppUser:
     if not credentials:raise HTTPException(401,'Token requerido',headers={'WWW-Authenticate':'Bearer'})
@@ -33,6 +33,7 @@ def current_user(credentials:HTTPAuthorizationCredentials|None=Depends(bearer),d
     except (jwt.PyJWTError,ValueError,KeyError):raise HTTPException(401,'Token inválido o vencido')
     user=db.get(AppUser,uid)
     if user is None or not user.active:raise HTTPException(401,'Cuenta no disponible')
+    if payload.get('ver') != user.token_version:raise HTTPException(401,'Sesión revocada; vuelve a iniciar sesión')
     return user
 
 def require_role(*roles):

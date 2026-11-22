@@ -92,3 +92,6 @@ from app.api.v1.endpoints.institution_features import router as institution_feat
 router.include_router(institution_features_router)
 from app.api.v1.endpoints.community_features import router as community_features_router
 router.include_router(community_features_router)
+
+from app.api.v1.endpoints.frontend_api import router as frontend_router
+router.include_router(frontend_router)
