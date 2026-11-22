@@ -27,7 +27,6 @@ function CourseCard({ course, onEnroll, enrollingCourseId, enrollmentFeedback, e
           <div className="flex flex-wrap items-center gap-2">
             {course.recommended && <span className="rounded-full bg-[#e4f2e5] px-3 py-1 text-xs font-semibold text-[#39704d]">Recomendado para ti</span>}
             {course.sponsored && <span className="rounded-full bg-[#f4f1e8] px-3 py-1 text-xs font-semibold text-[#837344]">Patrocinio divulgado</span>}
-            {course.is_demo && <span className="rounded-full bg-[#f4f1e8] px-3 py-1 text-xs font-semibold text-[#75633b]">Curso de demostración</span>}
             {course.is_curated && !course.is_demo && <span className="rounded-full bg-[#edf5e9] px-3 py-1 text-xs font-semibold text-[#39704d]">Fuente institucional consultada</span>}
           </div>
           <h3 className="mt-3 font-display text-lg font-semibold leading-snug text-[#1d3557]">{course.title}</h3>

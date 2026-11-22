@@ -29,7 +29,7 @@ function formatAmount(value) {
 }
 
 function sourceLabel(opportunity) {
-  if (opportunity.source_kind === 'demostracion') return 'Oferta de demostración'
+  if (opportunity.source_kind === 'demostracion') return null
   if (opportunity.source_kind === 'bolsa_trabajo') return 'Bolsa de trabajo consultada'
   if (opportunity.source_kind === 'canal_oficial') return null
   if (opportunity.is_curated) return 'Fuente institucional consultada'

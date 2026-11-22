@@ -7,6 +7,7 @@ from sqlalchemy import select, func, delete, text as sql_text
 from sqlalchemy.orm import Session
 from app.core.auth_jwt import require_role
 from app.core.database import get_db
+from app.core.config import settings
 from app.models.access import AppUser, StudentAccount
 from app.models.entities import Profile, Opportunity, Credential, Enrollment, Transaction
 from app.models.extended import (SchoolProfile, ScholarshipBand, FinanceEntry, FinanceBudget,
@@ -54,16 +55,32 @@ def school(user:AppUser=Depends(require_role('usuario')),db:Session=Depends(get_
 @router.get('/usuario/becas/{opportunity_id}/simular')
 def simulate_scholarship(opportunity_id:int,user:AppUser=Depends(require_role('usuario')),db:Session=Depends(get_db)):
     s=db.get(SchoolProfile,user.id)
-    if s is None:raise HTTPException(403,'Esta simulación requiere un perfil escolar')
+    if s is None:raise HTTPException(403,'Registra un perfil escolar para consultar los criterios de esta beca')
     opp=db.get(Opportunity,opportunity_id)
     if opp is None:raise HTTPException(404,'Oportunidad no encontrada')
     if opp.category.casefold() not in ('beca','scholarship'):
         raise HTTPException(422,'La oportunidad no es una beca')
-    bands=db.scalars(select(ScholarshipBand).where(ScholarshipBand.opportunity_id==opportunity_id,ScholarshipBand.official_published.is_(True),ScholarshipBand.approved_by_admin.is_(True)).order_by(ScholarshipBand.percent_discount.desc())).all()
+    if opp.is_demo and settings.environment == 'production':
+        raise HTTPException(404,'Convocatoria no encontrada')
+    query=select(ScholarshipBand).where(ScholarshipBand.opportunity_id==opportunity_id)
+    if not opp.is_demo:
+        query=query.where(ScholarshipBand.official_published.is_(True))
+        if opp.source_name is None:
+            query=query.where(ScholarshipBand.approved_by_admin.is_(True))
+    bands=db.scalars(query.order_by(ScholarshipBand.percent_discount.desc())).all()
     if not bands:
-        return {'status':'sin_estimacion','discount_percent':None,'message':'No hay umbrales oficiales completos y aprobados: no se inventa un porcentaje.'}
+        message=('Escala ficticia sin bandas cargadas.' if opp.is_demo else
+                 'La fuente oficial no publica una fórmula exacta por notas para asignar el porcentaje; revisa sus condiciones.')
+        return {'status':'sin_estimacion','discount_percent':None,'message':message,'is_demo':opp.is_demo}
     matched=next((b for b in bands if s.average_grade >= b.min_average and s.math_grade >= b.min_math),None)
-    return {'status':'compatible' if matched else 'no_compatible','discount_percent':matched.percent_discount if matched else None,'message':'Estimación orientativa; la institución decide y verifica documentos. No garantiza una beca.','criteria':[{'discount_percent':b.percent_discount,'minimum_average':as_money(b.min_average),'minimum_math':as_money(b.min_math),'meets':bool(s.average_grade >= b.min_average and s.math_grade >= b.min_math),'official_url':b.official_url} for b in bands]}
+    message=('Estimación orientativa; consulta a la institución. El resultado no confirma la adjudicación de un descuento.'
+             if opp.is_demo else
+             'Estimación orientativa; la institución decide y verifica documentos. No garantiza una beca.')
+    return {'status':'compatible' if matched else 'no_compatible','discount_percent':matched.percent_discount if matched else None,
+            'message':message,'is_demo':opp.is_demo,
+            'criteria':[{'discount_percent':b.percent_discount,'minimum_average':as_money(b.min_average),
+                         'minimum_math':as_money(b.min_math),'meets':bool(s.average_grade >= b.min_average and s.math_grade >= b.min_math),
+                         'official_url':b.official_url if b.official_published else None} for b in bands]}
 
 @router.put('/usuario/guardados/{opportunity_id}')
 def save_opportunity(opportunity_id:int,remind_on:date|None=None,user:AppUser=Depends(require_role('usuario')),db:Session=Depends(get_db)):

@@ -14,7 +14,7 @@ router=APIRouter(prefix="/api/v1")
 
 def demo_access():
     if not settings.demo_mode:
-        raise HTTPException(403,"Endpoint de demostración deshabilitado; usa rutas autenticadas")
+        raise HTTPException(403,"Esta ruta no está disponible; utiliza las rutas autenticadas")
 
 
 class Completion(BaseModel):

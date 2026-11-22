@@ -1,15 +1,19 @@
 """Rutas autenticadas para la aplicación multiusuario (sin tocar endpoints demo)."""
-from datetime import date
+import base64
+import binascii
+from datetime import date, datetime, timezone
 from typing import Literal
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field, HttpUrl, model_validator
-from sqlalchemy import select
+from sqlalchemy import func, select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.core.config import settings
 from app.core.auth_jwt import require_role
 from app.models.access import AppUser, StudentAccount, Organization, AuditLog
-from app.models.entities import Profile, Credential, Opportunity, Requirement, Course, Enrollment, Transaction
+from app.models.entities import (Profile, Credential, Opportunity, Requirement, Course, Enrollment, Transaction,
+                                 CourseLesson, CourseLessonCompletion, DemoCoursePayment)
 from app.models.extended import SchoolProfile, Notification, ReferralAgreement, ReferralEvent, OrganizationOpportunity, OrganizationCourse
 from app.services.matching_service import evaluate
 from app.services.student_identity import get_student_context, owned_credentials_filter, owned_enrollments_filter, profile_fk
@@ -84,6 +88,17 @@ class CourseIn(BaseModel):
 class CompleteIn(BaseModel):
     student_user_id: int = Field(gt=0)
 
+class CourseCheckoutIn(BaseModel):
+    idempotency_key: str = Field(min_length=8, max_length=100)
+
+class CourseProofIn(BaseModel):
+    filename: str = Field(min_length=1, max_length=180)
+    content_type: str = Field(min_length=1, max_length=80)
+    data_base64: str = Field(min_length=1, max_length=2_800_000)
+
+class CourseLessonCompleteIn(BaseModel):
+    completed: bool = True
+
 def student_profile(db, user):
     account = db.get(StudentAccount, user.id)
     if account is None or account.profile_id is None:
@@ -153,6 +168,8 @@ def enroll(course_id:int,user:AppUser=Depends(require_role("usuario")),db:Sessio
     profile_type, profile = get_student_context(db, user.id)
     course=db.get(Course,course_id)
     if course is None: raise HTTPException(404,"Curso no encontrado")
+    if float(course.cost_bob or 0) > 0:
+        raise HTTPException(409,"Este curso requiere completar la inscripción desde su proceso de pago")
     if course.source_name:
         raise HTTPException(409,"Este curso se inscribe en el sitio de la institución; abre su enlace público")
     if course.start_date is not None and course.start_date < date.today():raise HTTPException(409,"El curso ya comenzó")
@@ -172,12 +189,232 @@ def enroll(course_id:int,user:AppUser=Depends(require_role("usuario")),db:Sessio
     db.add(row); db.commit(); db.refresh(row)
     return {"id":row.id,"completed":False}
 
+
+def _learning_course(db: Session, course_id: int) -> Course:
+    if settings.environment == "production":
+        raise HTTPException(404, "Curso no encontrado")
+    course = db.get(Course, course_id)
+    if course is None or not course.is_demo:
+        raise HTTPException(404, "Curso no encontrado")
+    return course
+
+
+def _payment_payload(payment: DemoCoursePayment):
+    return {"payment_id": payment.id, "course_id": payment.course_id,
+            "amount_bob": payment.amount_bob, "status": payment.status,
+            "proof_uploaded": payment.status in ("proof_uploaded", "confirmed"),
+            "learning_url": f"/app/cursos/contenido?course={payment.course_id}" if payment.status == "confirmed" else None}
+
+
+@router.post("/usuario/cursos/{course_id}/checkout", status_code=201)
+def start_course_checkout(course_id: int, body: CourseCheckoutIn,
+                          user: AppUser = Depends(require_role("usuario")), db: Session = Depends(get_db)):
+    profile_type, profile = get_student_context(db, user.id)
+    course = _learning_course(db, course_id)
+    if course.start_date is not None and course.start_date < date.today():
+        raise HTTPException(409, "El curso ya comenzó")
+    if course.end_date is not None and course.end_date < date.today():
+        raise HTTPException(409, "El curso ya terminó")
+    payment = db.scalar(select(DemoCoursePayment).where(
+        DemoCoursePayment.student_user_id == user.id,
+        DemoCoursePayment.idempotency_key == body.idempotency_key,
+    ))
+    if payment and payment.course_id != course_id:
+        raise HTTPException(409, "La clave de inscripción ya fue utilizada")
+    if payment is not None:
+        return _payment_payload(payment)
+    enrolled = db.scalar(select(Enrollment).where(
+        Enrollment.course_id == course_id, owned_enrollments_filter(user.id, profile_type, profile)))
+    if enrolled:
+        raise HTTPException(409, "Ya tienes una inscripción para este curso")
+    payment = DemoCoursePayment(student_user_id=user.id, course_id=course_id,
+                                idempotency_key=body.idempotency_key,
+                                amount_bob=float(course.cost_bob or 0), status="pending")
+    db.add(payment)
+    db.commit()
+    db.refresh(payment)
+    return _payment_payload(payment)
+
+
+@router.get("/usuario/cursos/pagos/{payment_id}")
+def course_checkout_status(payment_id: int, user: AppUser = Depends(require_role("usuario")),
+                           db: Session = Depends(get_db)):
+    payment = db.scalar(select(DemoCoursePayment).where(
+        DemoCoursePayment.id == payment_id, DemoCoursePayment.student_user_id == user.id))
+    if payment is None:
+        raise HTTPException(404, "Inscripción no encontrada")
+    return _payment_payload(payment)
+
+
+@router.post("/usuario/cursos/pagos/{payment_id}/comprobante")
+def upload_course_proof(payment_id: int, body: CourseProofIn,
+                        user: AppUser = Depends(require_role("usuario")), db: Session = Depends(get_db)):
+    payment = db.scalar(select(DemoCoursePayment).where(
+        DemoCoursePayment.id == payment_id, DemoCoursePayment.student_user_id == user.id))
+    if payment is None:
+        raise HTTPException(404, "Inscripción no encontrada")
+    if payment.status not in ("pending", "proof_uploaded"):
+        raise HTTPException(409, "El comprobante ya fue recibido")
+    try:
+        proof = base64.b64decode(body.data_base64, validate=True)
+    except (binascii.Error, ValueError):
+        raise HTTPException(422, "El archivo no tiene un formato válido")
+    if len(proof) > 2 * 1024 * 1024:
+        raise HTTPException(413, "El archivo debe pesar 2 MB o menos")
+    file_type = body.content_type.lower().split(";", 1)[0].strip()
+    signatures = {
+        "application/pdf": proof.startswith(b"%PDF-"),
+        "image/png": proof.startswith(b"\x89PNG\r\n\x1a\n"),
+        "image/jpeg": proof.startswith(b"\xff\xd8\xff"),
+    }
+    if not signatures.get(file_type, False):
+        raise HTTPException(422, "Adjunta un comprobante PDF, PNG o JPG válido")
+    payment.proof_filename = body.filename.replace("\\", "/").split("/")[-1]
+    payment.proof_content_type = file_type
+    payment.proof_data = proof
+    payment.status = "proof_uploaded"
+    db.commit()
+    return _payment_payload(payment)
+
+
+@router.post("/usuario/cursos/pagos/{payment_id}/finalizar")
+def finalize_course_checkout(payment_id: int, user: AppUser = Depends(require_role("usuario")),
+                              db: Session = Depends(get_db)):
+    payment = db.scalar(select(DemoCoursePayment).where(
+        DemoCoursePayment.id == payment_id, DemoCoursePayment.student_user_id == user.id))
+    if payment is None:
+        raise HTTPException(404, "Inscripción no encontrada")
+    course = _learning_course(db, payment.course_id)
+    if payment.status == "confirmed":
+        return _payment_payload(payment)
+    if payment.status != "proof_uploaded":
+        raise HTTPException(409, "Sube el comprobante antes de finalizar la inscripción")
+    profile_type, profile = get_student_context(db, user.id)
+    enrollment = db.scalar(select(Enrollment).where(
+        Enrollment.course_id == course.id, owned_enrollments_filter(user.id, profile_type, profile)))
+    if enrollment is None:
+        enrollment = Enrollment(student_id=profile_fk(profile_type, profile), student_user_id=user.id,
+                                course_id=course.id, completed=False)
+        db.add(enrollment)
+    elif enrollment.student_user_id is None:
+        enrollment.student_user_id = user.id
+    payment.status = "confirmed"
+    payment.confirmed_at = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(payment)
+    return _payment_payload(payment)
+
+
+def _require_confirmed_learning_enrollment(db: Session, user: AppUser, course: Course):
+    profile_type, profile = get_student_context(db, user.id)
+    enrollment = db.scalar(select(Enrollment).where(
+        Enrollment.course_id == course.id, owned_enrollments_filter(user.id, profile_type, profile)))
+    if enrollment is None:
+        raise HTTPException(403, "Completa tu inscripción para acceder al curso")
+    confirmed = db.scalar(select(DemoCoursePayment.id).where(
+        DemoCoursePayment.student_user_id == user.id,
+        DemoCoursePayment.course_id == course.id,
+        DemoCoursePayment.status == "confirmed"))
+    if confirmed is None:
+        raise HTTPException(403, "Completa tu inscripción para acceder al curso")
+    return profile_type, profile, enrollment
+
+
+@router.get("/usuario/cursos/{course_id}/contenido")
+def course_content(course_id: int, user: AppUser = Depends(require_role("usuario")),
+                   db: Session = Depends(get_db)):
+    course = _learning_course(db, course_id)
+    _, _, enrollment = _require_confirmed_learning_enrollment(db, user, course)
+    lessons = db.scalars(select(CourseLesson).where(CourseLesson.course_id == course_id)
+                         .order_by(CourseLesson.position)).all()
+    completed_ids = set(db.scalars(select(CourseLessonCompletion.lesson_id).where(
+        CourseLessonCompletion.student_user_id == user.id,
+        CourseLessonCompletion.course_id == course_id)).all())
+    return {"course": {"id": course.id, "title": course.title,
+                       "credential_kind": course.credential_kind,
+                       "credential_value": course.credential_value,
+                       "completed": enrollment.completed},
+            "lessons": [{"id": lesson.id, "position": lesson.position,
+                         "title": lesson.title, "body": lesson.body,
+                         "completed": lesson.id in completed_ids} for lesson in lessons]}
+
+
+@router.post("/usuario/cursos/{course_id}/lecciones/{lesson_id}/completar")
+def complete_course_lesson(course_id: int, lesson_id: int, body: CourseLessonCompleteIn,
+                            user: AppUser = Depends(require_role("usuario")), db: Session = Depends(get_db)):
+    course = _learning_course(db, course_id)
+    _require_confirmed_learning_enrollment(db, user, course)
+    lesson = db.scalar(select(CourseLesson).where(CourseLesson.id == lesson_id,
+                                                 CourseLesson.course_id == course_id))
+    if lesson is None:
+        raise HTTPException(404, "Lección no encontrada")
+    completion = db.scalar(select(CourseLessonCompletion).where(
+        CourseLessonCompletion.student_user_id == user.id,
+        CourseLessonCompletion.lesson_id == lesson_id))
+    if body.completed and completion is None:
+        try:
+            with db.begin_nested():
+                db.add(CourseLessonCompletion(student_user_id=user.id, course_id=course_id, lesson_id=lesson_id))
+                db.flush()
+        except IntegrityError:
+            pass
+    elif not body.completed and completion is not None:
+        db.delete(completion)
+    db.commit()
+    total = db.scalar(select(func.count()).select_from(CourseLesson)
+                      .where(CourseLesson.course_id == course_id)) or 0
+    finished = db.scalar(select(func.count()).select_from(CourseLessonCompletion)
+                         .where(CourseLessonCompletion.student_user_id == user.id,
+                                CourseLessonCompletion.course_id == course_id)) or 0
+    return {"completed": body.completed, "finished_lessons": finished, "total_lessons": total}
+
+
+@router.post("/usuario/cursos/{course_id}/finalizar")
+def finish_course(course_id: int, user: AppUser = Depends(require_role("usuario")),
+                  db: Session = Depends(get_db)):
+    course = _learning_course(db, course_id)
+    profile_type, profile, enrollment = _require_confirmed_learning_enrollment(db, user, course)
+    lessons = db.scalar(select(func.count()).select_from(CourseLesson)
+                        .where(CourseLesson.course_id == course_id)) or 0
+    completed_lessons = db.scalar(select(func.count()).select_from(CourseLessonCompletion)
+                                  .where(CourseLessonCompletion.student_user_id == user.id,
+                                         CourseLessonCompletion.course_id == course_id)) or 0
+    if lessons == 0 or completed_lessons != lessons:
+        raise HTTPException(409, "Completa todas las lecciones antes de finalizar el curso")
+    if not enrollment.completed:
+        enrollment.completed = True
+        credential = db.scalar(select(Credential).where(
+            owned_credentials_filter(user.id, profile_type, profile),
+            Credential.kind == course.credential_kind,
+            Credential.value.ilike(course.credential_value)))
+        if credential is None:
+            db.add(Credential(student_id=profile_fk(profile_type, profile), student_user_id=user.id,
+                              kind=course.credential_kind, value=course.credential_value,
+                              level=course.credential_level, verified=False, issuer=course.issuer))
+        db.commit()
+    return {"status": "completed", "course_id": course.id,
+            "credential": {"kind": course.credential_kind, "value": course.credential_value,
+                           "verified": False}}
+
 @router.get("/usuario/inscripciones")
 def my_enrollments(user:AppUser=Depends(require_role("usuario")),db:Session=Depends(get_db)):
     profile_type, profile = get_student_context(db, user.id)
     rows=db.scalars(select(Enrollment).where(owned_enrollments_filter(user.id,profile_type,profile))).all()
-    return [{"id":e.id,"course_id":e.course_id,"completed":e.completed,
-             "validation_status":"validado" if e.completed else "pendiente"} for e in rows]
+    result = []
+    for enrollment in rows:
+        course = db.get(Course, enrollment.course_id)
+        confirmed_payment = db.scalar(select(DemoCoursePayment.id).where(
+            DemoCoursePayment.student_user_id == user.id,
+            DemoCoursePayment.course_id == enrollment.course_id,
+            DemoCoursePayment.status == "confirmed"))
+        can_open_content = (settings.environment != "production" and course is not None
+                            and course.is_demo and confirmed_payment is not None)
+        result.append({"id": enrollment.id, "course_id": enrollment.course_id,
+                       "completed": enrollment.completed,
+                       "validation_status": "validado" if enrollment.completed else "pendiente",
+                       "learning_url": f"/app/cursos/contenido?course={enrollment.course_id}"
+                       if can_open_content else None})
+    return result
 
 @router.post("/empresa/oportunidades",status_code=201)
 def publish(body:OpportunityIn,user:AppUser=Depends(require_role("empresa")),db:Session=Depends(get_db)):

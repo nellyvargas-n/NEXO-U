@@ -1,20 +1,21 @@
 # Migraciones versionadas de NEXO U
 
-Se incluyen **dos revisiones**: `20261122_01` (línea base del esquema v1.2 **ya existente**, no crea ni borra tablas) y `20261122_02` (agrega `auth_attempts` y `password_reset_tokens`).
+Alembic conserva el esquema v1.2 existente como revisión de línea base y aplica los cambios posteriores hasta `20261122_08`. La revisión `_07` carga de manera idempotente el catálogo público y `_08` garantiza los programas oficiales de becas escolares; `_06` agrega las tablas de contenido y pagos de cursos.
 
-## Neon existente (v1.2)
+## Aplicación automática
 
-Nunca ejecutes ambos métodos de instalación de v1.4 a la vez. Antes de cambiar `production`, crea una rama de prueba y verifica una copia de seguridad.
+- **Docker:** al iniciar el contenedor, el `CMD` de `Dockerfile` ejecuta `python -m alembic upgrade head` antes de arrancar FastAPI. Si una migración falla, el backend no se anuncia como listo.
+- **Vercel (proyecto con raíz `backend/`):** `vercel.json` instala las dependencias y ejecuta la misma actualización durante el build. Configura `DATABASE_URL` y, para Neon, preferiblemente `DATABASE_URL_UNPOOLED` en las variables del entorno Preview/Production del proyecto backend. Un cambio de variables requiere un despliegue nuevo.
 
-**Método sencillo con SQL Editor (recomendado para hackathon):** ejecuta únicamente `sql/07_seguridad_v14.sql` en `prueba-v12`, y después `sql/08_comprobar_v14.sql` para lectura. No vuelvas a ejecutar `NEON_CONSOLE_TODO.sql` ni `05_integracion_escolar_neon.sql` sobre una base ya actualizada. Si luego quieres registrar Alembic, ejecuta `alembic stamp 20261122_02` (marca la revisión como aplicada, sin DDL).
+## Base Neon preexistente
 
-**Método Alembic (alternativo):** configura `DATABASE_URL_UNPOOLED` con la URL de conexión **directa** de ESA rama de Neon (no `-pooler`) y `DATABASE_URL` con la URL de app. En `backend/` ejecuta:
+Antes de conectar una base ya creada, confirma que corresponde a la rama de pruebas y conserva un respaldo. Si la base se creó con los scripts SQL antiguos, no ejecutes los scripts otra vez: registra la línea base que corresponda y aplica solo las revisiones posteriores que falten. Nunca ejecutes SQL y Alembic para la misma revisión.
 
-```powershell
+Para una Neon que ya tiene el esquema v1.2 y se prepara por primera vez para Alembic:
+
+```bash
 python -m alembic stamp 20261122_01
 python -m alembic upgrade head
 ```
 
-No ejecutes `stamp head` **antes** de la migración: eso haría parecer que los cambios existen aunque no se hayan aplicado. No ejecutes `upgrade head` tras aplicar ya el SQL de `07`, salvo que hayas registrado la versión con `stamp 20261122_02`.
-
-El método Alembic requiere que la conexión se encuentre habilitada y que se hayan configurado variables reales **solo** en `.env`, fuera de Git. Nunca se hacen estas operaciones en pruebas locales automatizadas.
+`stamp` solo registra una versión; no crea tablas. No uses `stamp head` para ocultar una migración pendiente. Comprueba el estado con `python -m alembic current`.

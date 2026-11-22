@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { navigate } from '../../../shared/navigation/navigation.js'
 import CourseCard from './CourseCard.jsx'
 import CourseCheckoutDialog from './CourseCheckoutDialog.jsx'
 
@@ -22,7 +23,8 @@ function CourseCardWithEnrollment({
 }) {
   const [checkoutOpen, setCheckoutOpen] = useState(false)
   const [learningUrl, setLearningUrl] = useState('')
-  const contentUrl = learningUrl || courseContentUrl(course)
+  const contentUrl = learningUrl || course.enrollment?.learning_url || courseContentUrl(course)
+  const isInternalLearningUrl = contentUrl.startsWith('/app/')
   const needsCheckout = requiresPlatformCheckout(course)
   const cardEnrollmentAction = needsCheckout && enrollmentAction === 'ready' ? 'payment-required' : enrollmentAction
 
@@ -50,12 +52,12 @@ function CourseCardWithEnrollment({
       {course.enrollment && !course.enrollment.completed && (
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-[#dce9da] bg-[#f5f8f3] px-4 py-3 text-sm text-[#52685a]">
           <span>{contentUrl ? 'Inscripción activa. Continúa tu curso.' : 'Inscripción activa. La institución debe habilitar el contenido.'}</span>
-          {contentUrl && <a className="font-semibold text-[#246b4a] underline-offset-4 hover:underline" href={contentUrl} rel="noopener noreferrer" target="_blank">Abrir el curso ↗</a>}
+          {contentUrl && <a className="font-semibold text-[#246b4a] underline-offset-4" href={contentUrl} onClick={isInternalLearningUrl ? (event) => { event.preventDefault(); navigate(contentUrl) } : undefined} rel={isInternalLearningUrl ? undefined : 'noopener noreferrer'} target={isInternalLearningUrl ? undefined : '_blank'}>Abrir el curso ↗</a>}
         </div>
       )}
-      {course.enrollment?.completed && <p className="m-0 rounded-xl border border-[#d5e8d3] bg-[#f1f8ec] px-4 py-3 text-sm font-semibold text-[#365f43]">Credencial validada y añadida a tu perfil.</p>}
+      {course.enrollment?.completed && <p className="m-0 rounded-xl border border-[#d5e8d3] bg-[#f1f8ec] px-4 py-3 text-sm font-semibold text-[#365f43]">Habilidad añadida a tu perfil.</p>}
 
-      {checkoutOpen && <CourseCheckoutDialog course={course} onClose={() => setCheckoutOpen(false)} onPaid={(courseId, url) => {
+      {checkoutOpen && <CourseCheckoutDialog course={course} onClose={() => setCheckoutOpen(false)} onEnrolled={(courseId, url) => {
         if (url) setLearningUrl(url)
         return onRefresh(courseId)
       }} />}

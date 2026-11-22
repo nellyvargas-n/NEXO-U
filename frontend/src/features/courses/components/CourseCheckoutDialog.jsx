@@ -1,81 +1,133 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { ApiError } from '../../../shared/api/client.ts'
-import { getCourseCheckout, startCourseCheckout } from '../course-checkout.service.ts'
+import {
+  finalizeCourseCheckout,
+  startCourseCheckout,
+  uploadCourseProof,
+} from '../course-checkout.service.ts'
 
 function formatCost(value) {
   return new Intl.NumberFormat('es-BO', { style: 'currency', currency: 'BOB', maximumFractionDigits: 0 }).format(value)
 }
 
 function newIdempotencyKey(courseId) {
-  if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID()
-  return `curso-${courseId}-${Date.now()}-${Math.random().toString(36).slice(2)}`
-}
-
-function checkoutError(error) {
-  if (error instanceof ApiError && error.status === 404) {
-    return 'No se inició ningún cobro ni inscripción. El checkout todavía no está habilitado o el curso ya no está disponible.'
+  const storageKey = `nexo-course-checkout-${courseId}`
+  try {
+    const existingKey = window.sessionStorage.getItem(storageKey)
+    if (existingKey) return existingKey
+  } catch {
+    // La sesión de inscripción sigue funcionando si el navegador bloquea el almacenamiento.
   }
-  if (error instanceof ApiError && error.status === 401) return 'Tu sesión venció. Inicia sesión nuevamente para continuar.'
-  if (error instanceof TypeError || (error instanceof ApiError && error.status === 0)) return 'No pudimos conectar con el servicio de pago. No se creó una inscripción.'
-  return error instanceof Error ? error.message : 'No se pudo iniciar el pago.'
+  const key = globalThis.crypto?.randomUUID
+    ? globalThis.crypto.randomUUID()
+    : `curso-${courseId}-${Date.now()}-${Math.random().toString(36).slice(2)}`
+  try { window.sessionStorage.setItem(storageKey, key) } catch {
+    // El servidor conserva la clave mientras la ventana permanezca abierta.
+  }
+  return key
 }
 
-function CourseCheckoutDialog({ course, onClose, onPaid }) {
-  const [checkout, setCheckout] = useState(null)
-  const [isStarting, setIsStarting] = useState(false)
-  const [error, setError] = useState('')
-  const [refreshError, setRefreshError] = useState('')
-  const paidHandled = useRef(false)
-  const idempotencyKey = useRef(newIdempotencyKey(course.id))
+function getError(error) {
+  if (error instanceof ApiError && error.status === 401) return 'Tu sesión venció. Inicia sesión nuevamente para continuar.'
+  if (error instanceof TypeError || (error instanceof ApiError && error.status === 0)) return 'No pudimos conectar con el servicio. Inténtalo de nuevo.'
+  return error instanceof Error ? error.message : 'No se pudo completar la inscripción.'
+}
 
-  async function beginCheckout() {
+function QrPattern() {
+  const modules = [
+    '111111100101101111111', '100000101100001000001', '101110101011101011101',
+    '101110100010101011101', '101110101111001011101', '100000101010101000001',
+    '111111101010101111111', '000000001101100000000', '110101101001011011010',
+    '001011010111100101101', '111001111010111001010', '010110001101000111001',
+    '101101111001110010110', '000000001011001101011', '111111101100101001101',
+    '100000100011110101010', '101110101110011111001', '101110100010101010110',
+    '101110101101111001011', '100000101011001010010', '111111101100111101101',
+  ]
+  return (
+    <svg aria-label="Código QR de referencia" className="size-44 rounded-lg bg-white p-2" role="img" viewBox="0 0 21 21">
+      <rect fill="white" height="21" width="21" />
+      {modules.flatMap((row, y) => [...row].map((cell, x) => (
+        cell === '1' ? <rect fill="#173b31" height="1" key={`${x}-${y}`} width="1" x={x} y={y} /> : null
+      )))}
+    </svg>
+  )
+}
+
+async function fileAsBase64(file) {
+  const dataUrl = await new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onerror = () => reject(new Error('No se pudo leer el archivo.'))
+    reader.onload = () => resolve(reader.result)
+    reader.readAsDataURL(file)
+  })
+  return String(dataUrl).split(',', 2)[1] ?? ''
+}
+
+function CourseCheckoutDialog({ course, onClose, onEnrolled }) {
+  const [checkout, setCheckout] = useState(null)
+  const [file, setFile] = useState(null)
+  const [isStarting, setIsStarting] = useState(true)
+  const [isUploading, setIsUploading] = useState(false)
+  const [isFinalizing, setIsFinalizing] = useState(false)
+  const [error, setError] = useState('')
+  const idempotencyKey = useRef(newIdempotencyKey(course.id))
+  const started = useRef(false)
+
+  const beginCheckout = useCallback(async () => {
     setError('')
     setIsStarting(true)
     try {
       const result = await startCourseCheckout(course.id, idempotencyKey.current)
       setCheckout(result)
     } catch (requestError) {
-      setError(checkoutError(requestError))
+      setError(getError(requestError))
     } finally {
       setIsStarting(false)
     }
+  }, [course.id])
+
+  useEffect(() => {
+    if (started.current) return
+    started.current = true
+    beginCheckout()
+  }, [beginCheckout])
+
+  async function handleUpload() {
+    if (!file || !checkout?.payment_id) return
+    setError('')
+    setIsUploading(true)
+    try {
+      const dataBase64 = await fileAsBase64(file)
+      const result = await uploadCourseProof(checkout.payment_id, {
+        filename: file.name,
+        content_type: file.type,
+        data_base64: dataBase64,
+      })
+      setCheckout(result)
+    } catch (uploadError) {
+      setError(getError(uploadError))
+    } finally {
+      setIsUploading(false)
+    }
   }
 
-  useEffect(() => {
-    if (!checkout?.payment_id || checkout.status !== 'pending') return undefined
-    let isCurrent = true
-    let timer
-
-    async function checkPayment() {
-      try {
-        const result = await getCourseCheckout(checkout.payment_id)
-        if (!isCurrent) return
-        setCheckout(result)
-        setRefreshError('')
-        if (result.status === 'pending') timer = window.setTimeout(checkPayment, 3000)
-      } catch {
-        if (!isCurrent) return
-        setRefreshError('No pudimos consultar el pago. Seguiremos verificándolo.')
-        timer = window.setTimeout(checkPayment, 5000)
-      }
+  async function handleFinalize() {
+    if (!checkout?.payment_id) return
+    setError('')
+    setIsFinalizing(true)
+    try {
+      const result = await finalizeCourseCheckout(checkout.payment_id)
+      setCheckout(result)
+      await onEnrolled(course.id, result.learning_url)
+    } catch (finalizeError) {
+      setError(getError(finalizeError))
+    } finally {
+      setIsFinalizing(false)
     }
+  }
 
-    timer = window.setTimeout(checkPayment, 2500)
-    return () => {
-      isCurrent = false
-      window.clearTimeout(timer)
-    }
-  }, [checkout?.payment_id, checkout?.status])
-
-  useEffect(() => {
-    if (checkout?.status !== 'paid' || paidHandled.current) return
-    paidHandled.current = true
-    Promise.resolve(onPaid(course.id, checkout.learning_url)).catch(() => {
-      setRefreshError('Pago confirmado. Actualiza la lista para ver la inscripción.')
-    })
-  }, [checkout?.status, checkout?.learning_url, course.id, onPaid])
-
-  const isFinal = ['failed', 'expired', 'cancelled'].includes(checkout?.status)
+  const isConfirmed = checkout?.status === 'confirmed'
+  const proofUploaded = checkout?.status === 'proof_uploaded'
 
   return (
     <div className="fixed inset-0 z-50 grid place-items-center bg-[#14271f]/55 p-4" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose() }}>
@@ -83,9 +135,11 @@ function CourseCheckoutDialog({ course, onClose, onPaid }) {
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="m-0 text-xs font-bold tracking-[0.12em] text-[#2876d7]">INSCRIPCIÓN</p>
-            <h2 className="mt-2 font-display text-xl font-semibold text-[#1d3557]" id="course-checkout-title">{checkout?.status === 'paid' ? 'Pago confirmado' : 'Pagar e inscribirme'}</h2>
+            <h2 className="mt-2 font-display text-xl font-semibold text-[#1d3557]" id="course-checkout-title">
+              {isConfirmed ? 'Inscripción activa' : 'Completa tu inscripción'}
+            </h2>
           </div>
-          <button aria-label="Cerrar" className="grid size-10 shrink-0 place-items-center rounded-xl text-xl text-[#536c60] hover:bg-[#f0f5ed]" onClick={onClose} type="button">×</button>
+          <button aria-label="Cerrar" className="grid size-10 shrink-0 place-items-center rounded-xl text-xl text-[#536c60]" onClick={onClose} type="button">×</button>
         </div>
 
         <p className="mb-0 mt-4 font-semibold text-[#344f40]">{course.title}</p>
@@ -95,44 +149,54 @@ function CourseCheckoutDialog({ course, onClose, onPaid }) {
           <strong className="text-lg text-[#1d5c43]">{formatCost(course.cost_bob)}</strong>
         </div>
 
-        {!checkout && (
-          <>
-            <p className="mb-0 mt-4 text-sm leading-6 text-[#687b70]">La inscripción se activa únicamente cuando el pago queda confirmado.</p>
-            {error && <p className="mb-0 mt-4 rounded-xl border border-[#f1c3c0] bg-[#fff4f2] px-4 py-3 text-sm text-[#9b302a]" role="alert">{error}</p>}
-            <button className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-[#1d684d] px-4 text-sm font-semibold text-white disabled:cursor-wait disabled:opacity-60" disabled={isStarting} onClick={beginCheckout} type="button">
-              {isStarting ? 'Conectando con el pago…' : `Continuar al pago · ${formatCost(course.cost_bob)}`}
-            </button>
-          </>
-        )}
+        {isStarting && <p className="mb-0 mt-5 text-sm text-[#687b70]" role="status">Preparando tu inscripción…</p>}
 
-        {checkout?.status === 'pending' && (
-          <div className="mt-5 grid gap-4">
-            {checkout.qr_code_url && <img alt="Código QR para pagar el curso" className="mx-auto max-h-56 rounded-xl border border-[#e0e9de] p-2" src={checkout.qr_code_url} />}
-            {checkout.checkout_url && <a className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#1d684d] px-4 text-sm font-semibold text-white" href={checkout.checkout_url} rel="noopener noreferrer" target="_blank">Abrir medio de pago ↗</a>}
-            {!checkout.checkout_url && !checkout.qr_code_url && <p className="m-0 rounded-xl bg-[#fbf2dd] px-4 py-3 text-sm text-[#806b35]">El medio de pago todavía no fue generado.</p>}
-            <p className="m-0 text-center text-sm text-[#687b70]" role="status">Esperando confirmación del pago…</p>
-            {refreshError && <p className="m-0 text-center text-xs text-[#806b35]" role="status">{refreshError}</p>}
-          </div>
-        )}
-
-        {checkout?.status === 'paid' && (
-          <div className="mt-5 rounded-xl border border-[#d5e8d3] bg-[#f1f8ec] p-4 text-sm leading-6 text-[#365f43]" role="status">
-            <p className="m-0">Inscripción activa. Al terminar el curso, la empresa valida la finalización y la credencial se agrega a tu perfil.</p>
-            {checkout.learning_url && <a className="mt-3 inline-flex font-semibold text-[#246b4a] underline-offset-4 hover:underline" href={checkout.learning_url} rel="noopener noreferrer" target="_blank">Abrir el curso ↗</a>}
-            {!checkout.learning_url && <p className="mb-0 mt-2 text-[#806b35]">El contenido del curso aún no está habilitado.</p>}
-          </div>
-        )}
-
-        {isFinal && (
-          <div className="mt-5 grid gap-3">
-            <p className="m-0 rounded-xl border border-[#f1c3c0] bg-[#fff4f2] px-4 py-3 text-sm text-[#9b302a]" role="alert">
-              {checkout.status === 'expired' ? 'El pago venció. Inicia uno nuevo para inscribirte.' : checkout.status === 'cancelled' ? 'El pago fue cancelado. No se creó la inscripción.' : 'El pago no se completó. No se creó la inscripción.'}
+        {!isStarting && checkout?.status === 'pending' && (
+          <div className="mt-5 grid justify-items-center gap-4">
+            <div className="rounded-2xl border border-[#e0e9de] bg-[#f8faf7] p-3"><QrPattern /></div>
+            <p className="m-0 max-w-sm text-center text-sm leading-6 text-[#687b70]">
+              Este código no procesa pagos. Adjunta tu comprobante para continuar con la inscripción.
             </p>
-            <button className="inline-flex min-h-10 items-center justify-center rounded-xl border border-[#dfe8de] px-4 text-sm font-semibold text-[#246b4a]" onClick={() => { idempotencyKey.current = newIdempotencyKey(course.id); setCheckout(null); setError('') }} type="button">Intentar de nuevo</button>
+            <label className="grid w-full gap-2 text-sm font-semibold text-[#344f40]">
+              Subir comprobante <span className="text-[#687b70]">(PDF, PNG o JPG · máximo 2 MB)</span>
+              <input
+                accept="application/pdf,image/png,image/jpeg,.pdf,.png,.jpg,.jpeg"
+                className="min-h-12 w-full rounded-xl border border-[#d8e4d7] px-3 py-2 text-sm font-normal file:mr-3 file:rounded-lg file:border-0 file:bg-[#eaf3e9] file:px-3 file:py-2 file:font-semibold file:text-[#246b4a]"
+                onChange={(event) => { setFile(event.target.files?.[0] ?? null); setError('') }}
+                type="file"
+              />
+            </label>
+            {file && <p className="m-0 w-full truncate text-xs text-[#687b70]">{file.name}</p>}
+            {error && <p className="m-0 w-full rounded-xl border border-[#f1c3c0] bg-[#fff4f2] px-4 py-3 text-sm text-[#9b302a]" role="alert">{error}</p>}
+            <button className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-[#1d684d] px-4 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60" disabled={!file || isUploading} onClick={handleUpload} type="button">
+              {isUploading ? 'Subiendo comprobante…' : 'Subir comprobante'}
+            </button>
           </div>
         )}
 
-        {checkout?.status === 'paid' && refreshError && <p className="mb-0 mt-3 text-center text-xs text-[#806b35]" role="status">{refreshError}</p>}
+        {proofUploaded && (
+          <div className="mt-5 grid gap-4">
+            <p className="m-0 rounded-xl border border-[#d5e8d3] bg-[#f1f8ec] px-4 py-3 text-sm text-[#365f43]" role="status">Comprobante recibido. Este paso no valida una transacción bancaria.</p>
+            {error && <p className="m-0 rounded-xl border border-[#f1c3c0] bg-[#fff4f2] px-4 py-3 text-sm text-[#9b302a]" role="alert">{error}</p>}
+            <button className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-[#1d684d] px-4 text-sm font-semibold text-white disabled:cursor-wait disabled:opacity-60" disabled={isFinalizing} onClick={handleFinalize} type="button">
+              {isFinalizing ? 'Finalizando…' : 'Finalizar inscripción'}
+            </button>
+          </div>
+        )}
+
+        {isConfirmed && (
+          <div className="mt-5 grid gap-3 rounded-xl border border-[#d5e8d3] bg-[#f1f8ec] p-4 text-sm leading-6 text-[#365f43]" role="status">
+            <p className="m-0 font-semibold">Ya tienes acceso al curso.</p>
+            {checkout.learning_url && <a className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[#1d684d] px-4 font-semibold text-white" href={checkout.learning_url}>Abrir el curso</a>}
+          </div>
+        )}
+
+        {!isStarting && !checkout && error && (
+          <div className="mt-5 grid gap-3">
+            <p className="m-0 rounded-xl border border-[#f1c3c0] bg-[#fff4f2] px-4 py-3 text-sm text-[#9b302a]" role="alert">{error}</p>
+            <button className="inline-flex min-h-10 items-center justify-center rounded-xl border border-[#dfe8de] px-4 text-sm font-semibold text-[#246b4a]" onClick={beginCheckout} type="button">Intentar de nuevo</button>
+          </div>
+        )}
       </section>
     </div>
   )

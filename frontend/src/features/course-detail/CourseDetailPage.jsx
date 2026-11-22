@@ -56,11 +56,11 @@ function CourseDetailPage() {
           <div className="grid gap-5">
             <Surface>
               <h2 className="font-display text-lg font-semibold text-[#1d3557]">Credencial que ofrece</h2>
-              <p className="mt-2 text-sm leading-6 text-[#7b8da5]">{selectedCourse.credential_value} · nivel {selectedCourse.credential_level}. Se verifica al confirmar la finalización.</p>
+              <p className="mt-2 text-sm leading-6 text-[#7b8da5]">{selectedCourse.credential_value}{selectedCourse.credential_level ? ` · nivel ${selectedCourse.credential_level}` : ''}. Se añade al finalizar el curso.</p>
             </Surface>
             <Surface className="bg-[#f8faf6]">
               <h2 className="font-display text-lg font-semibold text-[#1d3557]">Después de inscribirte</h2>
-              <p className="mt-2 text-sm leading-6 text-[#7b8da5]">La organización emisora confirma la finalización y valida la credencial.</p>
+              <p className="mt-2 text-sm leading-6 text-[#7b8da5]">{selectedCourse.is_demo ? 'Al completar las lecciones, la habilidad se agrega a tu perfil y actualiza tu compatibilidad.' : 'Consulta las condiciones de finalización con la institución emisora.'}</p>
             </Surface>
           </div>
         </div>

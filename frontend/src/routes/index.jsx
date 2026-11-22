@@ -18,7 +18,7 @@ function NotFoundPage() {
       <div className="max-w-lg">
         <p className="text-sm font-semibold text-[#347a57]">404 · Página no encontrada</p>
         <h1 className="mt-3 font-display text-4xl font-semibold tracking-tight text-[#173b31]">No encontramos esa página.</h1>
-        <p className="mt-4 text-base leading-7 text-[#68776d]">Vuelve al inicio para ver la demo de Nexo U.</p>
+        <p className="mt-4 text-base leading-7 text-[#68776d]">Vuelve al inicio para explorar Nexo U.</p>
         <a className="mt-7 inline-flex min-h-12 items-center rounded-xl bg-[#1c5a42] px-5 text-sm font-semibold text-white transition hover:bg-[#247452] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1c5a42]" href="/">Volver al inicio</a>
       </div>
     </main>

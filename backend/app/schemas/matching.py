@@ -5,7 +5,7 @@ from app.schemas.requirement import RequirementRead
 class MatchingOpportunity(BaseModel):
     opportunity_id: int
     title: str
-    deadline: str
+    deadline: str | None
     met: int = Field(ge=0)
     total: int = Field(gt=0)
     percent: int = Field(ge=0, le=100)

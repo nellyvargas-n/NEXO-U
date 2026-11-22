@@ -27,6 +27,7 @@ export interface CourseEnrollment {
   id: number
   course_id: number
   completed: boolean
+  learning_url?: string | null
 }
 
 export interface CourseWithStatus extends PublicCourse {

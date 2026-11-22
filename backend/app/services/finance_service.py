@@ -9,4 +9,4 @@ def reach(db:Session,student_id:int=1, daily_expense:float=30.0, reserve:float=0
     if daily_expense <= 0:
         return {"balance_bob":balance,"daily_expense_bob":daily_expense,"last_day":None,"note":"Sin gasto diario positivo no hay fecha estimable"}
     days=max(0,int((balance-reserve)//daily_expense))
-    return {"balance_bob":balance,"daily_expense_bob":daily_expense,"last_day":(date.today()+timedelta(days=days)).isoformat(),"days":days,"note":"Simulación con gasto diario fijo, no pronóstico financiero"}
+    return {"balance_bob":balance,"daily_expense_bob":daily_expense,"last_day":(date.today()+timedelta(days=days)).isoformat(),"days":days,"note":"Estimación con gasto diario fijo; no es un pronóstico financiero"}

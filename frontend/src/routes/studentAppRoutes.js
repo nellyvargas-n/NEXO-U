@@ -7,6 +7,7 @@ import CredentialsPage from '../features/credentials/CredentialsPage.jsx'
 import LearningPathsPage from '../features/learning-paths/LearningPathsPage.jsx'
 import CourseDetailPage from '../features/course-detail/CourseDetailPage.jsx'
 import CoursesPage from '../features/courses/CoursesPage.jsx'
+import CourseLearningPage from '../features/courses/CourseLearningPage.jsx'
 import WalletPage from '../features/wallet/WalletPage.jsx'
 import SavedPage from '../features/saved/SavedPage.jsx'
 import NotificationsPage from '../features/notifications/NotificationsPage.jsx'
@@ -76,6 +77,13 @@ export const studentAppRoutes = [
     title: 'Cursos',
     activePath: '/app/cursos',
     component: CoursesPage,
+  },
+  {
+    path: '/app/cursos/contenido',
+    group: 'Preparación',
+    title: 'Contenido del curso',
+    activePath: '/app/cursos',
+    component: CourseLearningPage,
   },
   { path: '/app/guardados', group: 'Cuenta', title: 'Guardados', activePath: '/app/guardados', component: SavedPage },
   { path: '/app/notificaciones', group: 'Cuenta', title: 'Notificaciones', activePath: '/app/notificaciones', component: NotificationsPage },

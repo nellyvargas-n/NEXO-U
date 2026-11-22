@@ -14,11 +14,11 @@ function formatDate(raw){if(!raw)return'Por confirmar';const date=new Date(`${St
 function formatAmount(amount){return Number(amount)>0 ? new Intl.NumberFormat('es-BO',{style:'currency',currency:'BOB',maximumFractionDigits:0}).format(Number(amount)):null}
 function isSafeLink(value){try{return ['https:','http:'].includes(new URL(value).protocol)}catch{return false}}
 function requirementText(req){return req.kind==='language'?`${req.required} (${req.operator})`:req.required}
-function sourceLabel(item){if(item.source_kind==='demostracion')return'Oferta de demostración';if(item.source_kind==='bolsa_trabajo')return'Bolsa de trabajo';if(item.is_curated)return item.source_kind==='canal_oficial'?'Canal oficial':'Fuente institucional';return item.verified_organization?'Emisor verificado':'Emisor no verificado'}
+function sourceLabel(item){if(item.source_kind==='demostracion')return null;if(item.source_kind==='bolsa_trabajo')return'Bolsa de trabajo';if(item.is_curated)return item.source_kind==='canal_oficial'?'Canal oficial':'Fuente institucional';return item.verified_organization?'Emisor verificado':'Emisor no verificado'}
 function Card({item,saved,isSaving,onToggleSave}){
   const [expanded,setExpanded]=useState(false);const kind=typeFor(item.category);const Icon=kind==='beca'?FiAward:kind==='curso'?FiBookOpen:kind==='patrocinio'?FiStar:FiBriefcase
   const hasMatch=!!(item.match&&item.match.total>0)
-  return <article className="nex-explore-card"><div className="nex-explore-card-head"><div className={`nex-explore-card-icon is-${kind}`}><Icon/></div><div><span className={`nex-type-label is-${kind}`}>{typeName[kind]||'Oportunidad'}</span><h3>{item.title}</h3><p>{item.organization || 'Emisor sin nombre público'}</p><small>{sourceLabel(item)}</small></div><button className={`nex-bookmark-btn ${saved?'is-saved':''}`} type="button" aria-label={saved?'Quitar de guardados':'Guardar oportunidad'} aria-busy={isSaving} disabled={isSaving} onClick={()=>onToggleSave(item.id)}><FiBookmark/></button></div>
+  return <article className="nex-explore-card"><div className="nex-explore-card-head"><div className={`nex-explore-card-icon is-${kind}`}><Icon/></div><div><span className={`nex-type-label is-${kind}`}>{typeName[kind]||'Oportunidad'}</span><h3>{item.title}</h3><p>{item.organization || 'Emisor sin nombre público'}</p>{sourceLabel(item)&&<small>{sourceLabel(item)}</small>}</div><button className={`nex-bookmark-btn ${saved?'is-saved':''}`} type="button" aria-label={saved?'Quitar de guardados':'Guardar oportunidad'} aria-busy={isSaving} disabled={isSaving} onClick={()=>onToggleSave(item.id)}><FiBookmark/></button></div>
     <div className="nex-explore-details"><span><FiCalendar/> Cierra: {formatDate(item.deadline)}</span>{item.verified_organization&&<span><FiShield/> Emisor verificado</span>}{formatAmount(item.amount_bob)&&<span><FiAward/> {formatAmount(item.amount_bob)}</span>}{item.source_checked_on&&<span>Revisado: {formatDate(item.source_checked_on)}</span>}</div>
     {item.summary&&<p className="nex-explore-summary">{item.summary}</p>}
     {hasMatch?<div className="nex-compatibility"><div><span>Compatibilidad con tu perfil</span><strong>{item.match.percent}%</strong></div><div className="nex-compat-track"><i style={{width:`${Math.max(0,Math.min(100,item.match.percent||0))}%`}}/></div><small>{item.match.met} de {item.match.total} {item.is_curated?'criterios comparables':'requisitos obligatorios'} cumplidos</small>{item.is_curated&&item.source_kind!=='demostracion'&&<small>La institución puede exigir otras condiciones; revisa la convocatoria antes de postular.</small>}</div>:item.match?<div className="nex-match-unavailable"><FiInfo/> La fuente no publica requisitos que podamos comparar con tu perfil.</div>:<div className="nex-match-unavailable"><FiInfo/> Inicia sesión y completa tu perfil para conocer tu compatibilidad.</div>}
@@ -41,7 +41,7 @@ export default function OpportunitiesPage({embedded=false}){
       if(onlyFunded&&Number(item.amount_bob)<=0)return false
       return !term||[item.title,item.organization,typeName[typeFor(item.category)]].join(' ').toLocaleLowerCase('es').includes(term)
     })
-    if(sort==='date')list=[...list].sort((a,b)=>String(a.deadline).localeCompare(String(b.deadline)))
+    if(sort==='date')list=[...list].sort((a,b)=>(a.deadline||'9999-12-31').localeCompare(b.deadline||'9999-12-31'))
     else if(sort==='name')list=[...list].sort((a,b)=>a.title.localeCompare(b.title,'es'))
     else list=sortOpportunitiesByMatch(list)
     return list

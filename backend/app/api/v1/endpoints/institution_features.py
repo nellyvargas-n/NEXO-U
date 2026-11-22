@@ -67,7 +67,10 @@ def approve_band(band_id:int,body:BandReview,u:AppUser=Depends(require_role('adm
 
 @router.get('/admin/becas/bandas/pendientes')
 def pending_bands(u:AppUser=Depends(require_role('admin')),db:Session=Depends(get_db)):
-    return [{'id':b.id,'opportunity_id':b.opportunity_id,'percent_discount':b.percent_discount,'official_url':b.official_url} for b in db.scalars(select(ScholarshipBand).where(ScholarshipBand.approved_by_admin.is_(False)).limit(100)).all()]
+    rows=db.scalars(select(ScholarshipBand).join(Opportunity,Opportunity.id==ScholarshipBand.opportunity_id)
+                    .where(ScholarshipBand.approved_by_admin.is_(False),Opportunity.is_demo.is_(False),
+                           Opportunity.source_name.is_(None)).limit(100)).all()
+    return [{'id':b.id,'opportunity_id':b.opportunity_id,'percent_discount':b.percent_discount,'official_url':b.official_url} for b in rows]
 
 class CampaignIn(BaseModel):
     organization_id:int=Field(gt=0)
@@ -157,7 +160,7 @@ def audit(limit:int=Query(default=50,ge=1,le=100),u:AppUser=Depends(require_role
 @router.get('/oportunidades/publicas')
 def public_opportunities(limit:int=Query(default=50,ge=1,le=100),db:Session=Depends(get_db)):
     from app.core.config import settings
-    base_filters=[Opportunity.deadline>=date.today(),
+    base_filters=[or_(Opportunity.deadline.is_(None),Opportunity.deadline>=date.today()),
                   *([Opportunity.is_demo.is_(False)] if settings.environment == "production" else [])]
     registered_q=(select(Opportunity,Organization)
         .join(OrganizationOpportunity,OrganizationOpportunity.opportunity_id==Opportunity.id)
@@ -176,7 +179,7 @@ def public_opportunities(limit:int=Query(default=50,ge=1,le=100),db:Session=Depe
                  'organization':o.source_name,'verified_organization':False,'is_curated':True,
                  'source_kind':o.source_kind,'is_demo':o.is_demo}
                 for o in db.scalars(curated_q).all())
-    return sorted(rows,key=lambda row:(row['deadline'],row['id']))[:limit]
+    return sorted(rows,key=lambda row:(row['deadline'] or date.max,row['id']))[:limit]
 
 @router.get('/cursos/publicos')
 def public_courses(limit:int=Query(default=50,ge=1,le=100),db:Session=Depends(get_db)):

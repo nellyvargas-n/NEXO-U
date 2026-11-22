@@ -6,14 +6,16 @@ No crea usuarios, organizaciones ni modifica perfiles de estudiantes.
 from datetime import date, timedelta
 import os
 
-from sqlalchemy import select
+from sqlalchemy import or_, select
 
 from app.core.config import settings
 from app.core.database import SessionLocal
 from app.models.entities import Opportunity, Requirement
 
-SOURCE = "NEXO-U · demo de matching"
-TITLE = "Pasantía de Desarrollo de Software — DEMO"
+SOURCE = "NEXO-U · Desarrollo profesional"
+LEGACY_SOURCE = "NEXO-U · demo de matching"
+TITLE = "Pasantía de Desarrollo de Software"
+LEGACY_TITLE = "Pasantía de Desarrollo de Software — DEMO"
 REQUIREMENTS = [
     ("skill", "has", "Python"),
     ("skill", "has", "Java"),
@@ -31,8 +33,8 @@ def main():
     with SessionLocal() as db:
         try:
             opportunity = db.scalar(select(Opportunity).where(
-                Opportunity.source_name == SOURCE,
-                Opportunity.title == TITLE,
+                or_(Opportunity.source_name.in_([SOURCE, LEGACY_SOURCE]),
+                    Opportunity.title.in_([TITLE, LEGACY_TITLE])),
             ))
             fields = {
                 "category": "pasantia",
@@ -43,10 +45,8 @@ def main():
                 "source_name": SOURCE,
                 "source_kind": "demostracion",
                 "summary": (
-                    "Oferta ficticia para probar el matching de perfiles; no corresponde a una vacante real. "
-                    "Compara tres habilidades técnicas (Python, Java y React) e inglés B2. "
-                    "La fecha de cierre se muestra únicamente para la prueba; empresa, ubicación, modalidad, "
-                    "remuneración y postulación están por definir."
+                    "Pasantía de desarrollo de software con requisitos en Python, Java, React e inglés B2. "
+                    "Revisa las condiciones de la convocatoria y fortalece cada requisito desde tu perfil."
                 ),
                 "source_url": None,
                 "source_checked_on": None,
@@ -80,7 +80,7 @@ def main():
         except Exception:
             db.rollback()
             raise
-        print(f"Oferta demo #{opportunity.id} lista; requisitos: Python, Java, React e inglés B2.")
+        print(f"Oportunidad #{opportunity.id} lista; requisitos: Python, Java, React e inglés B2.")
 
 
 if __name__ == "__main__":

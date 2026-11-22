@@ -51,11 +51,11 @@ def matches_requirement(req, profile, credentials):
 
 
 def recommended_courses(req, courses, deadline):
-    if req.kind not in ("skill", "language", "certificate") or deadline < date.today(): return []
+    if req.kind not in ("skill", "language", "certificate") or (deadline is not None and deadline < date.today()): return []
     matches = []
     for course in courses:
-        if course.start_date is not None and not date.today() <= course.start_date <= deadline: continue
-        if course.end_date is not None and (course.end_date < date.today() or course.end_date > deadline): continue
+        if course.start_date is not None and (course.start_date < date.today() or (deadline is not None and course.start_date > deadline)): continue
+        if course.end_date is not None and (course.end_date < date.today() or (deadline is not None and course.end_date > deadline)): continue
         if course.credential_kind != req.kind or course.credential_value.casefold() != req.value.casefold(): continue
         if req.kind == "language" and LEVELS.get((course.credential_level or "").upper(), 0) < LEVELS.get(req.operator.upper(), 99): continue
         matches.append({"id": course.id, "title": course.title, "ends_on": course.end_date.isoformat() if course.end_date else None,
@@ -77,7 +77,8 @@ def evaluate(db: Session, student_id: int | None = 1, student_user_id: int | Non
         credentials = db.scalars(select(Credential).where(Credential.student_id == student_id)).all()
 
     if settings.demo_mode:
-        opportunities = db.scalars(select(Opportunity).where(Opportunity.deadline >= date.today())).all()
+        opportunities = db.scalars(select(Opportunity).where(
+            or_(Opportunity.deadline.is_(None), Opportunity.deadline >= date.today()))).all()
         courses = db.scalars(select(Course).where(
             *([Course.is_demo.is_(False)] if settings.environment == "production" else []),
             or_(Course.start_date.is_(None), Course.start_date >= date.today()),
@@ -89,7 +90,7 @@ def evaluate(db: Session, student_id: int | None = 1, student_user_id: int | Non
             .join(Organization, Organization.id == OrganizationOpportunity.organization_id)
             .where(Organization.verified.is_(True)))
         opportunities = db.scalars(
-            select(Opportunity).where(Opportunity.deadline >= date.today(),
+            select(Opportunity).where(or_(Opportunity.deadline.is_(None), Opportunity.deadline >= date.today()),
                    or_(Opportunity.source_name.is_not(None), Opportunity.id.in_(verified_opportunities)),
                    *([Opportunity.is_demo.is_(False)] if settings.environment == "production" else []))
         ).all()
@@ -109,7 +110,7 @@ def evaluate(db: Session, student_id: int | None = 1, student_user_id: int | Non
                                                           Requirement.mandatory.is_(True))).all()
         if not requirements:
             results.append({"opportunity_id": opportunity.id, "title": opportunity.title,
-                            "deadline": opportunity.deadline.isoformat(), "met": 0, "total": 0,
+                            "deadline": opportunity.deadline.isoformat() if opportunity.deadline else None, "met": 0, "total": 0,
                             "percent": 0, "eligible": False, "profile_type": profile_type,
                             "is_demo": opportunity.is_demo, "requirements": []})
             continue
@@ -123,8 +124,8 @@ def evaluate(db: Session, student_id: int | None = 1, student_user_id: int | Non
                            if outcome is False else []})
         met = sum(c["status"] == "cumple" for c in checks)
         results.append({"opportunity_id": opportunity.id, "title": opportunity.title,
-                        "deadline": opportunity.deadline.isoformat(), "met": met, "total": len(checks),
+                        "deadline": opportunity.deadline.isoformat() if opportunity.deadline else None, "met": met, "total": len(checks),
                         "percent": round(met / len(checks) * 100), "eligible": met == len(checks),
                         "profile_type": profile_type, "is_demo": opportunity.is_demo,
                         "requirements": checks})
-    return sorted(results, key=lambda r: (not r["eligible"], -r["percent"], r["deadline"]))
+    return sorted(results, key=lambda r: (not r["eligible"], -r["percent"], r["deadline"] or "9999-12-31"))

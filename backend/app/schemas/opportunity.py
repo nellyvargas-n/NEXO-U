@@ -6,7 +6,7 @@ class OpportunityRead(BaseModel):
     id: int
     title: str
     category: str
-    deadline: date
+    deadline: date | None
     official_url: HttpUrl
     amount_bob: float
     organization: str

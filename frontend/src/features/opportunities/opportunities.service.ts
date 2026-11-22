@@ -4,7 +4,7 @@ export interface PublicOpportunity {
   id: number
   title: string
   category: 'beca' | 'pasantia' | 'patrocinio' | 'curso' | string
-  deadline: string
+  deadline: string | null
   official_url: string
   amount_bob: number
   organization: string
@@ -14,6 +14,8 @@ export interface PublicOpportunity {
   source_url?: string | null
   source_checked_on?: string | null
   summary?: string | null
+  is_demo?: boolean
+  is_demo?: boolean
 }
 
 export interface MatchRequirement {
@@ -32,7 +34,7 @@ export interface MatchRequirement {
 export interface OpportunityMatch {
   opportunity_id: number
   title: string
-  deadline: string
+  deadline: string | null
   met: number
   total: number
   percent: number
@@ -84,6 +86,6 @@ export function sortOpportunitiesByMatch(opportunities: OpportunityWithMatch[]):
     const leftPercent = left.match?.total ? left.match.percent : -1
     const rightPercent = right.match?.total ? right.match.percent : -1
     const eligibleOrder = Number(Boolean(right.match?.eligible && right.match.total)) - Number(Boolean(left.match?.eligible && left.match.total))
-    return eligibleOrder || rightPercent - leftPercent || left.deadline.localeCompare(right.deadline)
+    return eligibleOrder || rightPercent - leftPercent || (left.deadline ?? '9999-12-31').localeCompare(right.deadline ?? '9999-12-31')
   })
 }

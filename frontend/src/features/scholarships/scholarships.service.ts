@@ -6,13 +6,14 @@ export interface ScholarshipSimulationCriterion {
   minimum_average: string | number
   minimum_math: string | number
   meets: boolean
-  official_url: string
+  official_url: string | null
 }
 
 export interface ScholarshipSimulation {
   status: 'compatible' | 'no_compatible' | 'sin_estimacion' | string
   discount_percent: number | null
   message: string
+  is_demo: boolean
   criteria?: ScholarshipSimulationCriterion[]
 }
 

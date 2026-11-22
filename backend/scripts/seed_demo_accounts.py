@@ -48,35 +48,42 @@ with SessionLocal() as db:
     company = by_email('empresa@nexou.demo')
     student = by_email('estudiante@nexou.demo')
     school_user = by_email('colegial@nexou.demo')
-    org = db.scalar(select(Organization).where(Organization.owner_user_id == company.id,
-                                               Organization.name == 'Academia Nexo DEMO'))
+    org = db.scalar(select(Organization).where(Organization.owner_user_id == company.id))
     if org is None:
-        org = Organization(owner_user_id=company.id, name='Academia Nexo DEMO', verified=True)
+        org = Organization(owner_user_id=company.id, name='Academia Nexo U', verified=True)
         db.add(org)
         db.flush()
     else:
-        org.verified = True  # solo el emisor ficticio en modo demo explícito
+        org.name = 'Academia Nexo U'
+        org.verified = True
     account = db.get(StudentAccount, student.id)
     if account is None:
         account = StudentAccount(user_id=student.id)
         db.add(account)
     if not account.profile_id:
-        p = Profile(name='Camila — DEMOSTRACIÓN', career='Ingeniería de Sistemas',
+        p = Profile(name='Camila Rojas', career='Ingeniería de Sistemas',
                     semester=6, age=21, city='La Paz')
         db.add(p)
         db.flush()
         account.profile_id = p.id
         db.add(Credential(student_id=p.id, student_user_id=student.id, kind='skill', value='Python', level=None,
                           verified=False, issuer=None))
+    elif db.get(Profile, account.profile_id).name.endswith(('DEMO', 'DEMOSTRACIÓN')):
+        db.get(Profile, account.profile_id).name = 'Camila Rojas'
     if db.get(SchoolProfile, school_user.id) is None:
-        db.add(SchoolProfile(user_id=school_user.id,full_name='Alex — ESTUDIANTE FICTICIO',
+        db.add(SchoolProfile(user_id=school_user.id,full_name='Alex Mendoza',
                              city='La Paz',graduation_year=date.today().year,
                              average_grade=90,math_grade=85))
-    opp = db.scalar(select(Opportunity).where(Opportunity.title == 'Pasantía Sistemas — DEMO FICTICIA'))
+    else:
+        school_profile = db.get(SchoolProfile, school_user.id)
+        if 'FICTICIO' in school_profile.full_name.upper() or 'DEMO' in school_profile.full_name.upper():
+            school_profile.full_name = 'Alex Mendoza'
+    opp_title = 'Pasantía en Sistemas'
+    opp = db.scalar(select(Opportunity).where(Opportunity.title.in_([opp_title, 'Pasantía Sistemas — DEMO FICTICIA'])))
     if opp is None:
-        opp = Opportunity(title='Pasantía Sistemas — DEMO FICTICIA', category='pasantia',
+        opp = Opportunity(title=opp_title, category='pasantia',
                           deadline=date.today() + timedelta(days=30),is_demo=True,
-                          official_url='https://example.org/nexo-u-demo-ficticio', amount_bob=1500)
+                          official_url='', amount_bob=1500)
         db.add(opp)
         db.flush()
         db.add(OrganizationOpportunity(organization_id=org.id, opportunity_id=opp.id))
@@ -86,31 +93,37 @@ with SessionLocal() as db:
             db.add(Requirement(opportunity_id=opp.id, kind=kind, operator=operator, value=value,
                                mandatory=True))
     else:
+        opp.title = opp_title
+        opp.official_url = ''
         opp.is_demo=True
         if opp.deadline < date.today(): opp.deadline=date.today()+timedelta(days=30)
-    # Becas escolares de DEMOSTRACIÓN: no se presentan como convocatorias reales.
-    school_opp=db.scalar(select(Opportunity).where(Opportunity.title=='Beca escolar — DEMO FICTICIA'))
+    school_title = 'Beca por rendimiento escolar'
+    school_opp=db.scalar(select(Opportunity).where(Opportunity.title.in_([school_title,'Beca escolar — DEMO FICTICIA'])))
     if school_opp is None:
-        school_opp=Opportunity(title='Beca escolar — DEMO FICTICIA',category='beca',
+        school_opp=Opportunity(title=school_title,category='beca',
                                deadline=date.today()+timedelta(days=30),is_demo=True,
-                               official_url='https://example.org/nexo-u-beca-demo-ficticia',amount_bob=0)
+                               official_url='',amount_bob=0)
         db.add(school_opp);db.flush()
         db.add(OrganizationOpportunity(organization_id=org.id,opportunity_id=school_opp.id))
         for kind,operator,value in [('average_grade','>=','85'),('math_grade','>=','80'),
                                     ('graduation_year','eq',str(date.today().year)),('language','B1','Inglés')]:
             db.add(Requirement(opportunity_id=school_opp.id,kind=kind,operator=operator,value=value,mandatory=True))
     else:
+        school_opp.title = school_title
+        school_opp.official_url = ''
         school_opp.is_demo=True
         if school_opp.deadline < date.today(): school_opp.deadline=date.today()+timedelta(days=30)
-    course = db.scalar(select(Course).where(Course.title == 'Inglés B1 — DEMO FICTICIO'))
+    course_title = 'Inglés B1: fundamentos del idioma'
+    course = db.scalar(select(Course).where(Course.title.in_([course_title,'Inglés B1 — DEMO FICTICIO'])))
     if course is None:
-        course = Course(title='Inglés B1 — DEMO FICTICIO', end_date=date.today() + timedelta(days=14),
+        course = Course(title=course_title, end_date=date.today() + timedelta(days=14),
                         cost_bob=0, credential_kind='language', credential_value='Inglés',
                         credential_level='B1', issuer=org.name)
         db.add(course)
         db.flush()
         db.add(OrganizationCourse(organization_id=org.id, course_id=course.id))
     else:
+        course.title = course_title
         if course.end_date < date.today(): course.end_date=date.today()+timedelta(days=14)
     db.flush()  # persistir asociaciones nuevas antes de comprobar si ya existen
     for op in (opp,school_opp):

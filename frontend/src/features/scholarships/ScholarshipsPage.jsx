@@ -26,47 +26,48 @@ function getLoadError(error) {
   return error instanceof Error ? error.message : 'No se pudieron cargar las becas.'
 }
 
-function getSimulationError(error) {
-  if (error instanceof ApiError && error.status === 403) return 'La simulación requiere un perfil escolar registrado.'
-  if (error instanceof ApiError && error.status === 404) return 'Esta convocatoria ya no está disponible para simular.'
+function getCalculationError(error) {
+  if (error instanceof ApiError && error.status === 403) return 'Registra un perfil escolar para consultar los criterios de esta beca.'
+  if (error instanceof ApiError && error.status === 404) return 'Esta convocatoria ya no está disponible.'
   if (error instanceof TypeError) return 'No pudimos conectar con el servicio. Inténtalo de nuevo.'
   return error instanceof Error ? error.message : 'No se pudo calcular la banda.'
 }
 
-function ScholarshipResult({ simulation }) {
-  if (simulation.status === 'sin_estimacion') {
+function ScholarshipResult({ result }) {
+  if (result.status === 'sin_estimacion') {
     return (
       <div className="mt-5 rounded-xl border border-[#e8dfbd] bg-[#fff9e9] p-4">
-        <p className="m-0 text-sm font-semibold text-[#725f32]">Aún no hay una banda estimable</p>
-        <p className="mb-0 mt-1 text-sm leading-6 text-[#756b4d]">{simulation.message}</p>
+        <p className="m-0 text-sm font-semibold text-[#725f32]">No hay un porcentaje exacto que calcular</p>
+        <p className="mb-0 mt-1 text-sm leading-6 text-[#756b4d]">{result.message}</p>
       </div>
     )
   }
 
-  const isCompatible = simulation.status === 'compatible'
+  const isCompatible = result.status === 'compatible'
+  const isDemo = Boolean(result.is_demo)
 
   return (
     <div className={`mt-5 rounded-xl border p-4 ${isCompatible ? 'border-[#d5e8d3] bg-[#f1f8ec]' : 'border-[#e8dfbd] bg-[#fff9e9]'}`}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className={`m-0 text-sm font-semibold ${isCompatible ? 'text-[#365f43]' : 'text-[#725f32]'}`}>
-            {isCompatible ? `Banda orientativa: ${simulation.discount_percent}%` : 'No alcanzas los umbrales publicados'}
+            {isCompatible ? `${isDemo ? 'Descuento de demostración' : 'Descuento orientativo'}: ${result.discount_percent}%` : isDemo ? 'No alcanzas los umbrales de demostración' : 'No cumples los requisitos publicados'}
           </p>
-          <p className="mb-0 mt-1 text-sm leading-6 text-[#7b8da5]">{simulation.message}</p>
+          <p className="mb-0 mt-1 text-sm leading-6 text-[#7b8da5]">{result.message}</p>
         </div>
         <span className={`rounded-full px-3 py-1 text-xs font-semibold ${isCompatible ? 'bg-[#dcefdc] text-[#39704d]' : 'bg-[#f5ebca] text-[#806b35]'}`}>
-          {isCompatible ? 'Cumples una banda' : 'Revisa los criterios'}
+          {isCompatible ? 'Cumples los criterios' : 'Revisa los criterios'}
         </span>
       </div>
 
-      {simulation.criteria?.length > 0 && (
+      {result.criteria?.length > 0 && (
         <div className="mt-4 grid gap-2">
-          <h3 className="m-0 text-xs font-bold uppercase tracking-wide text-[#52685a]">Bandas oficiales aprobadas</h3>
-          {simulation.criteria.map((criterion) => (
+          <h3 className="m-0 text-xs font-bold uppercase tracking-wide text-[#52685a]">{isDemo ? 'Escala ficticia de prueba' : 'Criterios de referencia'}</h3>
+          {result.criteria.map((criterion) => (
             <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-lg border border-[#e6ece3] bg-white px-3 py-2.5" key={`${criterion.discount_percent}-${criterion.minimum_average}-${criterion.minimum_math}`}>
               <div>
                 <p className="m-0 text-sm font-semibold text-[#344f40]">{criterion.discount_percent}% de descuento</p>
-                <p className="m-0 mt-0.5 text-xs leading-5 text-[#8595a9]">Promedio mínimo {criterion.minimum_average} · Matemáticas {criterion.minimum_math}</p>
+                <p className="m-0 mt-0.5 text-xs leading-5 text-[#8595a9]">Promedio mínimo {criterion.minimum_average} · {Number(criterion.minimum_math) > 0 ? `Matemáticas ${criterion.minimum_math}` : 'Matemáticas no es criterio oficial'}</p>
               </div>
               <div className="flex items-center gap-3">
                 <span className={`text-xs font-semibold ${criterion.meets ? 'text-[#39704d]' : 'text-[#806b35]'}`}>
@@ -82,24 +83,25 @@ function ScholarshipResult({ simulation }) {
   )
 }
 
-function ScholarshipCard({ opportunity, profileReady, simulation, onSimulate }) {
+function ScholarshipCard({ opportunity, profileReady, calculation, onCalculate }) {
   const amount = formatAmount(opportunity.amount_bob)
-  const isSimulating = simulation?.state === 'loading'
+  const isCalculating = calculation?.state === 'loading'
 
   return (
-    <article className="overflow-hidden rounded-2xl border border-[#e0e9de] bg-white p-5 sm:p-6" aria-busy={isSimulating}>
+    <article className="overflow-hidden rounded-2xl border border-[#e0e9de] bg-white p-5 sm:p-6" aria-busy={isCalculating}>
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-[#eaf3ff] px-3 py-1 text-xs font-semibold text-[#39704d]">Beca</span>
             {opportunity.verified_organization && <span className="text-xs font-medium text-[#567461]">✓ Emisor verificado</span>}
-            {opportunity.is_curated && opportunity.source_kind !== 'canal_oficial' && <span className="rounded-full bg-[#f4f1e8] px-3 py-1 text-xs font-medium text-[#75633b]">Fuente institucional consultada</span>}
+            {opportunity.is_demo && <span className="rounded-full bg-[#f4f1e8] px-3 py-1 text-xs font-medium text-[#75633b]">Beca de demostración</span>}
+            {opportunity.is_curated && !opportunity.is_demo && opportunity.source_kind !== 'canal_oficial' && <span className="rounded-full bg-[#f4f1e8] px-3 py-1 text-xs font-medium text-[#75633b]">Fuente institucional consultada</span>}
           </div>
           <h2 className="mt-3 font-display text-xl font-semibold leading-tight text-[#1d3557]">{opportunity.title}</h2>
           <p className="mt-1 text-sm text-[#8595a9]">{opportunity.organization}</p>
         </div>
         <div className="shrink-0 rounded-xl bg-[#f5f8f3] px-3 py-2 text-right">
-          <p className="m-0 text-xs text-[#7b897e]">Cierre</p>
+          <p className="m-0 text-xs text-[#7b897e]">{opportunity.deadline ? 'Cierre' : 'Próxima convocatoria'}</p>
           <p className="m-0 mt-1 text-sm font-semibold text-[#405c49]">{formatDate(opportunity.deadline)}</p>
         </div>
       </div>
@@ -115,16 +117,16 @@ function ScholarshipCard({ opportunity, profileReady, simulation, onSimulate }) 
         </div>
         <button
           className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#2475e2] px-4 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2876d7] disabled:cursor-not-allowed disabled:bg-[#93a99a]"
-          disabled={!profileReady || isSimulating}
+          disabled={!profileReady || isCalculating}
           type="button"
-          onClick={() => onSimulate(opportunity.id)}
+          onClick={() => onCalculate(opportunity.id)}
         >
-          {isSimulating ? 'Calculando…' : simulation?.state === 'result' ? 'Recalcular banda' : 'Simular mi banda'}
+          {isCalculating ? 'Calculando…' : calculation?.state === 'result' ? 'Actualizar cálculo' : 'Calcular descuento'}
         </button>
       </div>
 
-      {simulation?.state === 'error' && <p className="mb-0 mt-4 rounded-xl border border-[#f1c3c0] bg-[#fff4f2] px-4 py-3 text-sm leading-5 text-[#9b302a]" role="alert">{simulation.message}</p>}
-      {simulation?.state === 'result' && <ScholarshipResult simulation={simulation.data} />}
+      {calculation?.state === 'error' && <p className="mb-0 mt-4 rounded-xl border border-[#f1c3c0] bg-[#fff4f2] px-4 py-3 text-sm leading-5 text-[#9b302a]" role="alert">{calculation.message}</p>}
+      {calculation?.state === 'result' && <ScholarshipResult result={calculation.data} />}
     </article>
   )
 }
@@ -135,7 +137,7 @@ function ScholarshipsPage() {
   const [schoolProfile, setSchoolProfile] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
-  const [simulations, setSimulations] = useState({})
+  const [calculations, setCalculations] = useState({})
   const refreshKey = useAutoRefresh()
   const isInitialLoad = useRef(true)
 
@@ -186,14 +188,14 @@ function ScholarshipsPage() {
     return () => { isCurrent = false }
   }, [refreshKey])
 
-  async function handleSimulate(opportunityId) {
-    setSimulations((current) => ({ ...current, [opportunityId]: { state: 'loading' } }))
+  async function handleCalculate(opportunityId) {
+    setCalculations((current) => ({ ...current, [opportunityId]: { state: 'loading' } }))
 
     try {
       const result = await simulateScholarship(opportunityId)
-      setSimulations((current) => ({ ...current, [opportunityId]: { state: 'result', data: result } }))
-    } catch (simulationError) {
-      setSimulations((current) => ({ ...current, [opportunityId]: { state: 'error', message: getSimulationError(simulationError) } }))
+      setCalculations((current) => ({ ...current, [opportunityId]: { state: 'result', data: result } }))
+    } catch (calculationError) {
+      setCalculations((current) => ({ ...current, [opportunityId]: { state: 'error', message: getCalculationError(calculationError) } }))
     }
   }
 
@@ -201,14 +203,14 @@ function ScholarshipsPage() {
     <div className="grid max-w-4xl gap-5">
       <div>
         <h2 className="mt-1 font-display text-xl font-semibold text-[#1d3557]">Becas disponibles</h2>
-        <p className="mb-0 mt-2 max-w-2xl text-sm leading-6 text-[#7b8da5]">Simula tu descuento con umbrales aprobados.</p>
+        <p className="mb-0 mt-2 max-w-2xl text-sm leading-6 text-[#7b8da5]">Consulta un descuento orientativo según los criterios disponibles.</p>
       </div>
 
       {!isLoading && profileState === 'school' && schoolProfile && (
         <div className="rounded-2xl border border-[#dce9d9] bg-[#f4f8f1] p-4 sm:flex sm:items-center sm:justify-between sm:gap-5">
           <div>
-            <p className="m-0 text-sm font-semibold text-[#365f43]">Perfil escolar listo para simular</p>
-            <p className="mb-0 mt-1 text-sm text-[#7b8da5]">Tus notas solo se usan para la simulación.</p>
+            <p className="m-0 text-sm font-semibold text-[#365f43]">Perfil escolar listo</p>
+            <p className="mb-0 mt-1 text-sm text-[#7b8da5]">Tus notas se usan para consultar los criterios.</p>
           </div>
           <div className="mt-3 flex shrink-0 gap-4 sm:mt-0">
             <p className="m-0 text-xs text-[#8595a9]">Promedio <strong className="ml-1 text-sm text-[#344f40]">{schoolProfile.average_grade}</strong></p>
@@ -220,7 +222,7 @@ function ScholarshipsPage() {
       {!isLoading && profileState === 'none' && (
         <div className="rounded-2xl border border-[#e8dfbd] bg-[#fff9e9] p-4 sm:flex sm:items-center sm:justify-between sm:gap-5">
           <div>
-            <p className="m-0 text-sm font-semibold text-[#725f32]">Completa tu perfil escolar para simular</p>
+            <p className="m-0 text-sm font-semibold text-[#725f32]">Completa tu perfil escolar para consultar los criterios</p>
             <p className="mb-0 mt-1 text-sm leading-6 text-[#756b4d]">Agrega tu promedio y nota de Matemáticas.</p>
           </div>
           <a className="mt-3 inline-flex min-h-10 shrink-0 items-center justify-center rounded-xl border border-[#d9cfad] px-4 text-sm font-semibold text-[#725f32] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#927d49] sm:mt-0" href="/app/perfil">Completar perfil</a>
@@ -229,14 +231,14 @@ function ScholarshipsPage() {
 
       {!isLoading && profileState === 'university' && (
         <div className="rounded-2xl border border-[#e8dfbd] bg-[#fff9e9] p-4">
-          <p className="m-0 text-sm font-semibold text-[#725f32]">La simulación necesita un perfil escolar</p>
-          <p className="mb-0 mt-1 text-sm leading-6 text-[#756b4d]">Las becas son visibles, pero esta cuenta no puede simularlas.</p>
+          <p className="m-0 text-sm font-semibold text-[#725f32]">El cálculo requiere un perfil escolar</p>
+          <p className="mb-0 mt-1 text-sm leading-6 text-[#756b4d]">Agrega tus notas para consultar los criterios de elegibilidad.</p>
         </div>
       )}
 
       {!isLoading && profileState === 'error' && (
         <div className="rounded-xl border border-[#f1c3c0] bg-[#fff4f2] px-4 py-3">
-          <p className="m-0 text-sm leading-5 text-[#9b302a]" role="alert">No pudimos confirmar tu perfil escolar. Reintenta antes de simular una beca.</p>
+          <p className="m-0 text-sm leading-5 text-[#9b302a]" role="alert">No pudimos confirmar tu perfil escolar. Reintenta antes de consultar una beca.</p>
         </div>
       )}
 
@@ -248,15 +250,15 @@ function ScholarshipsPage() {
         </Surface>
       ) : opportunities.length > 0 ? (
         <>
-          <p className="m-0 text-sm font-medium text-[#687b70]">{opportunities.length} {opportunities.length === 1 ? 'convocatoria vigente' : 'convocatorias vigentes'}</p>
+          <p className="m-0 text-sm font-medium text-[#687b70]">{opportunities.length} {opportunities.length === 1 ? 'programa de beca' : 'programas de beca'}</p>
           <div className="grid gap-4">
             {opportunities.map((opportunity) => (
               <ScholarshipCard
                 key={opportunity.id}
                 opportunity={opportunity}
                 profileReady={profileState === 'school'}
-                simulation={simulations[opportunity.id]}
-                onSimulate={handleSimulate}
+                calculation={calculations[opportunity.id]}
+                onCalculate={handleCalculate}
               />
             ))}
           </div>

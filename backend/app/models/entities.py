@@ -1,5 +1,6 @@
-from datetime import date
-from sqlalchemy import String, Integer, BigInteger, Float, Boolean, ForeignKey, Date, Text, UniqueConstraint
+from datetime import date, datetime, timezone
+from sqlalchemy import (String, Integer, BigInteger, Float, Boolean, ForeignKey, Date, DateTime,
+                        LargeBinary, Text, UniqueConstraint, CheckConstraint)
 from sqlalchemy.orm import Mapped, mapped_column
 from app.core.database import Base
 
@@ -28,7 +29,7 @@ class Opportunity(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(String(200))
     category: Mapped[str] = mapped_column(String(50))
-    deadline: Mapped[date] = mapped_column(Date)
+    deadline: Mapped[date | None] = mapped_column(Date, nullable=True)
     official_url: Mapped[str] = mapped_column(String(500))
     amount_bob: Mapped[float] = mapped_column(Float, default=0)
     is_demo: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
@@ -78,6 +79,43 @@ class Enrollment(Base):
     student_user_id: Mapped[int | None] = mapped_column(BigInteger, ForeignKey("app_users.id", ondelete="CASCADE"), nullable=True, index=True)
     course_id: Mapped[int] = mapped_column(ForeignKey("courses.id"))
     completed: Mapped[bool] = mapped_column(Boolean, default=False)
+
+class CourseLesson(Base):
+    __tablename__ = "course_lessons"
+    __table_args__ = (UniqueConstraint("course_id", "position", name="uq_course_lesson_position"),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    course_id: Mapped[int] = mapped_column(ForeignKey("courses.id", ondelete="CASCADE"), index=True)
+    position: Mapped[int] = mapped_column(Integer)
+    title: Mapped[str] = mapped_column(String(160))
+    body: Mapped[str] = mapped_column(Text)
+
+class CourseLessonCompletion(Base):
+    __tablename__ = "course_lesson_completions"
+    __table_args__ = (UniqueConstraint("student_user_id", "lesson_id", name="uq_student_lesson_completion"),)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    student_user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("app_users.id", ondelete="CASCADE"), index=True)
+    course_id: Mapped[int] = mapped_column(ForeignKey("courses.id", ondelete="CASCADE"), index=True)
+    lesson_id: Mapped[int] = mapped_column(ForeignKey("course_lessons.id", ondelete="CASCADE"))
+    completed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+class DemoCoursePayment(Base):
+    __tablename__ = "demo_course_payments"
+    __table_args__ = (
+        UniqueConstraint("student_user_id", "idempotency_key", name="uq_course_payment_idempotency"),
+        CheckConstraint("amount_bob >= 0", name="ck_demo_course_payment_amount"),
+        CheckConstraint("status IN ('pending', 'proof_uploaded', 'confirmed', 'cancelled')", name="ck_demo_course_payment_status"),
+    )
+    id: Mapped[int] = mapped_column(BigInteger().with_variant(Integer, "sqlite"), primary_key=True, autoincrement=True)
+    student_user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("app_users.id", ondelete="CASCADE"), index=True)
+    course_id: Mapped[int] = mapped_column(ForeignKey("courses.id", ondelete="CASCADE"), index=True)
+    idempotency_key: Mapped[str] = mapped_column(String(100))
+    amount_bob: Mapped[float] = mapped_column(Float)
+    status: Mapped[str] = mapped_column(String(24), default="pending", nullable=False)
+    proof_filename: Mapped[str | None] = mapped_column(String(180), nullable=True)
+    proof_content_type: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    proof_data: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
 class Transaction(Base):
     __tablename__ = "transactions"
