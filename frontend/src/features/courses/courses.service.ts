@@ -4,13 +4,20 @@ import type { OpportunityMatch, PublicOpportunity } from '../opportunities/oppor
 export interface PublicCourse {
   id: number
   title: string
-  end_date: string
+  start_date: string | null
+  end_date: string | null
   cost_bob: number
   credential_kind: 'skill' | 'language' | 'certificate' | string
   credential_value: string
   credential_level: string | null
   organization: string
   sponsored: boolean
+  is_curated: boolean
+  source_kind: string | null
+  source_url: string | null
+  source_checked_on: string | null
+  official_url: string | null
+  summary: string | null
 }
 
 export interface CourseEnrollment {

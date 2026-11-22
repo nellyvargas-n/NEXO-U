@@ -38,7 +38,7 @@ function AdminOrganizationsPage() {
 
   return (
     <>
-      <AdminPageHeading eyebrow="SUPERVISIÓN" title="Organizaciones" description="Verifica a las organizaciones antes de que sus becas, pasantías y cursos aparezcan en el espacio estudiantil." />
+      <AdminPageHeading eyebrow="SUPERVISIÓN" title="Organizaciones" />
       {error ? <AdminNotice>{error}</AdminNotice> : null}
       {actionError ? <div className="mb-4"><AdminNotice>{actionError}</AdminNotice></div> : null}
       {success ? <div className="mb-4"><AdminNotice tone="success">{success}</AdminNotice></div> : null}
@@ -47,7 +47,6 @@ function AdminOrganizationsPage() {
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="m-0 font-display text-xl font-semibold text-[#1c4033]">Organizaciones registradas</h2>
-              <p className="mb-0 mt-1 text-sm text-[#718075]">{organizations.length} registros recibidos</p>
             </div>
             <button className={adminSecondaryButton} type="button" onClick={() => { setError(''); setIsLoading(true); setReloadKey((key) => key + 1) }}>Actualizar</button>
           </div>

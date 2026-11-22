@@ -56,18 +56,17 @@ function CourseDetailPage() {
           <div className="grid gap-5">
             <Surface>
               <h2 className="font-display text-lg font-semibold text-[#1d3557]">Credencial que ofrece</h2>
-              <p className="mt-2 text-sm leading-6 text-[#7b8da5]">{selectedCourse.credential_value} · nivel {selectedCourse.credential_level}. La credencial aparecerá como verificada únicamente después de que el emisor confirme la finalización.</p>
+              <p className="mt-2 text-sm leading-6 text-[#7b8da5]">{selectedCourse.credential_value} · nivel {selectedCourse.credential_level}. Se verifica al confirmar la finalización.</p>
             </Surface>
             <Surface className="bg-[#f8faf6]">
               <h2 className="font-display text-lg font-semibold text-[#1d3557]">Después de inscribirte</h2>
-              <p className="mt-2 text-sm leading-6 text-[#7b8da5]">La inscripción queda asociada a tu cuenta. Completar el curso y validar la credencial son acciones distintas; solo la organización emisora puede confirmar el resultado.</p>
+              <p className="mt-2 text-sm leading-6 text-[#7b8da5]">La organización emisora confirma la finalización y valida la credencial.</p>
             </Surface>
           </div>
         </div>
       ) : (
         <Surface className="py-9 text-center">
           <h2 className="font-display text-xl font-semibold text-[#1d3557]">No hay un curso público de Inglés B1 vigente</h2>
-          <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-[#8595a9]">Esta ruta aparece cuando una organización verificada publica un curso que otorga Inglés B1 y mantiene vigente su fecha de cierre.</p>
           <a className="mt-4 inline-flex min-h-10 items-center justify-center rounded-xl border border-[#dfe8f5] px-4 text-sm font-semibold text-[#246b4a]" href="/app/cursos">Explorar cursos públicos</a>
         </Surface>
       )}

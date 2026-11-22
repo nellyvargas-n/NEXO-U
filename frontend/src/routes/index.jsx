@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import LandingPage from '../features/landing/LandingPage.jsx'
 import RegisterPage from '../features/auth/pages/RegisterPage.jsx'
 import SignInPage from '../features/auth/pages/SignInPage.jsx'
@@ -6,9 +7,10 @@ import ResetPasswordPage from '../features/auth/pages/ResetPasswordPage.jsx'
 import StudentApp from '../features/student-app/StudentApp.jsx'
 import CompanyPortal from '../features/company-portal/CompanyPortal.jsx'
 import OpportunitiesPage from '../features/opportunities/OpportunitiesPage.jsx'
-import AdminPortal from '../features/admin-portal/AdminPortal.jsx'
+import AdminApp from '../features/admin/AdminApp.jsx'
 import CompanyCourseValidationPage from '../features/company-validation/CompanyCourseValidationPage.jsx'
 import { studentAppRoutes } from './studentAppRoutes.js'
+import { adminAppRoutes } from '../features/admin/adminAppRoutes.js'
 
 function NotFoundPage() {
   return (
@@ -32,8 +34,13 @@ export const routes = [
   { path: '/recuperar-clave', currentPage: 'recover', layout: 'auth', component: RecoverPasswordPage },
   { path: '/reset', currentPage: 'reset', layout: 'auth', component: ResetPasswordPage },
   { path: '/empresa', currentPage: 'company', layout: 'company', component: CompanyPortal },
-  { path: '/admin', currentPage: 'admin', layout: 'admin', component: AdminPortal },
   { path: '/empresa/cursos/validar', currentPage: 'company-validation', layout: 'company', component: CompanyCourseValidationPage },
+  ...adminAppRoutes.map(({ path }) => ({
+    path,
+    currentPage: 'admin',
+    layout: 'admin',
+    component: AdminApp,
+  })),
   ...studentAppRoutes.map(({ path }) => ({
     path,
     currentPage: 'student',

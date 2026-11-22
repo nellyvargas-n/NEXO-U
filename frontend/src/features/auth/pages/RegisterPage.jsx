@@ -71,12 +71,12 @@ function RegisterPage() {
           <legend className="mb-1 text-sm font-semibold text-[#344b3c]">¿Cómo utilizarás NEXO U?</legend>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <label className="cursor-pointer rounded-xl border border-[#d8e2d7] bg-white px-4 py-3 text-sm has-[:checked]:border-[#438c61] has-[:checked]:bg-[#eff7ef]">
-              <input type="radio" name="role" value="usuario" checked={role === 'usuario'} onChange={() => setRole('usuario')} className="mr-2 accent-[#347a57]" />
-              <strong>Estudiante</strong><span className="mt-1 block text-xs text-[#6a7b6f]">Buscar becas, pasantías y cursos</span>
+              <input type="radio" name="role" value="usuario" checked={role === 'usuario'} onChange={() => setRole('usuario')} className="mr-2 accent-[#347a57]" required />
+              <strong>Estudiante</strong><span className="mt-1 block text-xs text-[#6a7b6f]">Explora oportunidades</span>
             </label>
             <label className="cursor-pointer rounded-xl border border-[#d8e2d7] bg-white px-4 py-3 text-sm has-[:checked]:border-[#438c61] has-[:checked]:bg-[#eff7ef]">
-              <input type="radio" name="role" value="empresa" checked={role === 'empresa'} onChange={() => setRole('empresa')} className="mr-2 accent-[#347a57]" />
-              <strong>Empresa / institución</strong><span className="mt-1 block text-xs text-[#6a7b6f]">Publicar convocatorias y cursos</span>
+              <input type="radio" name="role" value="empresa" checked={role === 'empresa'} onChange={() => setRole('empresa')} className="mr-2 accent-[#347a57]" required />
+              <strong>Empresa / institución</strong><span className="mt-1 block text-xs text-[#6a7b6f]">Publica cursos y convocatorias</span>
             </label>
           </div>
         </fieldset>
@@ -95,7 +95,7 @@ function RegisterPage() {
           </fieldset>
         ) : (
           <p className="rounded-xl border border-[#d9e7d7] bg-[#f3f8ef] px-4 py-3 text-sm leading-6 text-[#486753]">
-            Primero creas una cuenta institucional. Al iniciar sesión podrás registrar tu organización, que deberá ser verificada por un administrador antes de publicar.
+            Registra tu organización después de crear la cuenta. Un administrador debe verificarla antes de publicar.
           </p>
         )}
 
@@ -117,7 +117,6 @@ function RegisterPage() {
         <button className="relative inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-[#1c5a42] px-5 text-base font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1c5a42] active:bg-[#174d38] disabled:cursor-wait disabled:opacity-70" type="submit" disabled={isSubmitting}>
           {isSubmitting ? 'Creando cuenta…' : 'Crear mi cuenta'} <Icon name="arrow-right" className="absolute right-5 size-5" />
         </button>
-        <p className="-mt-2 text-xs leading-5 text-[#718075]">{role === 'usuario' ? 'Después de iniciar sesión, completarás tu perfil académico.' : 'Un administrador verificará tu institución antes de habilitar publicaciones.'}</p>
       </form>
     </AuthLayout>
   )

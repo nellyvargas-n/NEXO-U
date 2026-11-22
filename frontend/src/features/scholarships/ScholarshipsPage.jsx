@@ -92,6 +92,7 @@ function ScholarshipCard({ opportunity, profileReady, simulation, onSimulate }) 
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-[#eaf3ff] px-3 py-1 text-xs font-semibold text-[#39704d]">Beca</span>
             {opportunity.verified_organization && <span className="text-xs font-medium text-[#567461]">✓ Emisor verificado</span>}
+            {opportunity.is_curated && <span className="rounded-full bg-[#f4f1e8] px-3 py-1 text-xs font-medium text-[#75633b]">{opportunity.source_kind === 'canal_oficial' ? 'Canal oficial consultado' : 'Fuente institucional consultada'}</span>}
           </div>
           <h2 className="mt-3 font-display text-xl font-semibold leading-tight text-[#1d3557]">{opportunity.title}</h2>
           <p className="mt-1 text-sm text-[#8595a9]">{opportunity.organization}</p>
@@ -102,10 +103,14 @@ function ScholarshipCard({ opportunity, profileReady, simulation, onSimulate }) 
         </div>
       </div>
 
+      {opportunity.summary && <p className="mb-0 mt-4 text-sm leading-6 text-[#687b70]">{opportunity.summary}</p>}
+      {opportunity.source_checked_on && <p className="mb-0 mt-2 text-xs text-[#8595a9]">Fuente revisada {formatDate(opportunity.source_checked_on)}</p>}
+
       <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-[#edf1eb] pt-4">
         <div className="flex flex-wrap items-center gap-4 text-sm text-[#758579]">
           {amount && <span className="font-semibold text-[#405c49]">Monto publicado: {amount}</span>}
-          {opportunity.official_url && <a className="font-semibold text-[#246b4a] underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2876d7]" href={opportunity.official_url} target="_blank" rel="noreferrer">Convocatoria oficial ↗</a>}
+          {opportunity.official_url && <a className="font-semibold text-[#246b4a] underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2876d7]" href={opportunity.official_url} target="_blank" rel="noreferrer">Postular o revisar convocatoria ↗</a>}
+          {opportunity.source_url && opportunity.source_url !== opportunity.official_url && <a className="font-semibold text-[#246b4a] underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2876d7]" href={opportunity.source_url} target="_blank" rel="noreferrer">Fuente consultada ↗</a>}
         </div>
         <button
           className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#2475e2] px-4 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2876d7] disabled:cursor-not-allowed disabled:bg-[#93a99a]"
@@ -193,16 +198,15 @@ function ScholarshipsPage() {
   return (
     <div className="grid max-w-4xl gap-5">
       <div>
-        <p className="m-0 text-sm text-[#8595a9]">Convocatorias vigentes de organizaciones verificadas</p>
         <h2 className="mt-1 font-display text-xl font-semibold text-[#1d3557]">Becas disponibles</h2>
-        <p className="mb-0 mt-2 max-w-2xl text-sm leading-6 text-[#7b8da5]">Consulta la fuente oficial y calcula una banda orientativa con los umbrales publicados y aprobados por administración.</p>
+        <p className="mb-0 mt-2 max-w-2xl text-sm leading-6 text-[#7b8da5]">Simula tu descuento con umbrales aprobados.</p>
       </div>
 
       {!isLoading && profileState === 'school' && schoolProfile && (
         <div className="rounded-2xl border border-[#dce9d9] bg-[#f4f8f1] p-4 sm:flex sm:items-center sm:justify-between sm:gap-5">
           <div>
             <p className="m-0 text-sm font-semibold text-[#365f43]">Perfil escolar listo para simular</p>
-            <p className="mb-0 mt-1 text-sm text-[#7b8da5]">Tus notas se comparan con cada banda aprobada; no se muestran a las instituciones.</p>
+            <p className="mb-0 mt-1 text-sm text-[#7b8da5]">Tus notas solo se usan para la simulación.</p>
           </div>
           <div className="mt-3 flex shrink-0 gap-4 sm:mt-0">
             <p className="m-0 text-xs text-[#8595a9]">Promedio <strong className="ml-1 text-sm text-[#344f40]">{schoolProfile.average_grade}</strong></p>
@@ -215,7 +219,7 @@ function ScholarshipsPage() {
         <div className="rounded-2xl border border-[#e8dfbd] bg-[#fff9e9] p-4 sm:flex sm:items-center sm:justify-between sm:gap-5">
           <div>
             <p className="m-0 text-sm font-semibold text-[#725f32]">Completa tu perfil escolar para simular</p>
-            <p className="mb-0 mt-1 text-sm leading-6 text-[#756b4d]">Necesitamos tu promedio general y tu nota de Matemáticas. Solo calculamos bandas con reglas oficiales aprobadas.</p>
+            <p className="mb-0 mt-1 text-sm leading-6 text-[#756b4d]">Agrega tu promedio y nota de Matemáticas.</p>
           </div>
           <a className="mt-3 inline-flex min-h-10 shrink-0 items-center justify-center rounded-xl border border-[#d9cfad] px-4 text-sm font-semibold text-[#725f32] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#927d49] sm:mt-0" href="/app/perfil">Completar perfil</a>
         </div>
@@ -224,7 +228,7 @@ function ScholarshipsPage() {
       {!isLoading && profileState === 'university' && (
         <div className="rounded-2xl border border-[#e8dfbd] bg-[#fff9e9] p-4">
           <p className="m-0 text-sm font-semibold text-[#725f32]">La simulación necesita un perfil escolar</p>
-          <p className="mb-0 mt-1 text-sm leading-6 text-[#756b4d]">Esta cuenta tiene un perfil universitario. Nexo U mantiene un solo perfil académico por cuenta; las becas siguen visibles, pero no se puede calcular una banda con este perfil.</p>
+          <p className="mb-0 mt-1 text-sm leading-6 text-[#756b4d]">Las becas son visibles, pero esta cuenta no puede simularlas.</p>
         </div>
       )}
 
@@ -260,7 +264,6 @@ function ScholarshipsPage() {
       ) : (
         <Surface className="py-9 text-center">
           <h2 className="font-display text-xl font-semibold text-[#1d3557]">No hay becas vigentes</h2>
-          <p className="mx-auto mb-0 mt-2 max-w-lg text-sm leading-6 text-[#8595a9]">Aquí aparecerán convocatorias abiertas publicadas por organizaciones verificadas.</p>
           <button className="mt-4 min-h-10 rounded-xl border border-[#dfe8f5] px-4 text-sm font-semibold text-[#246b4a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2876d7]" type="button" onClick={() => setReloadKey((key) => key + 1)}>Volver a buscar</button>
         </Surface>
       )}

@@ -28,6 +28,12 @@ function formatAmount(value) {
   return new Intl.NumberFormat('es-BO', { style: 'currency', currency: 'BOB', maximumFractionDigits: 0 }).format(value)
 }
 
+function sourceLabel(opportunity) {
+  if (opportunity.source_kind === 'bolsa_trabajo') return 'Bolsa de trabajo consultada'
+  if (opportunity.is_curated) return opportunity.source_kind === 'canal_oficial' ? 'Canal oficial consultado' : 'Fuente institucional consultada'
+  return opportunity.verified_organization ? 'Emisor verificado' : 'Emisor sin verificar'
+}
+
 function OpportunityMatchCard({ opportunity, maxRequirements = 4 }) {
   const { match } = opportunity
   const requirements = match?.requirements ?? []
@@ -46,6 +52,7 @@ function OpportunityMatchCard({ opportunity, maxRequirements = 4 }) {
               {opportunity.verified_organization && (
                 <span className="inline-flex items-center gap-1 text-xs font-medium text-[#567461]"><Icon name="check" className="size-3.5" /> Emisor verificado</span>
               )}
+              {opportunity.is_curated && <span className="rounded-full bg-[#f4f1e8] px-3 py-1 text-xs font-medium text-[#75633b]">{sourceLabel(opportunity)}</span>}
             </div>
             <h2 className="mt-3 font-display text-xl font-semibold leading-tight text-[#1c4033]">{opportunity.title}</h2>
             <p className="mt-1 text-sm text-[#718075]">{opportunity.organization}</p>
@@ -56,20 +63,23 @@ function OpportunityMatchCard({ opportunity, maxRequirements = 4 }) {
           </div>
         </div>
 
+        {opportunity.summary && <p className="mt-4 text-sm leading-6 text-[#687b70]">{opportunity.summary}</p>}
+        {opportunity.source_checked_on && <p className="mb-0 mt-2 text-xs text-[#8595a9]">Fuente revisada {formatDate(opportunity.source_checked_on)}</p>}
+
         <div className="mt-5 rounded-xl bg-[#f5f8f3] p-4">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <p className="m-0 font-display text-2xl font-bold tracking-tight text-[#247858]">
                 {hasMatchScore ? <>{match.met}<span className="text-base font-medium text-[#839186]">/{match.total}</span></> : '—'}
               </p>
-              <p className="m-0 text-sm text-[#687b70]">{hasMatchScore ? 'requisitos que cumples' : match ? 'sin requisitos obligatorios publicados' : 'match no disponible'}</p>
+              <p className="m-0 text-sm text-[#687b70]">{hasMatchScore ? (opportunity.is_curated ? 'requisitos comparables registrados' : 'requisitos que cumples') : match ? 'sin requisitos comparables publicados' : 'match no disponible'}</p>
             </div>
             {hasMatchScore ? (
               <span className={`rounded-full px-3 py-1.5 text-xs font-semibold ${match.eligible ? 'bg-[#e4f2e5] text-[#39704d]' : 'bg-[#fbf2dd] text-[#8a7138]'}`}>
-                {match.eligible ? 'Cumples los requisitos' : `${match.percent}% compatible`}
+                {match.eligible ? (opportunity.is_curated ? 'Coincides con los criterios comparables' : 'Cumples los requisitos') : `${match.percent}% compatible`}
               </span>
             ) : match ? (
-              <span className="rounded-full bg-[#f0f2ee] px-3 py-1.5 text-xs font-semibold text-[#68766c]">Requisitos por publicar</span>
+              <span className="rounded-full bg-[#f0f2ee] px-3 py-1.5 text-xs font-semibold text-[#68766c]">Sin criterios comparables</span>
             ) : <span className="text-xs font-medium text-[#68766c]">Esperando compatibilidad</span>}
           </div>
 
@@ -78,6 +88,7 @@ function OpportunityMatchCard({ opportunity, maxRequirements = 4 }) {
               <div className="h-full rounded-full bg-[#67ad7e]" style={{ width: `${Math.max(0, Math.min(100, match.percent))}%` }} />
             </div>
           )}
+          {hasMatchScore && opportunity.is_curated && <p className="mb-0 mt-2 text-xs leading-5 text-[#7b897e]">La institución puede exigir otras condiciones; revisa la convocatoria antes de postular.</p>}
         </div>
 
         {visibleRequirements.length > 0 && (
@@ -110,7 +121,8 @@ function OpportunityMatchCard({ opportunity, maxRequirements = 4 }) {
         <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-[#edf1eb] pt-4">
           <div className="flex flex-wrap items-center gap-4 text-sm text-[#758579]">
             {amount && <span>{amount}</span>}
-            {opportunity.official_url && <a className="font-semibold text-[#246b4a] underline-offset-4 hover:underline" href={opportunity.official_url} target="_blank" rel="noreferrer">Fuente oficial <span aria-hidden="true">↗</span></a>}
+            {opportunity.official_url && <a className="font-semibold text-[#246b4a] underline-offset-4 hover:underline" href={opportunity.official_url} target="_blank" rel="noreferrer">{opportunity.category === 'beca' ? 'Postular o revisar' : 'Ver convocatoria'} <span aria-hidden="true">↗</span></a>}
+            {opportunity.source_url && opportunity.source_url !== opportunity.official_url && <a className="font-semibold text-[#246b4a] underline-offset-4 hover:underline" href={opportunity.source_url} target="_blank" rel="noreferrer">Consultar fuente <span aria-hidden="true">↗</span></a>}
           </div>
           {match?.requirements?.some((requirement) => requirement.status === 'falta' && requirement.courses?.length > 0) && (
             <a className="inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-[#246b4a] underline-offset-4 hover:underline" href="/app/cursos">Ver cursos <span aria-hidden="true">→</span></a>

@@ -40,7 +40,7 @@ function AdminUsersPage({ currentUserId }) {
 
   return (
     <>
-      <AdminPageHeading eyebrow="SUPERVISIÓN" title="Usuarios" description="Consulta las cuentas registradas y administra su acceso cuando sea necesario." />
+      <AdminPageHeading eyebrow="SUPERVISIÓN" title="Usuarios" />
       {error ? <AdminNotice>{error}</AdminNotice> : null}
       {actionError ? <div className="mb-4"><AdminNotice>{actionError}</AdminNotice></div> : null}
       {success ? <div className="mb-4"><AdminNotice tone="success">{success}</AdminNotice></div> : null}
@@ -49,7 +49,6 @@ function AdminUsersPage({ currentUserId }) {
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="m-0 font-display text-xl font-semibold text-[#1c4033]">Cuentas registradas</h2>
-              <p className="mb-0 mt-1 text-sm text-[#718075]">La API devuelve hasta 100 cuentas por consulta.</p>
             </div>
             <button className={adminSecondaryButton} type="button" onClick={() => { setError(''); setIsLoading(true); setReloadKey((key) => key + 1) }}>Actualizar</button>
           </div>

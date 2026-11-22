@@ -1,4 +1,3 @@
-/** Identidad única NEXO U: birrete + logotipo, sin dependencias externas. */
 function BrandMark({ compact = false, compactOnNarrow = false, href = '/', inverse = false, size = 'default', className = '' }) {
   return (
     <a className={`nexo-brand ${inverse ? 'nexo-brand-inverse' : ''} ${size === 'small' ? 'nexo-brand-small' : ''} ${className}`} href={href} aria-label="NEXO U, ir al inicio">

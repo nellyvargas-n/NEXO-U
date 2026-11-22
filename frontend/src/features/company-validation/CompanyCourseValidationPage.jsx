@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { ApiError } from '../../shared/api/client.ts'
-import { clearAccessToken } from '../../shared/api/session.ts'
+import { FiCheckCircle, FiGrid, FiMenu, FiUsers } from 'react-icons/fi'
 import BrandMark from '../../shared/components/BrandMark.jsx'
+import WorkspaceSidebar from '../../navigation/components/WorkspaceSidebar.jsx'
 import Surface from '../student-app/components/Surface.jsx'
 import { getCompanyCourseData, validateCourseCompletion } from './company-validation.service.ts'
 
@@ -28,6 +29,7 @@ function getValidationError(error) {
 }
 
 function CompanyCourseValidationPage() {
+  const [menuOpen, setMenuOpen] = useState(false)
   const [organizations, setOrganizations] = useState([])
   const [courses, setCourses] = useState([])
   const [selectedCourseId, setSelectedCourseId] = useState('')
@@ -41,8 +43,6 @@ function CompanyCourseValidationPage() {
 
   useEffect(() => {
     let isCurrent = true
-    setIsLoading(true)
-    setLoadError(null)
 
     getCompanyCourseData()
       .then((data) => {
@@ -65,6 +65,12 @@ function CompanyCourseValidationPage() {
 
     return () => { isCurrent = false }
   }, [reloadKey])
+
+  function reloadCourses() {
+    setIsLoading(true)
+    setLoadError(null)
+    setReloadKey((key) => key + 1)
+  }
 
   const eligibleCourses = courses.filter((course) => course.organization?.verified)
   const selectedCourse = eligibleCourses.find((course) => String(course.id) === selectedCourseId)
@@ -89,29 +95,30 @@ function CompanyCourseValidationPage() {
     }
   }
 
-  function signOut() {
-    clearAccessToken()
-    window.location.assign('/login')
-  }
+  const navigationGroups = [
+    { label: 'Institución', items: [{ label: 'Panel institucional', href: '/empresa', icon: FiGrid }] },
+    { label: 'Seguimiento', items: [{ label: 'Inscripciones', href: '/empresa#inscripciones', icon: FiUsers }, { label: 'Validar credenciales', href: '/empresa/cursos/validar', icon: FiCheckCircle }] },
+  ]
 
   return (
-    <div className="nx-role-workspace nx-validation-workspace min-h-screen">
-      <header className="nx-role-topbar">
-        <div className="mx-auto flex min-h-[72px] max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
-          <div className="flex min-w-0 items-center gap-4">
-            <BrandMark href="/" size="small" />
-            <span className="hidden h-7 border-l border-[#dfe7dd] sm:block" aria-hidden="true" />
-            <p className="m-0 hidden text-sm font-medium text-[#8595a9] sm:block">Portal de organizaciones</p>
-          </div>
-          <button className="min-h-10 rounded-xl px-3 text-sm font-semibold text-[#385647] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#247858]" type="button" onClick={signOut}>Cerrar sesión</button>
+    <div className="nx-workspace nx-role-workspace nx-company-workspace nx-validation-workspace min-h-screen">
+      {menuOpen && <button className="nx-drawer-overlay" onClick={() => setMenuOpen(false)} aria-label="Cerrar navegación" type="button" />}
+      <WorkspaceSidebar id="company-sidebar" ariaLabel="Navegación empresarial" homeHref="/empresa" sectionLabel="PORTAL DE EMPRESAS" identity="Panel institucional" groups={navigationGroups} pathname="/empresa/cursos/validar" isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
+      <div className="nx-workspace-body">
+      <header className="nx-workspace-header nx-company-header">
+        <div className="nx-workspace-location">
+          <button className="nx-icon-btn nx-menu-trigger" type="button" onClick={() => setMenuOpen(true)} aria-label="Abrir menú de navegación" aria-expanded={menuOpen} aria-controls="company-sidebar"><FiMenu aria-hidden="true" /></button>
+          <span className="nx-mobile-brand"><BrandMark href="/empresa" size="small" /></span>
+          <span className="nx-breadcrumb">Portal institucional <span>/</span> <strong>Validar credenciales</strong></span>
         </div>
+        <span className="nx-company-header-label">Seguimiento de cursos</span>
       </header>
 
-      <main className="mx-auto grid max-w-6xl gap-6 px-4 py-7 sm:px-6 sm:py-10">
+      <main className="nx-workspace-content nx-role-main nx-validation-content grid max-w-6xl gap-6">
         <div>
           <p className="m-0 text-xs font-bold tracking-[0.12em] text-[#2876d7]">VALIDACIÓN DE CREDENCIALES</p>
           <h1 className="mt-2 font-display text-3xl font-semibold tracking-[-0.03em] text-[#1d3557] sm:text-4xl">Confirma la finalización de un curso</h1>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-[#7b8da5]">La validación confirma que el estudiante completó un curso de tu organización. Nexo U registra la credencial como verificada y actualiza su compatibilidad.</p>
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-[#7b8da5]">Confirma la finalización para verificar la credencial del estudiante.</p>
         </div>
 
         {isLoading ? (
@@ -120,7 +127,7 @@ function CompanyCourseValidationPage() {
           <Surface className="max-w-3xl">
             <p className="m-0 rounded-xl border border-[#f1c3c0] bg-[#fff4f2] px-4 py-3 text-sm leading-5 text-[#9b302a]" role="alert">{loadError.message}</p>
             {loadError.action === 'login' && <a className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#2475e2] px-4 text-sm font-semibold text-white" href="/login">Iniciar sesión</a>}
-            {loadError.action === 'retry' && <button className="mt-4 min-h-11 rounded-xl border border-[#dfe8f5] px-4 text-sm font-semibold text-[#2475e2]" type="button" onClick={() => setReloadKey((key) => key + 1)}>Reintentar</button>}
+            {loadError.action === 'retry' && <button className="mt-4 min-h-11 rounded-xl border border-[#dfe8f5] px-4 text-sm font-semibold text-[#2475e2]" type="button" onClick={reloadCourses}>Reintentar</button>}
           </Surface>
         ) : (
           <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)]">
@@ -128,7 +135,7 @@ function CompanyCourseValidationPage() {
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <h2 className="font-display text-xl font-semibold text-[#1d3557]">Validar una inscripción</h2>
-                  <p className="mt-1 text-sm leading-6 text-[#8595a9]">Selecciona el curso e ingresa el ID de cuenta que comparte el estudiante.</p>
+                  <p className="mt-1 text-sm leading-6 text-[#8595a9]">Selecciona el curso e ingresa el ID del estudiante.</p>
                 </div>
                 <span className="rounded-full bg-[#eaf3ff] px-3 py-1.5 text-xs font-semibold text-[#39704d]">{eligibleCourses.length} cursos verificables</span>
               </div>
@@ -179,7 +186,7 @@ function CompanyCourseValidationPage() {
                     <h2 className="font-display text-lg font-semibold text-[#1d3557]">Tus organizaciones</h2>
                     <p className="mt-1 text-sm text-[#8595a9]">{organizations.length} {organizations.length === 1 ? 'organización' : 'organizaciones'} · {verifiedOrganizations.length} verificadas</p>
                   </div>
-                  <button className="min-h-9 rounded-lg px-2 text-xs font-semibold text-[#2876d7] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2876d7]" type="button" onClick={() => setReloadKey((key) => key + 1)}>Actualizar</button>
+                  <button className="min-h-9 rounded-lg px-2 text-xs font-semibold text-[#2876d7] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2876d7]" type="button" onClick={reloadCourses}>Actualizar</button>
                 </div>
                 {organizations.length > 0 ? (
                   <ul className="mt-4 grid gap-3">
@@ -194,19 +201,11 @@ function CompanyCourseValidationPage() {
                   <p className="mt-4 rounded-xl bg-[#f5f8f3] px-4 py-3 text-sm leading-5 text-[#8595a9]">No hay organizaciones asociadas a esta cuenta.</p>
                 )}
               </Surface>
-
-              <Surface className="bg-[#f8faf6]">
-                <h2 className="font-display text-lg font-semibold text-[#1d3557]">Antes de confirmar</h2>
-                <ul className="mt-3 grid gap-2 pl-5 text-sm leading-5 text-[#7b8da5]">
-                  <li>El estudiante debe estar inscrito en el curso.</li>
-                  <li>El curso debe pertenecer a tu organización verificada.</li>
-                  <li>La confirmación crea una credencial verificada y actualiza el match del estudiante.</li>
-                </ul>
-              </Surface>
             </div>
           </div>
         )}
       </main>
+      </div>
     </div>
   )
 }
