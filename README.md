@@ -1,51 +1,45 @@
 # Nexo U — oportunidades alcanzables
 
-Nexo U es un prototipo estudiantil creado para Abstracthon 2026, en el track Ayuda tecnológica. Combina Educación y Comunicación: organiza oportunidades y requisitos publicados, explica cómo encajan con el perfil de cada estudiante y muestra un siguiente paso posible.
+Nexo U es un prototipo estudiantil de Abstracthon 2026, en el track Ayuda tecnológica. Reúne oportunidades, requisitos y cursos para ayudar a estudiantes a entender qué cumplen, qué les falta y cuál podría ser su siguiente paso.
 
-## Problema y propuesta
+Nexo U orienta y facilita el acceso a oportunidades; no adjudica becas, no selecciona postulantes y no garantiza resultados.
 
-Las becas, pasantías, cursos y sus requisitos suelen estar repartidos entre páginas y convocatorias distintas. Nexo U propone reunir esa información y ayudar al estudiante a entender:
+## Público y propuesta
 
-- Qué requisitos de una oportunidad cumple, cuáles le faltan y por qué.
-- Qué curso podría cerrar una brecha entrenable, siempre que la convocatoria acepte la credencial correspondiente.
-- Cómo cambia el match cuando el emisor confirma una credencial.
+El prototipo admite perfiles escolares y universitarios, con datos académicos separados. Los perfiles escolares pueden consultar becas y simular bandas únicamente cuando la institución ha publicado reglas oficiales aprobadas por administración. El matching también explica requisitos de pasantías y sugiere cursos públicos cuando hay una credencial que puede cubrirlos.
 
-Nexo U orienta y facilita el acceso a oportunidades; no adjudica becas ni garantiza postulaciones exitosas.
+El acceso del estudiante se plantea como gratuito. Campañas institucionales y referidos de cursos son hipótesis de ingresos que todavía deben validarse con universidades y proveedores. La billetera es opcional y está limitada a estudiantes universitarios adultos.
 
-## Público y modelo propuesto
+## Funcionalidades implementadas
 
-El MVP se enfoca en estudiantes universitarios que buscan pasantías y formación vinculada a requisitos concretos. La propuesta contempla como una etapa futura a estudiantes de último año de secundaria que buscan becas.
+- **Autenticación:** registro e inicio de sesión de estudiantes conectados al backend; recuperación y cambio de contraseña mediante los endpoints disponibles. La recuperación por correo requiere SMTP configurado.
+- **Espacio estudiantil (`/app`):** resumen con oportunidades públicas y matching; perfil escolar o universitario; credenciales; catálogo e inscripción a cursos; rutas sugeridas; becas; pasantías; y billetera financiera para universitarios de 18 años o más.
+- **Validación de cursos:** el portal `/empresa/cursos/validar` lista cursos propios de organizaciones verificadas y sus estudiantes inscritos. La empresa elige una inscripción pendiente para confirmar la finalización; el backend registra la credencial verificada.
+- **Becas:** la simulación solo presenta bandas oficiales aprobadas y es orientativa. Si no existen reglas aprobadas, no inventa un porcentaje.
+- **Privacidad financiera:** los movimientos, presupuestos y pagos previstos se guardan en la cuenta del estudiante; no hay conexión bancaria.
+- **Demo de portada:** la tarjeta visual 4/5 → 5/5 de la landing sigue siendo una demostración local separada del matching real dentro de `/app`.
 
-El acceso del estudiante se plantea como gratuito. Campañas institucionales y referidos de cursos son hipótesis de ingresos que todavía deben validarse con universidades y proveedores; no son acuerdos confirmados. La billetera financiera es un módulo opcional para universitarios adultos, fuera del flujo central de esta demo.
+## Datos y límites
 
-## Qué incluye el prototipo
+Las oportunidades ficticias se identifican con `is_demo` y la interfaz las etiqueta como ejemplos. Las oportunidades reales requieren una organización verificada, una fecha vigente y una fuente oficial comprobable. La disponibilidad de una beca, la elegibilidad calculada y la validación de un curso no garantizan admisión ni adjudicación.
 
-- **Frontend React:** landing de Nexo U y espacio estudiantil en `/app`, con sidebar para resumen, oportunidades, credenciales, rutas, cursos, perfil y privacidad. La tarjeta principal usa datos locales y simula el paso de 4/5 a 5/5 requisitos; todavía no consulta la API.
-- **Backend FastAPI:** API con roles de estudiante, empresa y administración; incluye matching determinista, cursos, credenciales, becas y módulos institucionales.
-- **Demostración:** el frontend ilustra localmente el paso de 4/5 a 5/5. El backend demuestra un flujo separado donde un estudiante se inscribe y la institución emisora confirma la credencial.
-- **Datos de ejemplo:** los perfiles, oportunidades y cursos usados para la demo son ficticios y deben mostrarse como tales.
-- **Acceso:** existen pantallas de registro e inicio de sesión en el frontend, pero su validación es local; no hay autenticación conectada ni persistencia de cuentas.
-
-## Límites actuales
-
-El frontend no está conectado al backend y sus pantallas de acceso no crean sesiones. El backend tiene rutas de autenticación y roles, pero la demo no se conecta a bancos ni representa una integración real con un emisor. Antes de presentar una oportunidad como real, se deben verificar su fuente, requisitos y vigencia.
+La administración de organizaciones y la aprobación de reglas de becas tienen endpoints protegidos en el backend; no todas las operaciones administrativas cuentan con una pantalla web. La billetera no se conecta a bancos ni ofrece asesoramiento financiero. Las preferencias visuales de cuenta aún no se guardan.
 
 ## Tecnologías
 
 - Frontend: React, Vite y Tailwind CSS.
 - Backend: FastAPI, SQLAlchemy y PostgreSQL de Neon.
-- Desarrollo y despliegue del backend: Docker Compose y Vercel, según su README.
+- Desarrollo y despliegue del backend: Docker Compose y Vercel, según su documentación.
 
 ## Ejecutar
 
 - Frontend: sigue [frontend/README.md](frontend/README.md).
-- Backend: sigue [backend/README.md](backend/README.md).
+- Backend: sigue [backend/README.md](backend/README.md) y revisa el contrato vigente en `backend/CONTRATO_FRONTEND_v1.4.md`.
 
-El flujo visual del frontend y la demostración de la API son independientes. La guía del backend explica cómo preparar Neon y recorrer el flujo de roles y validación de credenciales en Swagger.
+El cliente frontend lee `VITE_API_BASE_URL` o el alias `VITE_API_URL`; sin ambas usa `http://localhost:8000/api/`.
 
-## Estructura del repositorio
+## Estructura
 
-- `frontend/`: landing, espacio estudiantil con sidebar y una feature por ruta, vistas de demostración y pantallas de acceso.
-- `backend/`: API, reglas de matching, datos ficticios y configuración Docker.
+- `frontend/`: landing, autenticación, portal estudiantil, portal de validación de empresas y cliente API.
+- `backend/`: API, autenticación, reglas de matching, datos demo y configuración de despliegue.
 - `output/pdf/`: documentos de apoyo del proyecto y del evento.
-

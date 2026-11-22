@@ -1,24 +1,33 @@
 # Nexo U — Frontend
 
-Interfaz web de Nexo U. Presenta la propuesta pública y ofrece un espacio estudiantil de demostración con sidebar y vistas del MVP.
+Interfaz React de Nexo U. La landing presenta el proyecto y el área autenticada usa la API para consultar perfiles, oportunidades, matching, credenciales, cursos, becas y finanzas.
 
 ## Descripción del trabajo
 
-Nexo U ayuda a estudiantes a entender qué oportunidades pueden encajar con su perfil y qué requisito les falta. La tarjeta de demostración muestra una pasantía ficticia con 4 de 5 requisitos cumplidos, sugiere una capacitación para Inglés B1 y permite simular la validación de esa credencial para mostrar el resultado 5/5.
+Nexo U ayuda a estudiantes a entender qué oportunidades pueden encajar con su perfil, qué requisitos cumplen y qué paso pueden dar después. El área estudiantil incluye perfiles escolares y universitarios; sus datos se mantienen separados.
 
-La landing presenta la propuesta y su modelo de privacidad. El espacio estudiantil está disponible en /app. Las pantallas de inicio de sesión y registro están disponibles en /login y /register.
+El flujo de cursos conecta inscripción y consulta de estado con el backend. Las empresas con sesión pueden revisar las inscripciones de sus cursos verificados y confirmar la finalización de un estudiante. La credencial y el nuevo resultado de matching se consultan después desde la cuenta estudiantil.
 
-## Alcance actual
+## Flujos conectados
 
-- La tarjeta de oportunidad usa datos definidos localmente y cambia de estado en el navegador.
-- El botón de validación **simula** la confirmación del curso; no envía una solicitud al backend.
-- La oportunidad, el perfil y el curso son ejemplos ficticios, no convocatorias oficiales.
-- El sidebar organiza el espacio estudiantil en Resumen, Mi perfil, Oportunidades (todas, becas y pasantías), Preparación (credenciales, rutas y cursos) y Cuenta (billetera opcional, privacidad y configuración).
-- Cada destino del sidebar renderiza una feature propia dentro de `src/features/`.
-- La vista principal incluye el recorrido de ejemplo 4/5 → curso de Inglés B1 → 5/5. La tarjeta simula la verificación localmente.
-- Las vistas de becas y finanzas aclaran que no hay convocatorias oficiales ni conexión bancaria configuradas.
-- El registro e inicio de sesión validan campos localmente, pero no crean cuentas ni guardan credenciales.
-- El cliente API compartido está preparado para solicitudes futuras; las pantallas descritas arriba todavía no se conectan al flujo de matching del backend.
+- `/login` y `/register`: inicio de sesión y registro de estudiantes conectados a la API.
+- `/recuperar-clave` y `/reset`: solicitud y confirmación de restablecimiento por correo. El servidor debe tener SMTP configurado para enviar el enlace.
+- `/app` y `/app/oportunidades`: oportunidades públicas y matching de perfil con requisitos.
+- `/app/credenciales`: consultar y declarar habilidades, idiomas y certificados.
+- `/app/cursos`, `/app/rutas` y `/app/rutas/ingles-b1`: catálogo público, recomendaciones e inscripciones.
+- `/app/oportunidades/becas`: becas abiertas y simulación por perfil escolar; solo muestra bandas oficiales aprobadas.
+- `/app/oportunidades/pasantias`: oportunidades de categoría pasantía, ordenadas por compatibilidad.
+- `/app/billetera`: movimientos, presupuestos y pagos previstos para estudiantes universitarios de 18 años o más; no se conecta a bancos.
+- `/app/configuracion`: cambio de contraseña. Las preferencias visuales todavía no se guardan.
+- `/empresa/cursos/validar`: selección de una inscripción pendiente de un curso propio para verificar su finalización.
+
+La landing contiene una tarjeta visual independiente con una oportunidad ficticia y una simulación local 4/5 → 5/5. Esa tarjeta no modifica datos de la API. Dentro de `/app`, el matching y las validaciones vienen de los servicios conectados.
+
+## Datos demo y límites
+
+El backend devuelve `is_demo` para distinguir oportunidades ficticias; las tarjetas las marcan como ejemplos y no las presentan como convocatorias oficiales. La API de producción filtra datos demo. Los resultados de matching y las simulaciones de beca son orientativos y no garantizan aceptación ni adjudicación.
+
+La billetera registra datos ingresados por el estudiante, sin banco ni decisiones crediticias. Las operaciones administrativas de organizaciones y aprobación de reglas de becas cuentan con endpoints en el backend, pero no todas tienen pantalla web.
 
 ## Desarrollo local
 
@@ -28,23 +37,18 @@ Desde esta carpeta:
 2. Inicia Vite con `npm run dev`.
 3. Abre la dirección local que indique Vite, normalmente `http://localhost:5173`.
 
-## Espacio estudiantil
-
-Abre `/app` para entrar al panel de demostración. Las secciones del sidebar llevan a sus vistas y subsecciones; la ruta `/app/rutas/ingles-b1` abre el detalle del curso de ejemplo. No hay autenticación real y la landing no consulta el backend.
-
 ## Configuración de API
 
-El cliente compartido lee `VITE_API_BASE_URL`. Si no se define, usa `http://localhost:8000/api/`. Para el flujo actual de la tarjeta no es necesario iniciar el backend porque la interacción es local.
+El cliente compartido lee `VITE_API_BASE_URL` y acepta `VITE_API_URL` como alias. Si no se define ninguna, usa `http://localhost:8000/api/`. Consulta el contrato frontend/backend en [`../backend/CONTRATO_FRONTEND_v1.4.md`](../backend/CONTRATO_FRONTEND_v1.4.md).
 
 ## Estructura
 
-- `src/features/landing/`: landing, secciones informativas y datos de la tarjeta demo.
-- `src/features/auth/`: interfaces de inicio de sesión y registro.
-- `src/navigation/components/`: navegación pública y sidebar estudiantil.
-- `src/routes/`: rutas públicas y mapa de rutas del espacio estudiantil.
-- `src/features/summary/`, `profile/`, `opportunities/`, `scholarships/`, `internships/`, `credentials/`, `learning-paths/`, `course-detail/`, `courses/`, `wallet/`, `privacy/` y `settings/`: una feature por ruta estudiantil.
-- `src/features/student-app/`: estructura compartida del espacio estudiantil.
-- `src/shared/api/`: cliente HTTP compartido.
-- `src/shared/components/`: componentes de marca.
+- `src/features/landing/`: landing y demo visual local.
+- `src/features/auth/`: acceso, registro y recuperación de contraseña.
+- `src/features/company-validation/`: confirmación de cursos para empresas.
+- `src/navigation/`: navegación pública y sidebar estudiantil.
+- `src/routes/`: rutas públicas, de empresa y del espacio estudiantil.
+- `src/features/`: una feature por sección del MVP.
+- `src/shared/api/`: cliente HTTP y servicios de autenticación.
 
-El backend y su demo de matching se describen en [backend/README.md](../backend/README.md).
+Consulta [backend/README.md](../backend/README.md) para configurar la API y las cuentas de demostración.

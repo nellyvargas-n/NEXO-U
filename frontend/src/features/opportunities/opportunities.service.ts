@@ -9,6 +9,7 @@ export interface PublicOpportunity {
   amount_bob: number
   organization: string
   verified_organization: boolean
+  is_demo: boolean
 }
 
 export interface MatchRequirement {
@@ -46,7 +47,7 @@ export interface OpportunityFeed {
 function getMatchNotice(error: unknown): string {
   if (error instanceof ApiError) {
     if (error.status === 401 || error.status === 403) return 'Inicia sesión con una cuenta de estudiante para calcular tu compatibilidad.'
-    if (error.status === 404) return 'El matching general requiere un perfil universitario. Si tienes perfil escolar, consulta la simulación de becas.'
+    if (error.status === 404) return 'Completa tu perfil escolar o universitario para calcular tu compatibilidad con las oportunidades.'
   }
 
   if (error instanceof TypeError) return 'No pudimos conectar con el servicio de matching. Las oportunidades siguen disponibles.'

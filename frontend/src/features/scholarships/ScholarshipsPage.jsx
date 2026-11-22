@@ -92,6 +92,7 @@ function ScholarshipCard({ opportunity, profileReady, simulation, onSimulate }) 
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-[#edf5e9] px-3 py-1 text-xs font-semibold text-[#39704d]">Beca</span>
             {opportunity.verified_organization && <span className="text-xs font-medium text-[#567461]">✓ Emisor verificado</span>}
+            {opportunity.is_demo && <span className="rounded-full bg-[#fff4e7] px-3 py-1 text-xs font-semibold text-[#8a6030]">Ejemplo ficticio</span>}
           </div>
           <h2 className="mt-3 font-display text-xl font-semibold leading-tight text-[#1c4033]">{opportunity.title}</h2>
           <p className="mt-1 text-sm text-[#718075]">{opportunity.organization}</p>
@@ -105,7 +106,7 @@ function ScholarshipCard({ opportunity, profileReady, simulation, onSimulate }) 
       <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-[#edf1eb] pt-4">
         <div className="flex flex-wrap items-center gap-4 text-sm text-[#758579]">
           {amount && <span className="font-semibold text-[#405c49]">Monto publicado: {amount}</span>}
-          {opportunity.official_url && <a className="font-semibold text-[#246b4a] underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#347a57]" href={opportunity.official_url} target="_blank" rel="noreferrer">Convocatoria oficial ↗</a>}
+          {opportunity.official_url && <a className="font-semibold text-[#246b4a] underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#347a57]" href={opportunity.official_url} target="_blank" rel="noreferrer">{opportunity.is_demo ? 'Referencia del ejemplo' : 'Convocatoria oficial'} ↗</a>}
         </div>
         <button
           className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#1c5a42] px-4 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#347a57] disabled:cursor-not-allowed disabled:bg-[#93a99a]"

@@ -104,7 +104,7 @@ export const studentAppRoutes = [
     path: '/app/configuracion',
     group: 'Cuenta',
     title: 'Configuración',
-    description: 'Las preferencias de cuenta todavía no se guardan en este prototipo.',
+    description: 'Cambia tu contraseña; las preferencias visuales aún no se guardan.',
     activePath: '/app/configuracion',
     component: SettingsPage,
   },

@@ -1,6 +1,8 @@
 import LandingPage from '../features/landing/LandingPage.jsx'
 import RegisterPage from '../features/auth/pages/RegisterPage.jsx'
 import SignInPage from '../features/auth/pages/SignInPage.jsx'
+import RequestPasswordResetPage from '../features/auth/pages/RequestPasswordResetPage.jsx'
+import ResetPasswordPage from '../features/auth/pages/ResetPasswordPage.jsx'
 import StudentApp from '../features/student-app/StudentApp.jsx'
 import CompanyCourseValidationPage from '../features/company-validation/CompanyCourseValidationPage.jsx'
 import { studentAppRoutes } from './studentAppRoutes.js'
@@ -22,6 +24,8 @@ export const routes = [
   { path: '/', currentPage: 'landing', layout: 'public', component: LandingPage },
   { path: '/login', currentPage: 'login', layout: 'public', component: SignInPage },
   { path: '/register', currentPage: 'register', layout: 'public', component: RegisterPage },
+  { path: '/recuperar-clave', currentPage: 'login', layout: 'public', component: RequestPasswordResetPage },
+  { path: '/reset', currentPage: 'login', layout: 'public', component: ResetPasswordPage },
   { path: '/empresa/cursos/validar', currentPage: 'company-validation', layout: 'company', component: CompanyCourseValidationPage },
   ...studentAppRoutes.map(({ path }) => ({
     path,

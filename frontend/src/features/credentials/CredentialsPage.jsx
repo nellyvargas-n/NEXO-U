@@ -22,7 +22,7 @@ function getLoadError(error) {
     return { message: 'Inicia sesión con tu cuenta de estudiante para ver tus credenciales.', action: 'login' }
   }
   if (error instanceof ApiError && error.status === 404) {
-    return { message: 'Las credenciales requieren un perfil universitario. Los perfiles escolares todavía no pueden usar esta sección.', action: 'profile' }
+    return { message: 'Completa tu perfil escolar o universitario para consultar tus credenciales.', action: 'profile' }
   }
   if (error instanceof TypeError) return { message: 'No pudimos conectar con el servidor. Revisa la conexión e inténtalo otra vez.', action: 'retry' }
   return { message: error instanceof Error ? error.message : 'No se pudieron cargar tus credenciales.', action: 'retry' }
@@ -86,7 +86,7 @@ function CredentialsPage() {
       setSuccessMessage('Credencial agregada. Aparecerá como declarada hasta que un emisor autorizado la verifique.')
     } catch (error) {
       if (error instanceof ApiError && error.status === 404) {
-        setSaveError('Completa primero tu perfil universitario para registrar credenciales.')
+        setSaveError('Completa primero tu perfil escolar o universitario para registrar credenciales.')
       } else if (error instanceof TypeError) {
         setSaveError('No pudimos conectar con el servidor. Inténtalo otra vez.')
       } else {

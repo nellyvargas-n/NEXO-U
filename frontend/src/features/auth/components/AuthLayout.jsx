@@ -6,6 +6,8 @@ function AuthLayout({
   switchText,
   switchLabel,
   switchHref,
+  title,
+  description,
   children,
 }) {
   const isRegister = pageType === 'register'
@@ -48,10 +50,10 @@ function AuthLayout({
             <div className={`mt-8 ${isRegister ? 'mb-6' : 'mb-8'}`}>
               <p className="mb-2 text-sm font-semibold text-[#347a57]">{eyebrow}</p>
               <h1 className="font-display text-3xl font-semibold leading-tight tracking-[-0.04em] text-[#173b31] sm:text-4xl" id="auth-form-title">
-                {isRegister ? 'Crea tu cuenta' : 'Inicia sesión'}
+                {title || (isRegister ? 'Crea tu cuenta' : 'Inicia sesión')}
               </h1>
               <p className="mt-3 text-base leading-6 text-[#68776d]">
-                {isRegister ? 'Un perfil para tus próximos pasos.' : 'Ingresa tus datos para continuar.'}
+                {description || (isRegister ? 'Un perfil para tus próximos pasos.' : 'Ingresa tus datos para continuar.')}
               </p>
             </div>
 

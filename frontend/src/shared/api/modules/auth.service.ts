@@ -21,11 +21,9 @@ export interface RegisteredUser {
   active: boolean
 }
 
-export interface CurrentUser {
-  id: number
-  email: string
-  role: AuthRole
-  active: boolean
+export interface AuthMessage {
+  message: string
+  changed?: boolean
 }
 
 export function registerStudentAccount({ email, password }: AuthCredentials): Promise<RegisteredUser> {
@@ -53,8 +51,25 @@ export async function signIn({ email, password }: AuthCredentials, remember = fa
   return session
 }
 
-export function getCurrentUser(): Promise<CurrentUser> {
-  return apiRequest<CurrentUser>('v1/auth/me')
+export function requestPasswordReset(email: string): Promise<AuthMessage> {
+  return apiRequest<AuthMessage>('v1/auth/recuperar-clave/solicitar', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+  })
+}
+
+export function confirmPasswordReset(token: string, newPassword: string): Promise<AuthMessage> {
+  return apiRequest<AuthMessage>('v1/auth/recuperar-clave/confirmar', {
+    method: 'POST',
+    body: JSON.stringify({ token, new_password: newPassword }),
+  })
+}
+
+export function changePassword(currentPassword: string, newPassword: string): Promise<AuthMessage> {
+  return apiRequest<AuthMessage>('v1/auth/cambiar-clave', {
+    method: 'POST',
+    body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
+  })
 }
 
 export function getAuthErrorMessage(error: unknown): string {

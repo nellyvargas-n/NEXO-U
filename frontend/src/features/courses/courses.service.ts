@@ -33,7 +33,7 @@ export interface CourseData {
 
 function getMatchNotice(error: unknown): string {
   if (error instanceof ApiError && (error.status === 401 || error.status === 403)) return 'Inicia sesión con una cuenta de estudiante para recibir recomendaciones personalizadas.'
-  if (error instanceof ApiError && error.status === 404) return 'El matching general requiere un perfil universitario. Si tienes perfil escolar, consulta la simulación de becas.'
+  if (error instanceof ApiError && error.status === 404) return 'Completa tu perfil escolar o universitario para recibir recomendaciones personalizadas.'
   if (error instanceof TypeError) return 'No pudimos conectar con el servicio de recomendaciones.'
   return error instanceof Error ? error.message : 'No se pudieron consultar las recomendaciones.'
 }
@@ -43,7 +43,7 @@ function getEnrollmentAccess(error: unknown): Pick<CourseData, 'enrollmentNotice
     return { enrollmentNotice: 'Inicia sesión con tu cuenta de estudiante para inscribirte.', enrollmentAction: 'login' }
   }
   if (error instanceof ApiError && error.status === 404) {
-    return { enrollmentNotice: 'Las inscripciones requieren un perfil universitario. Los perfiles escolares todavía no pueden inscribirse desde esta sección.', enrollmentAction: 'profile' }
+    return { enrollmentNotice: 'Completa un perfil escolar o universitario para inscribirte en cursos.', enrollmentAction: 'profile' }
   }
   if (error instanceof TypeError) {
     return { enrollmentNotice: 'No pudimos consultar tus inscripciones. Vuelve a intentarlo antes de inscribirte.', enrollmentAction: 'unavailable' }
@@ -107,7 +107,7 @@ export async function enrollInCourse(courseId: number): Promise<Omit<CourseEnrol
 
 export function getEnrollmentError(error: unknown): string {
   if (error instanceof ApiError && error.status === 401) return 'Inicia sesión con tu cuenta de estudiante para inscribirte.'
-  if (error instanceof ApiError && error.status === 404) return 'No se encontró el curso o falta completar un perfil universitario.'
+  if (error instanceof ApiError && error.status === 404) return 'No se encontró el curso o falta completar un perfil académico.'
   if (error instanceof TypeError) return 'No pudimos conectar con el servidor. Inténtalo otra vez.'
   return error instanceof Error ? error.message : 'No se pudo completar la inscripción.'
 }

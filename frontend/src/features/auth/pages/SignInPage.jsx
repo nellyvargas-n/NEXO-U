@@ -38,11 +38,6 @@ function SignInPage() {
     }
   }
 
-  function handleForgotPassword() {
-    setError('')
-    setNotice('La recuperación de contraseña aún no está disponible. Contacta al equipo de Nexo U.')
-  }
-
   return (
     <AuthLayout
       pageType="login"
@@ -64,7 +59,7 @@ function SignInPage() {
             <input className="size-4 accent-[#347a57]" type="checkbox" name="remember" />
             <span>Recordar sesión</span>
           </label>
-          <button className="min-h-11 rounded-lg px-2 text-sm font-semibold text-[#347a57] transition hover:bg-[#eff6ed] hover:underline hover:underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#347a57]" type="button" onClick={handleForgotPassword}>Olvidé mi contraseña</button>
+          <a className="inline-flex min-h-11 items-center rounded-lg px-2 text-sm font-semibold text-[#347a57] transition hover:bg-[#eff6ed] hover:underline hover:underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#347a57]" href="/recuperar-clave">Olvidé mi contraseña</a>
         </div>
 
         {error && <p className="m-0 rounded-xl border border-[#f1c3c0] bg-[#fff4f2] px-4 py-3 text-sm leading-5 text-[#9b302a]" role="alert">{error}</p>}
