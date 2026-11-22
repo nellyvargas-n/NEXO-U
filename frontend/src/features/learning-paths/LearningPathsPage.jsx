@@ -1,22 +1,73 @@
 import Surface from '../student-app/components/Surface.jsx'
+import CourseCard from '../courses/components/CourseCard.jsx'
+import { useCourses } from '../courses/useCourses.js'
+
+function isEnglishB1(course) {
+  return course.credential_kind === 'language'
+    && course.credential_level?.toUpperCase() === 'B1'
+    && /ingl[eé]s|english/i.test(course.credential_value)
+}
 
 function LearningPathsPage() {
+  const {
+    courses,
+    matchNotice,
+    enrollmentNotice,
+    enrollmentAction,
+    isLoading,
+    error,
+    enrollingCourseId,
+    enrollmentFeedback,
+    enroll,
+    retry,
+  } = useCourses()
+  const recommendedCourses = courses.filter((course) => course.recommended)
+
+  if (isLoading) {
+    return <Surface className="max-w-4xl"><p className="m-0 py-4 text-sm text-[#718075]" role="status">Buscando cursos que cubran requisitos pendientes…</p></Surface>
+  }
+
+  if (error) {
+    return (
+      <Surface className="max-w-4xl">
+        <p className="m-0 rounded-xl border border-[#f1c3c0] bg-[#fff4f2] px-4 py-3 text-sm leading-5 text-[#9b302a]" role="alert">{error}</p>
+        <button className="mt-4 min-h-11 rounded-xl border border-[#d8e2d7] px-4 text-sm font-semibold text-[#1c5a42]" type="button" onClick={retry}>Reintentar</button>
+      </Surface>
+    )
+  }
+
   return (
-    <div className="grid max-w-4xl gap-5 md:grid-cols-[minmax(0,1.2fr)_minmax(250px,0.8fr)]">
-      <Surface>
-        <p className="text-sm font-semibold text-[#3a7653]">Ruta para cerrar un requisito</p>
-        <h2 className="mt-2 font-display text-2xl font-semibold tracking-[-0.03em] text-[#1c4033]">Inglés B1</h2>
-        <p className="mt-3 text-sm leading-6 text-[#66776b]">La oportunidad de ejemplo solicita Inglés B1. La duración y el cierre deben comprobarse antes de recomendar una ruta real.</p>
-        <div className="mt-5 grid gap-3 border-t border-[#edf1eb] pt-5 text-sm text-[#596f60] sm:grid-cols-2">
-          <p><span className="block text-xs font-medium text-[#87948a]">Duración de ejemplo</span><span className="mt-1 block font-semibold text-[#365340]">6 semanas</span></p>
-          <p><span className="block text-xs font-medium text-[#87948a]">Resultado esperado</span><span className="mt-1 block font-semibold text-[#365340]">Credencial Inglés B1</span></p>
-        </div>
-        <a className="mt-6 inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#1d6245] px-4 text-sm font-semibold text-white transition hover:bg-[#174f39] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#247858]" href="/app/rutas/ingles-b1">Ver detalles del curso <span aria-hidden="true">→</span></a>
-      </Surface>
+    <div className="grid max-w-5xl gap-5">
       <Surface className="bg-[#f8faf6]">
-        <h2 className="font-display text-lg font-semibold text-[#1c4033]">Regla de recomendación</h2>
-        <p className="mt-2 text-sm leading-6 text-[#66776b]">Un curso solo aparece cuando aporta una habilidad o certificado que la convocatoria acepta.</p>
+        <p className="m-0 text-sm font-semibold text-[#3a7653]">Rutas para requisitos pendientes</p>
+        <h2 className="mt-2 font-display text-xl font-semibold tracking-[-0.03em] text-[#1c4033]">Cursos sugeridos por tus oportunidades</h2>
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-[#66776b]">Las sugerencias vienen del motor de matching y solo se muestran aquí si el curso también está publicado en el catálogo público.</p>
       </Surface>
+
+      {matchNotice && <p className="m-0 rounded-xl border border-[#e8dfbd] bg-[#fff9e9] px-4 py-3 text-sm leading-5 text-[#75633b]" role="status">{matchNotice}</p>}
+      {enrollmentNotice && <p className="m-0 rounded-xl border border-[#e8dfbd] bg-[#fff9e9] px-4 py-3 text-sm leading-5 text-[#75633b]" role="status">{enrollmentNotice}</p>}
+
+      {recommendedCourses.length > 0 ? (
+        <div className="grid gap-4">
+          {recommendedCourses.map((course) => (
+            <CourseCard
+              course={course}
+              detailHref={isEnglishB1(course) ? `/app/rutas/ingles-b1?course=${course.id}` : undefined}
+              enrollmentAction={enrollmentAction}
+              enrollmentFeedback={enrollmentFeedback}
+              enrollingCourseId={enrollingCourseId}
+              key={course.id}
+              onEnroll={enroll}
+            />
+          ))}
+        </div>
+      ) : (
+        <Surface className="py-9 text-center">
+          <h2 className="font-display text-xl font-semibold text-[#1c4033]">No hay una ruta pública sugerida todavía</h2>
+          <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-[#718075]">Cuando el matching encuentre un requisito pendiente que pueda cubrir un curso público, la recomendación aparecerá aquí.</p>
+          <a className="mt-4 inline-flex min-h-10 items-center justify-center rounded-xl border border-[#d8e2d7] px-4 text-sm font-semibold text-[#246b4a]" href="/app/cursos">Explorar el catálogo</a>
+        </Surface>
+      )}
     </div>
   )
 }
