@@ -48,7 +48,7 @@ export const studentAppRoutes = [
     path: '/app/oportunidades/pasantias',
     group: 'Oportunidades',
     title: 'Pasantías',
-    description: 'Revisa la convocatoria de ejemplo y los requisitos que pide.',
+    description: 'Explora pasantías vigentes y compara los requisitos publicados con tu perfil.',
     activePath: '/app/oportunidades/pasantias',
     component: InternshipsPage,
   },
