@@ -33,8 +33,6 @@ def ready():
         raise HTTPException(503, detail="JWT_SECRET inválido: genera una clave aleatoria de al menos 32 caracteres")
     try:
         with engine.connect() as conn:
-            conn.execute(sql_text("SELECT 1"))
-            inspector = inspect(engine)
             required = {
                 'app_users': {'id', 'role'},
                 'opportunities': {'id', 'is_demo'},
@@ -44,13 +42,27 @@ def ready():
                 'auth_attempts': {'id','key_hash'},
                 'password_reset_tokens': {'id','token_hash'},
             }
-            missing = []
-            for table_name, fields in required.items():
-                if not inspector.has_table(table_name):
-                    missing.append(table_name)
-                else:
-                    existing = {column['name'] for column in inspector.get_columns(table_name)}
-                    missing.extend(f'{table_name}.{field}' for field in (fields - existing))
+            if conn.dialect.name == 'postgresql':
+                existing = set(conn.execute(sql_text("""
+                    SELECT table_name, column_name
+                    FROM information_schema.columns
+                    WHERE table_schema = current_schema()
+                      AND ((table_name = 'app_users' AND column_name IN ('id', 'role'))
+                        OR (table_name = 'opportunities' AND column_name IN ('id', 'is_demo'))
+                        OR (table_name = 'credentials' AND column_name IN ('id', 'student_user_id'))
+                        OR (table_name = 'enrollments' AND column_name IN ('id', 'student_user_id'))
+                        OR (table_name = 'finance_entries' AND column_name IN ('id', 'user_id'))
+                        OR (table_name = 'auth_attempts' AND column_name IN ('id', 'key_hash'))
+                        OR (table_name = 'password_reset_tokens' AND column_name IN ('id', 'token_hash')))
+                """)).all())
+            else:
+                inspector = inspect(conn)
+                existing = set()
+                for table_name in required:
+                    if inspector.has_table(table_name):
+                        existing.update((table_name, column['name']) for column in inspector.get_columns(table_name))
+            missing = [f'{table_name}.{field}' for table_name, fields in required.items()
+                       for field in fields if (table_name, field) not in existing]
             if missing:
                 raise HTTPException(503, detail="Esquema v1.4 incompleto. Ejecuta sql/07_seguridad_v14.sql en tu rama Neon de prueba (después del esquema v1.2). Faltantes: " + ', '.join(missing))
         return {"status":"ready","database":"connected","schema":"v1.4"}
