@@ -56,7 +56,7 @@ export const studentAppRoutes = [
     path: '/app/credenciales',
     group: 'Preparación',
     title: 'Credenciales',
-    description: 'Distingue las habilidades declaradas de las credenciales confirmadas por un emisor.',
+    description: 'Registra habilidades, idiomas y certificados; un emisor autorizado confirma las credenciales verificadas.',
     activePath: '/app/credenciales',
     component: CredentialsPage,
   },

@@ -122,7 +122,7 @@ function StudentSidebar({ pathname, isOpen, onClose }) {
       </nav>
 
       <div className="shrink-0 border-t border-[#e8ede6] px-5 py-4">
-        <p className="text-[13px] leading-5 text-[#87948a]">La oportunidad, el curso y las credenciales de esta vista son datos de ejemplo.</p>
+        <p className="text-[13px] leading-5 text-[#87948a]">Las credenciales declaradas necesitan confirmación de un emisor autorizado.</p>
       </div>
     </aside>
   )
