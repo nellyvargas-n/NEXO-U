@@ -5,7 +5,7 @@ nivel mínimo (por ejemplo B1). Nunca adjudica una beca automáticamente.
 """
 from datetime import date
 from decimal import Decimal, InvalidOperation
-from sqlalchemy import select
+from sqlalchemy import select, or_
 from sqlalchemy.orm import Session
 from app.models.entities import Profile, Credential, Opportunity, Requirement, Course
 from app.models.extended import SchoolProfile
@@ -54,12 +54,13 @@ def recommended_courses(req, courses, deadline):
     if req.kind not in ("skill", "language", "certificate") or deadline < date.today(): return []
     matches = []
     for course in courses:
-        if not date.today() <= course.end_date <= deadline: continue
+        if course.start_date is not None and not date.today() <= course.start_date <= deadline: continue
+        if course.end_date is not None and (course.end_date < date.today() or course.end_date > deadline): continue
         if course.credential_kind != req.kind or course.credential_value.casefold() != req.value.casefold(): continue
         if req.kind == "language" and LEVELS.get((course.credential_level or "").upper(), 0) < LEVELS.get(req.operator.upper(), 99): continue
-        matches.append({"id": course.id, "title": course.title, "ends_on": course.end_date.isoformat(),
+        matches.append({"id": course.id, "title": course.title, "ends_on": course.end_date.isoformat() if course.end_date else None,
                         "cost_bob": course.cost_bob, "credential_level": course.credential_level})
-    return sorted(matches, key=lambda c: (c["cost_bob"], c["ends_on"]))
+    return sorted(matches, key=lambda c: (c["cost_bob"], c["ends_on"] or "9999-12-31"))
 
 
 def evaluate(db: Session, student_id: int | None = 1, student_user_id: int | None = None):
@@ -76,27 +77,39 @@ def evaluate(db: Session, student_id: int | None = 1, student_user_id: int | Non
 
     if settings.demo_mode:
         opportunities = db.scalars(select(Opportunity).where(Opportunity.deadline >= date.today())).all()
-        courses = db.scalars(select(Course).where(Course.end_date >= date.today())).all()
+        courses = db.scalars(select(Course).where(
+            or_(Course.start_date.is_(None), Course.start_date >= date.today()),
+            or_(Course.end_date.is_(None), Course.end_date >= date.today()))).all()
     else:
         from app.models.access import Organization
         from app.models.extended import OrganizationCourse, OrganizationOpportunity
-        opportunities = db.scalars(
-            select(Opportunity).join(OrganizationOpportunity, Opportunity.id == OrganizationOpportunity.opportunity_id)
+        verified_opportunities = (select(OrganizationOpportunity.opportunity_id)
             .join(Organization, Organization.id == OrganizationOpportunity.organization_id)
-            .where(Organization.verified.is_(True), Opportunity.deadline >= date.today(),
+            .where(Organization.verified.is_(True)))
+        opportunities = db.scalars(
+            select(Opportunity).where(Opportunity.deadline >= date.today(),
+                   or_(Opportunity.source_name.is_not(None), Opportunity.id.in_(verified_opportunities)),
                    *([Opportunity.is_demo.is_(False)] if settings.environment == "production" else []))
         ).all()
-        courses = db.scalars(
-            select(Course).join(OrganizationCourse, Course.id == OrganizationCourse.course_id)
+        verified_courses = (select(OrganizationCourse.course_id)
             .join(Organization, Organization.id == OrganizationCourse.organization_id)
-            .where(Organization.verified.is_(True), Course.end_date >= date.today())
+            .where(Organization.verified.is_(True)))
+        courses = db.scalars(
+            select(Course).where(or_(Course.source_name.is_not(None), Course.id.in_(verified_courses)),
+                or_(Course.start_date.is_(None), Course.start_date >= date.today()),
+                or_(Course.end_date.is_(None), Course.end_date >= date.today()))
         ).all()
 
     results = []
     for opportunity in opportunities:
         requirements = db.scalars(select(Requirement).where(Requirement.opportunity_id == opportunity.id,
                                                           Requirement.mandatory.is_(True))).all()
-        if not requirements: continue
+        if not requirements:
+            results.append({"opportunity_id": opportunity.id, "title": opportunity.title,
+                            "deadline": opportunity.deadline.isoformat(), "met": 0, "total": 0,
+                            "percent": 0, "eligible": False, "profile_type": profile_type,
+                            "is_demo": opportunity.is_demo, "requirements": []})
+            continue
         checks = []
         for req in requirements:
             outcome = matches_requirement(req, profile, credentials)

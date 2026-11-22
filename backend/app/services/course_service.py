@@ -1,14 +1,16 @@
 """Catálogo de cursos de organizaciones verificadas."""
 from datetime import date
-from sqlalchemy import select
+from sqlalchemy import select, or_
 from app.models.access import Organization
 from app.models.entities import Course
 from app.models.extended import OrganizationCourse
 
 
 def verified_courses(db, limit: int = 50) -> list[Course]:
-    return list(db.scalars(select(Course).join(OrganizationCourse,
-        OrganizationCourse.course_id == Course.id).join(Organization,
-        Organization.id == OrganizationCourse.organization_id).where(
-        Organization.verified.is_(True), Course.end_date >= date.today()
+    verified_ids = (select(OrganizationCourse.course_id).join(Organization,
+        Organization.id == OrganizationCourse.organization_id).where(Organization.verified.is_(True)))
+    return list(db.scalars(select(Course).where(
+        or_(Course.source_name.is_not(None), Course.id.in_(verified_ids)),
+        or_(Course.start_date.is_(None), Course.start_date >= date.today()),
+        or_(Course.end_date.is_(None), Course.end_date >= date.today())
     ).order_by(Course.end_date, Course.id).limit(min(max(1,limit),100))).all())

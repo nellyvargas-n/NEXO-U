@@ -149,7 +149,10 @@ def enroll(course_id:int,user:AppUser=Depends(require_role("usuario")),db:Sessio
     profile_type, profile = get_student_context(db, user.id)
     course=db.get(Course,course_id)
     if course is None: raise HTTPException(404,"Curso no encontrado")
-    if course.end_date < date.today():raise HTTPException(409,"El curso ya terminó")
+    if course.source_name:
+        raise HTTPException(409,"Este curso se inscribe en el sitio de la institución; abre su enlace público")
+    if course.start_date is not None and course.start_date < date.today():raise HTTPException(409,"El curso ya comenzó")
+    if course.end_date is not None and course.end_date < date.today():raise HTTPException(409,"El curso ya terminó")
     if not settings.demo_mode:
         permitted=db.scalar(select(OrganizationCourse).join(Organization, Organization.id==OrganizationCourse.organization_id)
                             .where(OrganizationCourse.course_id==course_id,Organization.verified.is_(True)))

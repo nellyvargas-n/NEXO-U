@@ -3,7 +3,7 @@ from datetime import date
 from decimal import Decimal
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field, HttpUrl
-from sqlalchemy import select, func
+from sqlalchemy import select, func, and_, or_
 from sqlalchemy.orm import Session
 from app.core.auth_jwt import require_role
 from app.core.database import get_db
@@ -157,23 +157,52 @@ def audit(limit:int=Query(default=50,ge=1,le=100),u:AppUser=Depends(require_role
 @router.get('/oportunidades/publicas')
 def public_opportunities(limit:int=Query(default=50,ge=1,le=100),db:Session=Depends(get_db)):
     from app.core.config import settings
-    q=(select(Opportunity,Organization).join(OrganizationOpportunity,OrganizationOpportunity.opportunity_id==Opportunity.id)
-       .join(Organization,Organization.id==OrganizationOpportunity.organization_id)
-       .where(Organization.verified.is_(True),Opportunity.deadline>=date.today(),
-              *([Opportunity.is_demo.is_(False)] if settings.environment == "production" else []))
-       .order_by(Opportunity.deadline,Opportunity.id).limit(limit))
-    return [{'id':o.id,'title':o.title,'category':o.category,'deadline':o.deadline,
-             'official_url':o.official_url,'amount_bob':o.amount_bob,'organization':org.name,
-             'verified_organization':org.verified,'is_demo':o.is_demo} for o,org in db.execute(q)]
+    base_filters=[Opportunity.deadline>=date.today(),
+                  *([Opportunity.is_demo.is_(False)] if settings.environment == "production" else [])]
+    registered_q=(select(Opportunity,Organization)
+        .join(OrganizationOpportunity,OrganizationOpportunity.opportunity_id==Opportunity.id)
+        .join(Organization,Organization.id==OrganizationOpportunity.organization_id)
+        .where(Organization.verified.is_(True),Opportunity.source_name.is_(None),*base_filters))
+    rows=[{'id':o.id,'title':o.title,'category':o.category,'deadline':o.deadline,
+           'official_url':o.official_url,'source_url':o.source_url,'summary':o.summary,
+           'source_checked_on':o.source_checked_on,'amount_bob':o.amount_bob,
+           'organization':org.name,'verified_organization':True,'is_curated':False,
+           'source_kind':'organizacion_verificada','is_demo':o.is_demo}
+          for o,org in db.execute(registered_q)]
+    curated_q=(select(Opportunity).where(Opportunity.source_name.is_not(None),*base_filters))
+    rows.extend({'id':o.id,'title':o.title,'category':o.category,'deadline':o.deadline,
+                 'official_url':o.official_url,'source_url':o.source_url,'summary':o.summary,
+                 'source_checked_on':o.source_checked_on,'amount_bob':o.amount_bob,
+                 'organization':o.source_name,'verified_organization':False,'is_curated':True,
+                 'source_kind':o.source_kind,'is_demo':o.is_demo}
+                for o in db.scalars(curated_q).all())
+    return sorted(rows,key=lambda row:(row['deadline'],row['id']))[:limit]
 
 @router.get('/cursos/publicos')
 def public_courses(limit:int=Query(default=50,ge=1,le=100),db:Session=Depends(get_db)):
-    q=(select(Course,Organization).join(OrganizationCourse,OrganizationCourse.course_id==Course.id).join(Organization,Organization.id==OrganizationCourse.organization_id).where(Organization.verified.is_(True),Course.end_date>=date.today()).order_by(Course.cost_bob,Course.end_date).limit(limit))
     results=[]
+    course_window=and_(or_(Course.start_date.is_(None),Course.start_date>=date.today()),
+                       or_(Course.end_date.is_(None),Course.end_date>=date.today()))
+    q=(select(Course,Organization).join(OrganizationCourse,OrganizationCourse.course_id==Course.id)
+       .join(Organization,Organization.id==OrganizationCourse.organization_id)
+       .where(Organization.verified.is_(True),Course.source_name.is_(None),course_window))
     for c,org in db.execute(q):
         sponsored=db.scalar(select(ReferralAgreement.id).where(ReferralAgreement.course_id==c.id,ReferralAgreement.active.is_(True),ReferralAgreement.disclosed.is_(True)).limit(1)) is not None
-        results.append({'id':c.id,'title':c.title,'end_date':c.end_date,'cost_bob':c.cost_bob,'credential_kind':c.credential_kind,'credential_value':c.credential_value,'credential_level':c.credential_level,'organization':org.name,'sponsored':sponsored})
-    return results
+        results.append({'id':c.id,'title':c.title,'start_date':c.start_date,'end_date':c.end_date,'cost_bob':c.cost_bob,
+                        'credential_kind':c.credential_kind,'credential_value':c.credential_value,
+                        'credential_level':c.credential_level,'organization':org.name,'sponsored':sponsored,
+                        'summary':c.summary,'official_url':c.official_url,'source_url':c.source_url,
+                        'source_kind':'organizacion_verificada','source_checked_on':c.source_checked_on,
+                        'is_curated':False})
+    curated_q=(select(Course).where(Course.source_name.is_not(None),course_window))
+    for c in db.scalars(curated_q).all():
+        results.append({'id':c.id,'title':c.title,'start_date':c.start_date,'end_date':c.end_date,'cost_bob':c.cost_bob,
+                        'credential_kind':c.credential_kind,'credential_value':c.credential_value,
+                        'credential_level':c.credential_level,'organization':c.source_name,'sponsored':False,
+                        'summary':c.summary,'official_url':c.official_url,'source_url':c.source_url,
+                        'source_kind':c.source_kind,'source_checked_on':c.source_checked_on,
+                        'is_curated':True})
+    return sorted(results,key=lambda row:(row['cost_bob'],row['end_date'] or date.max,row['id']))[:limit]
 
 @router.get('/empresa/oportunidades')
 def my_opportunities(u:AppUser=Depends(require_role('empresa')),db:Session=Depends(get_db)):

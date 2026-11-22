@@ -1,5 +1,5 @@
 from datetime import date
-from sqlalchemy import String, Integer, BigInteger, Float, Boolean, ForeignKey, Date, UniqueConstraint
+from sqlalchemy import String, Integer, BigInteger, Float, Boolean, ForeignKey, Date, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 from app.core.database import Base
 
@@ -32,6 +32,13 @@ class Opportunity(Base):
     official_url: Mapped[str] = mapped_column(String(500))
     amount_bob: Mapped[float] = mapped_column(Float, default=0)
     is_demo: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    # Las convocatorias recopiladas no se asocian a una Organization ni se presentan
+    # como verificadas en NEXO-U; conservan la atribución y la fuente consultada.
+    source_name: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    source_kind: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    summary: Mapped[str | None] = mapped_column(Text, nullable=True)
+    source_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    source_checked_on: Mapped[date | None] = mapped_column(Date, nullable=True)
 
 class Requirement(Base):
     __tablename__ = "requirements"
@@ -46,12 +53,19 @@ class Course(Base):
     __tablename__ = "courses"
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str] = mapped_column(String(200))
-    end_date: Mapped[date] = mapped_column(Date)
+    start_date: Mapped[date | None] = mapped_column(Date, nullable=True)
+    end_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     cost_bob: Mapped[float] = mapped_column(Float, default=0)
     credential_kind: Mapped[str] = mapped_column(String(30))
     credential_value: Mapped[str] = mapped_column(String(120))
     credential_level: Mapped[str | None] = mapped_column(String(20), nullable=True)
     issuer: Mapped[str] = mapped_column(String(120))
+    source_name: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    source_kind: Mapped[str | None] = mapped_column(String(30), nullable=True)
+    summary: Mapped[str | None] = mapped_column(Text, nullable=True)
+    official_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    source_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    source_checked_on: Mapped[date | None] = mapped_column(Date, nullable=True)
 
 class Enrollment(Base):
     __tablename__ = "enrollments"
