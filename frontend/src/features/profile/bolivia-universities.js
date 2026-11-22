@@ -16,13 +16,17 @@ export const universityGroups = [
     ],
   },
   {
-    label: 'Indígenas y de régimen especial',
+    label: 'Universidades indígenas',
     options: [
       'Universidad Indígena Aymara “Túpac Katari”',
       'Universidad Indígena Guaraní y de Pueblos de Tierras Bajas “Apiaguaiki Tüpa”',
       'Universidad Indígena Quechua “Casimiro Huanca”',
+    ],
+  },
+  {
+    label: 'Régimen especial',
+    options: [
       'Universidad Militar “Mcal. Bernardino Bilbao Rioja”',
-      'Universidad Pedagógica',
       'Universidad Policial “Mcal. Antonio José de Sucre”',
     ],
   },
