@@ -2,15 +2,18 @@ import { useState } from 'react'
 import AuthLayout from '../components/AuthLayout.jsx'
 import PasswordField from '../components/PasswordField.jsx'
 import Icon from '../../../shared/components/Icon.jsx'
+import { getAuthErrorMessage, registerStudentAccount } from '../../../shared/api/modules/auth.service.ts'
+import { saveOnboardingDraft } from '../../profile/onboardingDraft.ts'
 
 const passwordMismatchMessage = 'Las contraseñas no coinciden.'
 
 function RegisterPage() {
-  const [notice, setNotice] = useState('')
+  const [error, setError] = useState('')
   const [passwordError, setPasswordError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   function handlePasswordChange(event) {
-    setNotice('')
+    setError('')
     if (!passwordError) return
 
     const form = event.currentTarget.form
@@ -21,13 +24,16 @@ function RegisterPage() {
     }
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault()
     const form = event.currentTarget
     const formData = new FormData(form)
-    const password = formData.get('password')
-    const passwordConfirmation = formData.get('passwordConfirmation')
-    setNotice('')
+    const email = String(formData.get('email') ?? '').trim()
+    const password = String(formData.get('password') ?? '')
+    const passwordConfirmation = String(formData.get('passwordConfirmation') ?? '')
+    const fullName = String(formData.get('fullName') ?? '').trim()
+    const studentType = formData.get('studentType')
+    setError('')
 
     if (password !== passwordConfirmation) {
       setPasswordError(passwordMismatchMessage)
@@ -36,7 +42,19 @@ function RegisterPage() {
     }
 
     setPasswordError('')
-    setNotice('La vista previa está lista. Tus datos no se envían ni se guardan.')
+    setIsSubmitting(true)
+
+    try {
+      await registerStudentAccount({ email, password })
+      if (studentType === 'school' || studentType === 'university') {
+        saveOnboardingDraft({ fullName, studentType })
+      }
+      window.location.assign('/login?registered=1')
+    } catch (requestError) {
+      setError(getAuthErrorMessage(requestError))
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -47,7 +65,7 @@ function RegisterPage() {
       switchLabel="Inicia sesión"
       switchHref="/login"
     >
-      <form className="grid gap-5" onSubmit={handleSubmit}>
+      <form className="grid gap-5" onSubmit={handleSubmit} onChange={() => setError('')} aria-busy={isSubmitting}>
         <fieldset className="m-0 grid gap-3 border-0 p-0">
           <legend className="mb-1 text-sm font-semibold text-[#344b3c]">¿Dónde estudias actualmente?</legend>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -78,15 +96,15 @@ function RegisterPage() {
           <input className="h-12 w-full rounded-xl border border-[#d8e2d7] bg-white px-4 text-base text-[#253b30] outline-none transition placeholder:text-[#94a197] focus:border-[#438c61] focus:ring-4 focus:ring-[#438c61]/15" id="register-email" name="email" type="email" autoComplete="email" placeholder="tu@correo.com" required />
         </div>
 
-        <PasswordField id="register-password" label="Crea una contraseña" autoComplete="new-password" minLength={8} hint="Usa al menos 8 caracteres." onChange={handlePasswordChange} />
-        <PasswordField id="register-password-confirmation" label="Confirma tu contraseña" name="passwordConfirmation" autoComplete="new-password" minLength={8} error={passwordError} onChange={handlePasswordChange} />
+        <PasswordField id="register-password" label="Crea una contraseña" autoComplete="new-password" minLength={10} hint="Usa al menos 10 caracteres." onChange={handlePasswordChange} />
+        <PasswordField id="register-password-confirmation" label="Confirma tu contraseña" name="passwordConfirmation" autoComplete="new-password" minLength={10} error={passwordError} onChange={handlePasswordChange} />
 
-        {notice && <p className="m-0 rounded-xl border border-[#d5e8d3] bg-[#f1f8ec] px-4 py-3 text-sm leading-5 text-[#365f43]" role="status">{notice}</p>}
+        {error && <p className="m-0 rounded-xl border border-[#f1c3c0] bg-[#fff4f2] px-4 py-3 text-sm leading-5 text-[#9b302a]" role="alert">{error}</p>}
 
-        <button className="relative inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-[#1c5a42] px-5 text-base font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1c5a42] active:bg-[#174d38]" type="submit">
-          Crear mi cuenta <Icon name="arrow-right" className="absolute right-5 size-5" />
+        <button className="relative inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-[#1c5a42] px-5 text-base font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1c5a42] active:bg-[#174d38] disabled:cursor-wait disabled:opacity-70" type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Creando cuenta…' : 'Crear mi cuenta'} <Icon name="arrow-right" className="absolute right-5 size-5" />
         </button>
-        <p className="m-0 text-center text-sm leading-5 text-[#718075]">Vista previa: este formulario todavía no crea una cuenta.</p>
+        <p className="-mt-2 text-xs leading-5 text-[#718075]">Después de iniciar sesión, completarás tus datos académicos para activar las recomendaciones.</p>
       </form>
     </AuthLayout>
   )

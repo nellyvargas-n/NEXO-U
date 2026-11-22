@@ -1,22 +1,76 @@
 import Surface from '../student-app/components/Surface.jsx'
+import CourseCard from '../courses/components/CourseCard.jsx'
+import { useCourses } from '../courses/useCourses.js'
+
+function isEnglishB1(course) {
+  return course.credential_kind === 'language'
+    && course.credential_level?.toUpperCase() === 'B1'
+    && /ingl[eé]s|english/i.test(course.credential_value)
+}
 
 function CourseDetailPage() {
+  const {
+    courses,
+    matchNotice,
+    enrollmentNotice,
+    enrollmentAction,
+    isLoading,
+    error,
+    enrollingCourseId,
+    enrollmentFeedback,
+    enroll,
+    retry,
+  } = useCourses()
+  const requestedCourseId = new URLSearchParams(window.location.search).get('course')
+  const selectedCourse = requestedCourseId
+    ? courses.find((course) => course.id === Number(requestedCourseId) && isEnglishB1(course))
+    : courses.find((course) => isEnglishB1(course) && course.recommended) ?? courses.find(isEnglishB1)
+
+  if (isLoading) {
+    return <Surface className="max-w-4xl"><p className="m-0 py-4 text-sm text-[#718075]" role="status">Cargando el curso público…</p></Surface>
+  }
+
+  if (error) {
+    return (
+      <Surface className="max-w-4xl">
+        <p className="m-0 rounded-xl border border-[#f1c3c0] bg-[#fff4f2] px-4 py-3 text-sm leading-5 text-[#9b302a]" role="alert">{error}</p>
+        <button className="mt-4 min-h-11 rounded-xl border border-[#d8e2d7] px-4 text-sm font-semibold text-[#1c5a42]" type="button" onClick={retry}>Reintentar</button>
+      </Surface>
+    )
+  }
+
   return (
-    <div className="grid max-w-4xl gap-5 md:grid-cols-[minmax(0,1.2fr)_minmax(250px,0.8fr)]">
-      <Surface>
-        <p className="text-sm font-semibold text-[#3a7653]">Curso sugerido · ejemplo</p>
-        <h2 className="mt-2 font-display text-2xl font-semibold tracking-[-0.03em] text-[#1c4033]">Inglés B1</h2>
-        <p className="mt-3 text-sm leading-6 text-[#66776b]">Capacitación de seis semanas con una credencial vinculada al requisito pendiente de la pasantía de ejemplo.</p>
-        <div className="mt-5 rounded-xl border border-[#e6ece3] bg-[#f8faf6] p-4">
-          <p className="text-xs font-semibold text-[#7a897e]">ESTADO DE LA DEMO</p>
-          <p className="mt-2 text-sm leading-6 text-[#596f60]">Esta pantalla no registra una inscripción. La validación del emisor se muestra en la tarjeta del resumen.</p>
+    <div className="grid max-w-5xl gap-5">
+      {matchNotice && <p className="m-0 rounded-xl border border-[#e8dfbd] bg-[#fff9e9] px-4 py-3 text-sm leading-5 text-[#75633b]" role="status">{matchNotice}</p>}
+      {enrollmentNotice && <p className="m-0 rounded-xl border border-[#e8dfbd] bg-[#fff9e9] px-4 py-3 text-sm leading-5 text-[#75633b]" role="status">{enrollmentNotice}</p>}
+
+      {selectedCourse ? (
+        <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.25fr)_minmax(260px,0.75fr)]">
+          <CourseCard
+            course={selectedCourse}
+            enrollmentAction={enrollmentAction}
+            enrollmentFeedback={enrollmentFeedback}
+            enrollingCourseId={enrollingCourseId}
+            onEnroll={enroll}
+          />
+          <div className="grid gap-5">
+            <Surface>
+              <h2 className="font-display text-lg font-semibold text-[#1c4033]">Credencial que ofrece</h2>
+              <p className="mt-2 text-sm leading-6 text-[#66776b]">{selectedCourse.credential_value} · nivel {selectedCourse.credential_level}. La credencial aparecerá como verificada únicamente después de que el emisor confirme la finalización.</p>
+            </Surface>
+            <Surface className="bg-[#f8faf6]">
+              <h2 className="font-display text-lg font-semibold text-[#1c4033]">Después de inscribirte</h2>
+              <p className="mt-2 text-sm leading-6 text-[#66776b]">La inscripción queda asociada a tu cuenta. Completar el curso y validar la credencial son acciones distintas; solo la organización emisora puede confirmar el resultado.</p>
+            </Surface>
+          </div>
         </div>
-        <a className="mt-5 inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-[#246b4a] hover:underline" href="/app">Volver al resumen <span aria-hidden="true">→</span></a>
-      </Surface>
-      <Surface className="bg-[#f8faf6]">
-        <h2 className="font-display text-lg font-semibold text-[#1c4033]">Después del curso</h2>
-        <p className="mt-2 text-sm leading-6 text-[#66776b]">El emisor confirma la credencial y el motor vuelve a comparar los requisitos.</p>
-      </Surface>
+      ) : (
+        <Surface className="py-9 text-center">
+          <h2 className="font-display text-xl font-semibold text-[#1c4033]">No hay un curso público de Inglés B1 vigente</h2>
+          <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-[#718075]">Esta ruta aparece cuando una organización verificada publica un curso que otorga Inglés B1 y mantiene vigente su fecha de cierre.</p>
+          <a className="mt-4 inline-flex min-h-10 items-center justify-center rounded-xl border border-[#d8e2d7] px-4 text-sm font-semibold text-[#246b4a]" href="/app/cursos">Explorar cursos públicos</a>
+        </Surface>
+      )}
     </div>
   )
 }

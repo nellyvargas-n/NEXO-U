@@ -1,13 +1,28 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import BrandMark from '../../shared/components/BrandMark.jsx'
 import StudentSidebar from '../../navigation/components/StudentSidebar.jsx'
 import StudentPageHeading from './components/StudentPageHeading.jsx'
 import { findStudentAppRoute } from '../../routes/studentAppRoutes.js'
+import { getAccessToken } from '../../shared/api/session.ts'
+import { getStudentProfiles } from '../profile/profile.service.ts'
 
 function StudentApp({ pathname = '/app' }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const page = findStudentAppRoute(pathname)
   const Page = page.component
+
+  useEffect(() => {
+    if (pathname !== '/app' || !getAccessToken()) return undefined
+
+    let isCurrent = true
+    getStudentProfiles()
+      .then(({ university, school }) => {
+        if (isCurrent && !university && !school) window.location.replace('/app/perfil')
+      })
+      .catch(() => undefined)
+
+    return () => { isCurrent = false }
+  }, [pathname])
 
   return (
     <div className="min-h-screen bg-[#f6f8f4] text-[#173b31]">
@@ -38,8 +53,8 @@ function StudentApp({ pathname = '/app' }) {
             <p className="hidden truncate text-sm font-medium text-[#718075] lg:block">{page.group}<span className="mx-2 text-[#c0c9c0]">/</span><span className="text-[#30483a]">{page.title}</span></p>
           </div>
           <a className="flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-2 text-sm font-semibold text-[#385647] transition hover:bg-[#eef4ec] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#247858]" href="/app/perfil">
-            <span className="grid size-8 place-items-center rounded-full bg-[#d8eddb] text-xs font-bold text-[#215d43]" aria-hidden="true">CR</span>
-            <span className="hidden sm:inline">Camila R.</span>
+            <span className="grid size-8 place-items-center rounded-full bg-[#d8eddb] text-xs font-bold text-[#215d43]" aria-hidden="true">NU</span>
+            <span className="hidden sm:inline">Mi perfil</span>
           </a>
         </header>
 

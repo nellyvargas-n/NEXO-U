@@ -4,8 +4,8 @@ function PrivacyPage() {
   return (
     <div className="grid max-w-4xl gap-5 md:grid-cols-2">
       <Surface>
-        <h2 className="font-display text-lg font-semibold text-[#1c4033]">Datos de la demo</h2>
-        <p className="mt-2 text-sm leading-6 text-[#66776b]">El perfil y las credenciales de esta interfaz son ejemplos. Los formularios de acceso no crean ni guardan cuentas.</p>
+        <h2 className="font-display text-lg font-semibold text-[#1c4033]">Cuenta y perfil</h2>
+        <p className="mt-2 text-sm leading-6 text-[#66776b]">El registro crea una cuenta en el servicio de Nexo U. Después de iniciar sesión, puedes completar y actualizar tus datos académicos desde Mi perfil.</p>
       </Surface>
       <Surface>
         <h2 className="font-display text-lg font-semibold text-[#1c4033]">Información financiera</h2>

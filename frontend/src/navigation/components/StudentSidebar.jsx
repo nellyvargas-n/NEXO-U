@@ -83,10 +83,10 @@ function StudentSidebar({ pathname, isOpen, onClose }) {
       <div className="px-5 pb-4 pt-5">
         <p className="text-xs font-semibold text-[#89958b]">Espacio estudiantil</p>
         <div className="mt-4 flex items-center gap-3 rounded-2xl border border-[#e6ece3] bg-white p-3">
-          <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#d8eddb] text-sm font-bold text-[#215d43]" aria-hidden="true">CR</span>
+          <span className="grid size-10 shrink-0 place-items-center rounded-full bg-[#d8eddb] text-sm font-bold text-[#215d43]" aria-hidden="true">NU</span>
           <span className="min-w-0">
-            <span className="block truncate text-sm font-semibold text-[#203a30]">Camila R.</span>
-            <span className="mt-0.5 block text-[13px] text-[#7a897e]">Estudiante de ejemplo</span>
+            <span className="block truncate text-sm font-semibold text-[#203a30]">Mi cuenta</span>
+            <span className="mt-0.5 block text-[13px] text-[#7a897e]">Perfil académico</span>
           </span>
         </div>
       </div>
@@ -122,7 +122,7 @@ function StudentSidebar({ pathname, isOpen, onClose }) {
       </nav>
 
       <div className="shrink-0 border-t border-[#e8ede6] px-5 py-4">
-        <p className="text-[13px] leading-5 text-[#87948a]">La oportunidad, el curso y las credenciales de esta vista son datos de ejemplo.</p>
+        <p className="text-[13px] leading-5 text-[#87948a]">Las credenciales declaradas necesitan confirmación de un emisor autorizado.</p>
       </div>
     </aside>
   )

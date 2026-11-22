@@ -6,6 +6,7 @@ function PasswordField({
   name = 'password',
   autoComplete,
   minLength,
+  maxLength = 128,
   hint,
   error,
   onChange,
@@ -26,6 +27,7 @@ function PasswordField({
           type={visible ? 'text' : 'password'}
           autoComplete={autoComplete}
           minLength={minLength}
+          maxLength={maxLength}
           placeholder="Ingresa tu contraseña"
           aria-invalid={error ? 'true' : undefined}
           aria-describedby={describedBy}

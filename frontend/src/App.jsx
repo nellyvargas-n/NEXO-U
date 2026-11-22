@@ -9,6 +9,10 @@ function App() {
     return <Page pathname={route.pathname} />
   }
 
+  if (route.layout === 'company') {
+    return <Page />
+  }
+
   return (
     <div className="min-h-screen overflow-x-clip bg-[#fbfcf8]">
       <PublicNavbar currentPage={route.currentPage} />
