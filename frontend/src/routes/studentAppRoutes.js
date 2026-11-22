@@ -88,7 +88,7 @@ export const studentAppRoutes = [
     path: '/app/billetera',
     group: 'Cuenta',
     title: 'Mi billetera',
-    description: 'El módulo financiero es opcional y no se conecta a una cuenta bancaria en esta demo.',
+    description: 'Registra movimientos, presupuestos y pagos previstos; disponible para universitarios adultos.',
     activePath: '/app/billetera',
     component: WalletPage,
   },
