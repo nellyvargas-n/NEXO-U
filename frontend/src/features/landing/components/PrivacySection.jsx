@@ -2,7 +2,7 @@ import Icon from '../../../shared/components/Icon.jsx'
 
 function PrivacySection() {
   return (
-    <section className="scroll-mt-24 px-5 pb-24 sm:px-8 lg:pb-28" id="privacidad" aria-labelledby="privacy-title">
+    <section className="nx-privacy-section scroll-mt-24 px-5 pb-24 sm:px-8 lg:pb-28" id="privacidad" aria-labelledby="privacy-title">
       <div className="mx-auto grid max-w-7xl grid-cols-[auto_minmax(0,1fr)_minmax(240px,0.7fr)] items-center gap-8 rounded-3xl border border-[#dce9dd] bg-[#f0f6ed] p-8 sm:p-10 max-[900px]:grid-cols-[auto_minmax(0,1fr)] max-[700px]:gap-5 max-[700px]:p-6 max-[520px]:grid-cols-1">
         <div className="grid size-16 place-items-center rounded-2xl bg-[#e1efdc] text-[#568566] max-[700px]:size-14" aria-hidden="true">
           <svg className="size-9" viewBox="0 0 52 52" fill="none">

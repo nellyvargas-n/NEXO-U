@@ -14,7 +14,7 @@ export interface CompanyCourse {
   cost_bob: number
   credential_kind: string
   credential_value: string
-  credential_level: string | null
+  credential_level?: string | null
   organization: CompanyOrganization | null
 }
 
@@ -23,19 +23,11 @@ export interface CompanyCourseData {
   courses: CompanyCourse[]
 }
 
-export interface CompanyCourseEnrollment {
-  enrollment_id: number
-  student_user_id: number
-  student_name: string
-  profile_type: 'colegial' | 'universitario' | string
-  completed: boolean
-  validation_status: 'validado' | 'pendiente' | string
-}
-
 export async function getCompanyCourseData(): Promise<CompanyCourseData> {
-  const [organizationsResult, coursesResult] = await Promise.allSettled([
+  const [organizationsResult, coursesResult, publicCoursesResult] = await Promise.allSettled([
     apiRequest<CompanyOrganization[]>('v1/empresa/organizaciones'),
     apiRequest<Omit<CompanyCourse, 'organization'>[]>('v1/empresa/cursos'),
+    apiRequest<Array<{ id: number; credential_level: string | null }>>('v1/cursos/publicos'),
   ])
 
   if (organizationsResult.status === 'rejected') throw organizationsResult.reason
@@ -43,18 +35,22 @@ export async function getCompanyCourseData(): Promise<CompanyCourseData> {
 
   const organizations = organizationsResult.value
   const courses = coursesResult.value
+  const publicLevelByCourseId = new Map<number, string | null>()
+  if (publicCoursesResult.status === 'fulfilled') {
+    for (const course of publicCoursesResult.value) {
+      publicLevelByCourseId.set(course.id, course.credential_level)
+    }
+  }
+
   const organizationsById = new Map(organizations.map((organization) => [organization.id, organization]))
   return {
     organizations,
     courses: courses.map((course) => ({
       ...course,
+      credential_level: course.credential_level ?? publicLevelByCourseId.get(course.id) ?? null,
       organization: organizationsById.get(course.organization_id) ?? null,
     })),
   }
-}
-
-export function getCompanyCourseEnrollments(courseId: number): Promise<CompanyCourseEnrollment[]> {
-  return apiRequest<CompanyCourseEnrollment[]>(`v1/empresa/cursos/${courseId}/inscripciones?limit=200&offset=0`)
 }
 
 export interface CourseValidationResult {

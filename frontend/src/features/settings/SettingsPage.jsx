@@ -1,83 +1,11 @@
-import { useState } from 'react'
-import { ApiError } from '../../shared/api/client.ts'
+import { useEffect, useState } from 'react'
+import { FiLock, FiLogOut, FiShield, FiUser } from 'react-icons/fi'
+import { getCurrentUser } from '../../shared/api/modules/auth.service.ts'
 import { clearAccessToken } from '../../shared/api/session.ts'
-import { changePassword } from '../../shared/api/modules/auth.service.ts'
-import PasswordField from '../auth/components/PasswordField.jsx'
-import Surface from '../student-app/components/Surface.jsx'
-
-function getChangeError(error) {
-  if (error instanceof ApiError && error.status === 400) return 'La contraseña actual es incorrecta.'
-  if (error instanceof ApiError && error.status === 401) return 'Tu sesión venció. Inicia sesión nuevamente y vuelve a intentarlo.'
-  if (error instanceof ApiError && error.status === 422) return 'La nueva contraseña debe tener al menos 12 caracteres y ser distinta a la actual.'
-  if (error instanceof TypeError) return 'No pudimos conectar con el servidor. Inténtalo de nuevo en unos momentos.'
-  return error instanceof Error ? error.message : 'No se pudo cambiar la contraseña.'
+import { apiRequest } from '../../shared/api/client.ts'
+export default function SettingsPage(){
+  const [me,setMe]=useState(null),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false)
+  useEffect(()=>{getCurrentUser().then(setMe).catch(e=>setError(e.message))},[])
+  async function change(e){e.preventDefault();const d=new FormData(e.currentTarget);const newPassword=d.get('new_password'),confirm=d.get('confirm');setError('');setNotice('');if(newPassword!==confirm){setError('Las contraseñas no coinciden.');return}setBusy(true);try{await apiRequest('v1/auth/cambiar-clave',{method:'POST',body:JSON.stringify({current_password:d.get('current_password'),new_password:newPassword})});clearAccessToken();setNotice('Tu contraseña se actualizó y las sesiones anteriores fueron revocadas. Inicia sesión nuevamente.');e.currentTarget.reset()}catch(err){setError(err.message)}finally{setBusy(false)}}
+  return <div className="nex-settings-page"><section className="nex-main-card"><div className="nex-section-heading"><h2><FiUser/> Datos de acceso</h2></div><p>Correo: <strong>{me?.email||'Consultando…'}</strong></p><p>Tipo de cuenta: <strong>{me?.role||'—'}</strong></p><p>Los datos académicos se editan desde <a href="/app/perfil">Mi perfil</a>.</p></section><section className="nex-main-card"><div className="nex-section-heading"><h2><FiLock/> Cambiar contraseña</h2></div><p>Esta acción modifica tu cuenta real y revoca los tokens anteriores.</p><form onSubmit={change} className="nex-settings-form"><label>Contraseña actual<input type="password" name="current_password" autoComplete="current-password" required/></label><label>Nueva contraseña<input type="password" name="new_password" minLength="12" autoComplete="new-password" required/></label><label>Confirmar contraseña<input type="password" name="confirm" minLength="12" autoComplete="new-password" required/></label>{error&&<p className="nex-info-message" role="alert">{error}</p>}{notice&&<p className="nex-success-message" role="status">{notice} <a href="/login">Iniciar sesión</a></p>}<button type="submit" disabled={busy}>{busy?'Guardando…':'Actualizar contraseña'}</button></form></section><section className="nex-main-card"><h2><FiShield/> Privacidad y sesión</h2><p>Tus datos financieros no se muestran a las instituciones. Puedes salir de esta sesión desde aquí.</p><button className="nex-secondary-action" type="button" onClick={()=>{clearAccessToken();window.location.assign('/login')}}><FiLogOut/> Cerrar sesión</button></section></div>
 }
-
-function SettingsPage() {
-  const [error, setError] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [changed, setChanged] = useState(false)
-
-  async function handleSubmit(event) {
-    event.preventDefault()
-    const form = event.currentTarget
-    const formData = new FormData(form)
-    const currentPassword = String(formData.get('currentPassword') ?? '')
-    const newPassword = String(formData.get('newPassword') ?? '')
-    const confirmation = String(formData.get('passwordConfirmation') ?? '')
-    setError('')
-
-    if (newPassword !== confirmation) {
-      setError('Las contraseñas nuevas no coinciden.')
-      form.elements.namedItem('passwordConfirmation')?.focus()
-      return
-    }
-
-    setIsSubmitting(true)
-    try {
-      await changePassword(currentPassword, newPassword)
-      clearAccessToken()
-      setChanged(true)
-      form.reset()
-    } catch (requestError) {
-      setError(getChangeError(requestError))
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  return (
-    <div className="grid max-w-3xl gap-5">
-      <Surface>
-        <p className="m-0 text-xs font-bold tracking-[0.12em] text-[#347a57]">CUENTA</p>
-        <h2 className="mt-2 font-display text-xl font-semibold text-[#1c4033]">Preferencias de cuenta</h2>
-        <p className="mt-2 text-sm leading-6 text-[#66776b]">Las preferencias visuales aún no se guardan. Tus datos académicos sí se consultan desde tu perfil.</p>
-        <a className="mt-4 inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-[#246b4a] underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#347a57]" href="/app/perfil">Ver mi perfil <span aria-hidden="true">→</span></a>
-      </Surface>
-
-      <Surface>
-        <h2 className="font-display text-xl font-semibold text-[#1c4033]">Cambiar contraseña</h2>
-        <p className="mt-2 text-sm leading-6 text-[#66776b]">Al cambiarla, se cerrarán las sesiones anteriores y tendrás que iniciar sesión de nuevo.</p>
-
-        {changed ? (
-          <div className="mt-5 grid gap-3">
-            <p className="m-0 rounded-xl border border-[#d5e8d3] bg-[#f1f8ec] px-4 py-3 text-sm leading-5 text-[#365f43]" role="status">Contraseña actualizada. Inicia sesión con tu nueva contraseña.</p>
-            <a className="inline-flex min-h-11 items-center justify-center justify-self-start rounded-xl bg-[#1c5a42] px-4 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1c5a42]" href="/login">Iniciar sesión</a>
-          </div>
-        ) : (
-          <form className="mt-5 grid gap-4" onSubmit={handleSubmit} onChange={() => setError('')} aria-busy={isSubmitting}>
-            <PasswordField id="current-password" name="currentPassword" label="Contraseña actual" autoComplete="current-password" minLength={1} />
-            <PasswordField id="new-password" name="newPassword" label="Nueva contraseña" autoComplete="new-password" minLength={12} hint="Usa al menos 12 caracteres." />
-            <PasswordField id="confirm-new-password" name="passwordConfirmation" label="Confirma la nueva contraseña" autoComplete="new-password" minLength={12} />
-            {error && <p className="m-0 rounded-xl border border-[#f1c3c0] bg-[#fff4f2] px-4 py-3 text-sm leading-5 text-[#9b302a]" role="alert">{error}</p>}
-            <button className="inline-flex min-h-12 items-center justify-center rounded-xl bg-[#1c5a42] px-5 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1c5a42] disabled:cursor-wait disabled:opacity-70" type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Actualizando…' : 'Cambiar contraseña'}
-            </button>
-          </form>
-        )}
-      </Surface>
-    </div>
-  )
-}
-
-export default SettingsPage

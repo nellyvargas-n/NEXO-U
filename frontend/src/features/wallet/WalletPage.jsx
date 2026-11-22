@@ -15,9 +15,9 @@ import {
   saveFinanceBudget,
 } from './wallet.service.ts'
 
-const inputClass = 'mt-2 min-h-11 w-full rounded-xl border border-[#d8e2d7] bg-white px-3 text-sm text-[#253b30] outline-none focus:border-[#438c61] focus:ring-4 focus:ring-[#438c61]/15'
-const primaryButtonClass = 'inline-flex min-h-11 items-center justify-center rounded-xl bg-[#1c5a42] px-4 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#347a57] disabled:cursor-wait disabled:opacity-60'
-const secondaryButtonClass = 'inline-flex min-h-10 items-center justify-center rounded-xl border border-[#d8e2d7] px-3 text-sm font-semibold text-[#1c5a42] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#347a57] disabled:cursor-wait disabled:opacity-60'
+const inputClass = 'mt-2 min-h-11 w-full rounded-xl border border-[#dfe8f5] bg-white px-3 text-sm text-[#253b30] outline-none focus:border-[#438c61] focus:ring-4 focus:ring-[#438c61]/15'
+const primaryButtonClass = 'inline-flex min-h-11 items-center justify-center rounded-xl bg-[#2475e2] px-4 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2876d7] disabled:cursor-wait disabled:opacity-60'
+const secondaryButtonClass = 'inline-flex min-h-10 items-center justify-center rounded-xl border border-[#dfe8f5] px-3 text-sm font-semibold text-[#2475e2] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2876d7] disabled:cursor-wait disabled:opacity-60'
 
 const movementCategories = ['Alimentación', 'Transporte', 'Vivienda', 'Educación', 'Salud', 'Beca', 'Trabajo', 'Otros']
 
@@ -64,11 +64,11 @@ function Metric({ label, value, tone = 'green' }) {
     ? 'bg-[#fff4f2] text-[#9b302a]'
     : tone === 'gold'
       ? 'bg-[#fff9e9] text-[#806b35]'
-      : 'bg-[#f3f7f1] text-[#1c5a42]'
+      : 'bg-[#f3f7f1] text-[#2475e2]'
 
   return (
     <div className={`rounded-2xl p-4 ${toneClasses}`}>
-      <p className="m-0 text-xs font-semibold text-[#718075]">{label}</p>
+      <p className="m-0 text-xs font-semibold text-[#8595a9]">{label}</p>
       <p className="mb-0 mt-2 font-display text-xl font-semibold">{value}</p>
     </div>
   )
@@ -77,9 +77,9 @@ function Metric({ label, value, tone = 'green' }) {
 function SectionTitle({ eyebrow, title, description }) {
   return (
     <div className="border-b border-[#edf1eb] px-5 py-5 sm:px-6">
-      {eyebrow && <p className="m-0 text-xs font-bold tracking-[0.12em] text-[#347a57]">{eyebrow}</p>}
-      <h2 className="mt-1 font-display text-lg font-semibold text-[#1c4033]">{title}</h2>
-      {description && <p className="mb-0 mt-1 text-sm leading-5 text-[#718075]">{description}</p>}
+      {eyebrow && <p className="m-0 text-xs font-bold tracking-[0.12em] text-[#2876d7]">{eyebrow}</p>}
+      <h2 className="mt-1 font-display text-lg font-semibold text-[#1d3557]">{title}</h2>
+      {description && <p className="mb-0 mt-1 text-sm leading-5 text-[#8595a9]">{description}</p>}
     </div>
   )
 }
@@ -268,7 +268,7 @@ function WalletPage() {
   }
 
   if (isLoading) {
-    return <Surface className="max-w-4xl"><p className="m-0 py-4 text-sm text-[#718075]" role="status">Revisando acceso y cargando billetera…</p></Surface>
+    return <Surface className="max-w-4xl"><p className="m-0 py-4 text-sm text-[#8595a9]" role="status">Revisando acceso y cargando billetera…</p></Surface>
   }
 
   if (accessState !== 'eligible') {
@@ -283,8 +283,8 @@ function WalletPage() {
 
     return (
       <Surface className="max-w-3xl">
-        <p className="m-0 text-xs font-bold tracking-[0.12em] text-[#347a57]">MÓDULO FINANCIERO PRIVADO</p>
-        <h2 className="mt-2 font-display text-xl font-semibold text-[#1c4033]">Billetera para estudiantes adultos</h2>
+        <p className="m-0 text-xs font-bold tracking-[0.12em] text-[#2876d7]">MÓDULO FINANCIERO PRIVADO</p>
+        <h2 className="mt-2 font-display text-xl font-semibold text-[#1d3557]">Billetera para estudiantes adultos</h2>
         <p className="mt-3 rounded-xl border border-[#e8dfbd] bg-[#fff9e9] px-4 py-3 text-sm leading-6 text-[#756b4d]" role={accessState === 'profile-error' ? 'alert' : 'status'}>{accessMessages[accessState]}</p>
         {accessState === 'no-profile' || accessState === 'incomplete-profile' ? <a className={`${primaryButtonClass} mt-4`} href="/app/perfil">Completar perfil</a> : null}
         {accessState === 'unauthenticated' && <a className={`${primaryButtonClass} mt-4`} href="/login">Iniciar sesión</a>}
@@ -296,7 +296,7 @@ function WalletPage() {
   if (loadError || !walletData) {
     return (
       <Surface className="max-w-3xl">
-        <h2 className="font-display text-xl font-semibold text-[#1c4033]">No se pudo cargar la billetera</h2>
+        <h2 className="font-display text-xl font-semibold text-[#1d3557]">No se pudo cargar la billetera</h2>
         <p className="mt-3 rounded-xl border border-[#f1c3c0] bg-[#fff4f2] px-4 py-3 text-sm leading-6 text-[#9b302a]" role="alert">{loadError || 'Inténtalo de nuevo en unos momentos.'}</p>
         <button className={`${secondaryButtonClass} mt-4`} type="button" onClick={() => setReloadKey((key) => key + 1)}>Reintentar</button>
       </Surface>
@@ -309,9 +309,9 @@ function WalletPage() {
     <div className="grid max-w-5xl gap-5">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="m-0 text-xs font-bold tracking-[0.12em] text-[#347a57]">MÓDULO FINANCIERO PRIVADO</p>
-          <h2 className="mt-1 font-display text-xl font-semibold text-[#1c4033]">Mi billetera</h2>
-          <p className="mb-0 mt-2 max-w-2xl text-sm leading-6 text-[#66776b]">Organiza tus movimientos, define límites por categoría y registra pagos previstos. No se conecta a bancos.</p>
+          <p className="m-0 text-xs font-bold tracking-[0.12em] text-[#2876d7]">MÓDULO FINANCIERO PRIVADO</p>
+          <h2 className="mt-1 font-display text-xl font-semibold text-[#1d3557]">Mi billetera</h2>
+          <p className="mb-0 mt-2 max-w-2xl text-sm leading-6 text-[#7b8da5]">Organiza tus movimientos, define límites por categoría y registra pagos previstos. No se conecta a bancos.</p>
         </div>
         <button className={secondaryButtonClass} type="button" onClick={() => setReloadKey((key) => key + 1)}>Actualizar datos</button>
       </div>
@@ -339,12 +339,12 @@ function WalletPage() {
             <button className={`${primaryButtonClass} sm:col-span-2 sm:justify-self-start`} type="submit">Actualizar proyección</button>
           </form>
           <div className="rounded-2xl bg-[#f3f7f1] p-5 lg:min-w-52">
-            <p className="m-0 text-xs font-semibold text-[#718075]">Días estimados</p>
-            <p className="mb-0 mt-1 font-display text-3xl font-semibold text-[#1c5a42]">{summary.estimated_days ?? '—'}</p>
-            <p className="mb-0 mt-2 text-sm text-[#66776b]">{summary.estimated_until ? `Hasta el ${formatDate(summary.estimated_until)}` : 'Con los valores indicados'}</p>
+            <p className="m-0 text-xs font-semibold text-[#8595a9]">Días estimados</p>
+            <p className="mb-0 mt-1 font-display text-3xl font-semibold text-[#2475e2]">{summary.estimated_days ?? '—'}</p>
+            <p className="mb-0 mt-2 text-sm text-[#7b8da5]">{summary.estimated_until ? `Hasta el ${formatDate(summary.estimated_until)}` : 'Con los valores indicados'}</p>
           </div>
         </div>
-        <p className="m-0 border-t border-[#edf1eb] px-5 py-3 text-xs leading-5 text-[#718075] sm:px-6">{summary.note} La proyección es orientativa y no constituye asesoramiento financiero.</p>
+        <p className="m-0 border-t border-[#edf1eb] px-5 py-3 text-xs leading-5 text-[#8595a9] sm:px-6">{summary.note} La proyección es orientativa y no constituye asesoramiento financiero.</p>
       </Surface>
 
       <div className="grid items-start gap-5 xl:grid-cols-2">
@@ -395,7 +395,7 @@ function WalletPage() {
                 </li>
               ))}
             </ul>
-          ) : <p className="m-0 px-5 py-8 text-center text-sm leading-6 text-[#718075] sm:px-6">Aún no tienes movimientos. Registra tu primer ingreso o gasto.</p>}
+          ) : <p className="m-0 px-5 py-8 text-center text-sm leading-6 text-[#8595a9] sm:px-6">Aún no tienes movimientos. Registra tu primer ingreso o gasto.</p>}
         </Surface>
       </div>
 
@@ -421,11 +421,11 @@ function WalletPage() {
               {budgets.map((budget) => (
                 <li className="flex items-center justify-between gap-4 px-5 py-4 sm:px-6" key={budget.id}>
                   <div><p className="m-0 text-sm font-semibold text-[#30483a]">{budget.category}</p><p className="m-0 mt-1 text-xs text-[#7a887d]">{budget.month}</p></div>
-                  <strong className="text-sm text-[#1c5a42]">{formatBob(budget.limit_bob)}</strong>
+                  <strong className="text-sm text-[#2475e2]">{formatBob(budget.limit_bob)}</strong>
                 </li>
               ))}
             </ul>
-          ) : <p className="m-0 border-t border-[#edf1eb] px-5 py-6 text-sm text-[#718075] sm:px-6">Aún no configuraste presupuestos mensuales.</p>}
+          ) : <p className="m-0 border-t border-[#edf1eb] px-5 py-6 text-sm text-[#8595a9] sm:px-6">Aún no configuraste presupuestos mensuales.</p>}
         </Surface>
 
         <Surface className="p-0">
@@ -457,13 +457,13 @@ function WalletPage() {
                 </li>
               ))}
             </ul>
-          ) : <p className="m-0 border-t border-[#edf1eb] px-5 py-6 text-sm text-[#718075] sm:px-6">No tienes pagos previstos.</p>}
+          ) : <p className="m-0 border-t border-[#edf1eb] px-5 py-6 text-sm text-[#8595a9] sm:px-6">No tienes pagos previstos.</p>}
         </Surface>
       </div>
 
       <Surface className="bg-[#f8faf6]">
-        <h2 className="font-display text-lg font-semibold text-[#1c4033]">Privacidad de tus datos</h2>
-        <p className="mb-0 mt-2 text-sm leading-6 text-[#66776b]">Los movimientos, presupuestos y obligaciones se consultan en tu cuenta y no se comparten con organizaciones. Este módulo no está conectado a bancos y no ofrece asesoramiento financiero.</p>
+        <h2 className="font-display text-lg font-semibold text-[#1d3557]">Privacidad de tus datos</h2>
+        <p className="mb-0 mt-2 text-sm leading-6 text-[#7b8da5]">Los movimientos, presupuestos y obligaciones se consultan en tu cuenta y no se comparten con organizaciones. Este módulo no está conectado a bancos y no ofrece asesoramiento financiero.</p>
       </Surface>
     </div>
   )

@@ -1,0 +1,8 @@
+import { useState } from 'react'
+import AuthLayout from '../components/AuthLayout.jsx'
+import { apiRequest } from '../../../shared/api/client.ts'
+export default function RecoverPasswordPage(){
+  const [error,setError]=useState(''),[message,setMessage]=useState(''),[busy,setBusy]=useState(false)
+  async function submit(event){event.preventDefault();const data=new FormData(event.currentTarget);setBusy(true);setError('');setMessage('');try{await apiRequest('v1/auth/recuperar-clave/solicitar',{method:'POST',body:JSON.stringify({email:data.get('email')})});setMessage('Si tu cuenta existe, recibirás un enlace de recuperación en tu correo.')}catch(e){setError(e.message)}finally{setBusy(false)}}
+  return <AuthLayout pageType="recover" eyebrow="SEGURIDAD DE TU CUENTA" switchText="¿Recuerdas tu contraseña?" switchLabel="Iniciar sesión" switchHref="/login"><form className="grid gap-4" onSubmit={submit}><label className="grid gap-2 text-sm font-semibold">Correo electrónico<input type="email" name="email" autoComplete="email" required placeholder="tu@correo.com" className="w-full rounded-xl border p-3"/></label>{error&&<p role="alert" className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}{message&&<p role="status" className="rounded-xl bg-green-50 px-4 py-3 text-sm text-green-700">{message}</p>}<button type="submit" disabled={busy} className="min-h-12 rounded-xl bg-purple-700 px-5 font-semibold text-white">{busy?'Enviando…':'Enviar instrucciones'}</button><p className="text-xs text-gray-500">Este servicio requiere SMTP configurado en tu servidor; si no está disponible, se mostrará el error correspondiente.</p></form></AuthLayout>
+}

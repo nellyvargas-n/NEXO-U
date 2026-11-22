@@ -23,7 +23,7 @@ const steps = [
 
 function HowItWorks() {
   return (
-    <section className="scroll-mt-24 bg-white px-5 py-24 sm:px-8 lg:py-28" id="como-funciona" aria-labelledby="how-title">
+    <section className="nx-how-section scroll-mt-24 bg-white px-5 py-24 sm:px-8 lg:py-28" id="como-funciona" aria-labelledby="how-title">
       <div className="mx-auto max-w-7xl">
         <div className="mb-12 max-w-2xl sm:mb-14">
           <p className="mb-3 text-sm font-semibold text-[#347a57]">Cómo funciona</p>

@@ -16,6 +16,8 @@ export function useCourses() {
 
   useEffect(() => {
     let isCurrent = true
+    setIsLoading(true)
+    setError('')
 
     getCourseData()
       .then((result) => {
@@ -64,10 +66,6 @@ export function useCourses() {
     enrollingCourseId,
     enrollmentFeedback,
     enroll,
-    retry: () => {
-      setIsLoading(true)
-      setError('')
-      setReloadKey((key) => key + 1)
-    },
+    retry: () => setReloadKey((key) => key + 1),
   }
 }

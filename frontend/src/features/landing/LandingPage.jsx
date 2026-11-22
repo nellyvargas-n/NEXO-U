@@ -1,45 +1,19 @@
+import { useEffect, useState } from 'react'
+import { FiArrowRight, FiArrowUpRight, FiAward, FiBookOpen, FiBriefcase, FiCheckCircle, FiSearch, FiShield } from 'react-icons/fi'
+import { apiRequest } from '../../shared/api/client.ts'
 import HowItWorks from './components/HowItWorks.jsx'
 import PrivacySection from './components/PrivacySection.jsx'
 import SiteFooter from './components/SiteFooter.jsx'
-import Icon from '../../shared/components/Icon.jsx'
-
-function LandingPage() {
-  return (
-    <>
-      <main id="inicio">
-        <section className="relative isolate overflow-hidden bg-[#f5f7f2]" aria-labelledby="hero-title">
-          <div className="pointer-events-none absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
-            <img className="absolute inset-0 size-full scale-105 object-cover object-center opacity-100 blur-[1px]" src="/fondo.png" alt="" />
-            <div className="absolute inset-0 bg-gradient-to-r from-[#f5f7f2]/50 via-[#f5f7f2]/28 to-[#f5f7f2]/18" />
-          </div>
-          <div className="mx-auto flex min-h-[calc(100vh-76px)] max-w-7xl items-center justify-center px-6 py-20 text-center max-[700px]:min-h-[calc(100vh-66px)] max-[700px]:px-5 max-[700px]:py-16 max-[390px]:px-4">
-            <div className="relative z-10 max-w-4xl">
-              <span className="pointer-events-none absolute -inset-x-10 -inset-y-14 -z-10 rounded-full bg-white/65 blur-3xl" aria-hidden="true" />
-              <h1 className="mx-auto mt-0 max-w-[1000px] font-serif text-[clamp(3.25rem,7vw,6.25rem)] font-medium leading-[0.98] tracking-[-0.045em] text-[#111111] max-[700px]:text-[clamp(2.7rem,11vw,4rem)]" id="hero-title">
-                <span className="block">Becas y pasantías</span>
-                <span className="mt-1 block text-[#1c5a42]">para tu perfil.</span>
-              </h1>
-              <span className="mx-auto mt-6 block h-1 w-16 rounded-full bg-[#1c5a42]" aria-hidden="true" />
-              <p className="mx-auto mt-6 max-w-2xl text-base leading-7 text-[#242824] sm:text-lg sm:leading-8">
-                Nexo U reúne tus credenciales y compara tus requisitos con becas y pasantías. Mira qué ya cumples y qué te falta para postular.
-              </p>
-              <div className="mt-8 flex flex-wrap items-center justify-center gap-3 max-[430px]:items-stretch">
-                <a className="inline-flex min-h-12 items-center justify-center gap-3 rounded-xl bg-[#1c5a42] px-5 text-sm font-semibold text-white shadow-lg shadow-[#1c5a42]/15 transition hover:-translate-y-0.5 hover:bg-[#247452] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1c5a42] active:translate-y-0 max-[430px]:w-full" href="/register">
-                  Crear mi perfil <Icon name="arrow-right" className="size-5" />
-                </a>
-                <a className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold text-[#466555] transition hover:bg-white/70 hover:text-[#1c5a42] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#438c61] max-[430px]:w-full" href="#como-funciona">
-                  Cómo funciona
-                </a>
-              </div>
-            </div>
-          </div>
-        </section>
-        <HowItWorks />
-        <PrivacySection />
-      </main>
-      <SiteFooter />
-    </>
-  )
+const categoryName=(raw)=>{const kind=String(raw||'').toLowerCase();return kind.includes('beca')?'Beca':kind.includes('pasant')?'Pasantía':kind.includes('curso')?'Curso':'Convocatoria'}
+const dateLabel=(raw)=>raw ? new Intl.DateTimeFormat('es-BO',{dateStyle:'medium'}).format(new Date(`${String(raw).slice(0,10)}T12:00:00`)) : 'Por confirmar'
+function validLink(raw){try{return ['http:','https:'].includes(new URL(raw).protocol)}catch{return false}}
+export default function LandingPage(){
+ const [opportunities,setOpportunities]=useState(null),[error,setError]=useState('')
+ useEffect(()=>{let live=true;apiRequest('v1/oportunidades/publicas').then(data=>{if(live)setOpportunities(data)}).catch(e=>{if(live)setError(e.message)});return()=>{live=false}},[])
+ return <div className="nex-homepage"><main>
+  <section className="nex-home-hero"><div className="nex-home-text"><span>PLATAFORMA DE OPORTUNIDADES</span><h1>Conecta tu talento con nuevas <em>oportunidades.</em></h1><p>Becas, pasantías y cursos en un solo lugar. Descubre cuáles se ajustan a tu perfil y qué necesitas para avanzar.</p><div className="nex-home-cta"><a href="/explorar">Explorar convocatorias <FiArrowRight/></a><a href="/register">Crear una cuenta <FiArrowUpRight/></a></div><div className="nex-home-trust"><span><FiCheckCircle/> Compatibilidad explicable</span><span><FiShield/> Datos privados</span></div></div><div className="nex-home-hero-img" role="img" aria-label="Vista de un campus universitario"/></section>
+  <div className="nex-home-categories"><a href="/explorar"><FiAward/><strong>Becas</strong><span>Apoyo para tus estudios</span><FiArrowRight/></a><a href="/explorar"><FiBriefcase/><strong>Pasantías</strong><span>Experiencia profesional</span><FiArrowRight/></a><a href="/app/cursos"><FiBookOpen/><strong>Cursos</strong><span>Nuevas habilidades</span><FiArrowRight/></a></div>
+  <section className="nex-home-live"><div className="nex-home-live-head"><div><small>CATÁLOGO CONECTADO A FASTAPI</small><h2>Convocatorias vigentes</h2><p>Solo se muestran oportunidades publicadas por organizaciones verificadas.</p></div><a href="/explorar">Ver todas <FiArrowRight/></a></div><div className="nex-home-live-list">{error?<div className="nex-no-data">No se pudo consultar el catálogo: {error}</div>:opportunities===null?<div className="nex-no-data">Consultando las oportunidades disponibles…</div>:opportunities.length===0?<div className="nex-no-data"><FiSearch/><strong>No hay convocatorias públicas vigentes</strong><span>Las instituciones verificadas podrán publicar oportunidades aquí.</span></div>:opportunities.slice(0,3).map(item=><article key={item.id}><span className="nex-home-tag">{categoryName(item.category)}</span><h3>{item.title}</h3><p>{item.organization||'Institución'}</p><small>Fecha de cierre: {dateLabel(item.deadline)}</small>{validLink(item.official_url)?<a href={item.official_url} target="_blank" rel="noopener noreferrer">Abrir convocatoria <FiArrowUpRight/></a>:<span>Enlace por confirmar</span>}</article>)}</div></section>
+  <HowItWorks/><PrivacySection/>
+ </main><SiteFooter/></div>
 }
-
-export default LandingPage

@@ -1,54 +1,50 @@
-# Nexo U — Frontend
+# NEXO U · Frontend profesional v10
 
-Interfaz React de Nexo U. La landing presenta el proyecto y el área autenticada usa la API para consultar perfiles, oportunidades, matching, credenciales, cursos, becas y finanzas.
+Frontend completo React + Vite, rediseñado tomando como referencia el dashboard corporativo aprobado: fondo claro, cabecera violeta, menú lateral blanco y tarjetas limpias, con las funciones existentes para **estudiante, empresa y administrador**.
 
-## Descripción del trabajo
+> **Datos reales** significa que la interfaz consulta el backend FastAPI y muestra únicamente los registros que devuelve tu base Neon. Este ZIP no contiene credenciales de Neon, llamadas directas desde el navegador a PostgreSQL, oportunidades ficticias ni contadores simulados. Si Neon todavía no tiene convocatorias públicas vigentes, verás un estado vacío.
 
-Nexo U ayuda a estudiantes a entender qué oportunidades pueden encajar con su perfil, qué requisitos cumplen y qué paso pueden dar después. El área estudiantil incluye perfiles escolares y universitarios; sus datos se mantienen separados.
+## Instalación en tu proyecto NEXO-U
 
-El flujo de cursos conecta inscripción y consulta de estado con el backend. Las empresas con sesión pueden revisar las inscripciones de sus cursos verificados y confirmar la finalización de un estudiante. La credencial y el nuevo resultado de matching se consultan después desde la cuenta estudiantil.
+1. Haz una copia de seguridad de tu carpeta `frontend` actual y conserva tu configuración privada `frontend/.env.local` si existe.
+2. Extrae este ZIP y sustituye **solo la carpeta `frontend`** en tu proyecto. No cambies `backend` ni ejecutes SQL.
+3. Abre `frontend/.env.local` (créalo si falta) y coloca: `VITE_API_BASE_URL=/api/`.
+4. En otra terminal, dentro de `backend`, inicia Docker: `docker compose up -d --build`; confirma que `http://localhost:8000/ready` está listo.
+5. En la carpeta `frontend`, ejecuta: `npm install`, `npm run build` y `npm run dev`.
+6. Abre `http://localhost:5173` y comprueba que `http://localhost:5173/version-nexou-v10.txt` dice **V10**.
 
-## Flujos conectados
+Los datos del frontend provienen de `http://localhost:8000` mediante el proxy de Vite. No pongas `DATABASE_URL`, `JWT_SECRET` ni contraseñas de Neon en el frontend ni en GitHub.
 
-- `/login` y `/register`: inicio de sesión y registro de estudiantes conectados a la API.
-- `/recuperar-clave` y `/reset`: solicitud y confirmación de restablecimiento por correo. El servidor debe tener SMTP configurado para enviar el enlace.
-- `/app` y `/app/oportunidades`: oportunidades públicas y matching de perfil con requisitos.
-- `/app/credenciales`: consultar y declarar habilidades, idiomas y certificados.
-- `/app/cursos`, `/app/rutas` y `/app/rutas/ingles-b1`: catálogo público, recomendaciones e inscripciones.
-- `/app/oportunidades/becas`: becas abiertas y simulación por perfil escolar; solo muestra bandas oficiales aprobadas.
-- `/app/oportunidades/pasantias`: oportunidades de categoría pasantía, ordenadas por compatibilidad.
-- `/app/billetera`: movimientos, presupuestos y pagos previstos para estudiantes universitarios de 18 años o más; no se conecta a bancos.
-- `/app/configuracion`: cambio de contraseña. Las preferencias visuales todavía no se guardan.
-- `/empresa/cursos/validar`: selección de una inscripción pendiente de un curso propio para verificar su finalización.
+## Rutas y roles
 
-La landing contiene una tarjeta visual independiente con una oportunidad ficticia y una simulación local 4/5 → 5/5. Esa tarjeta no modifica datos de la API. Dentro de `/app`, el matching y las validaciones vienen de los servicios conectados.
+- `/` — Portada pública (datos de convocatorias desde la API).
+- `/login` y `/register` — Acceso de estudiantes y empresas; la creación de administrador **nunca es pública**.
+- `/explorar` — Catálogo real, búsqueda, filtros, requisitos y guardados por cuenta.
+- `/app` — Panel personal del estudiante, estadísticas de su cuenta y convocatorias reales.
+- `/app/perfil`, `/app/credenciales`, `/app/cursos`, `/app/rutas` — Perfil, credenciales y formación.
+- `/app/oportunidades/becas`, `/app/oportunidades/pasantias` — Becas y pasantías.
+- `/app/guardados`, `/app/notificaciones`, `/app/billetera`, `/app/configuracion` — Datos personales y seguridad.
+- `/empresa` — Gestión de organizaciones, oportunidades, cursos, requisitos e inscripciones.
+- `/empresa/cursos/validar` — Validación de cursos (solo empresa propietaria).
+- `/admin` — Usuarios y organizaciones (solo rol `admin`).
 
-## Datos demo y límites
+## Qué hay que considerar
 
-El backend devuelve `is_demo` para distinguir oportunidades ficticias; las tarjetas las marcan como ejemplos y no las presentan como convocatorias oficiales. La API de producción filtra datos demo. Los resultados de matching y las simulaciones de beca son orientativos y no garantizan aceptación ni adjudicación.
+- Las **postulaciones externas** ocurren en la web oficial de la convocatoria; NEXO U no afirma recibirlas ni las cuenta si no existe endpoint.
+- Los indicadores de compatibilidad solo aparecen si el motor devuelve una evaluación, y no garantizan la adjudicación de una beca o pasantía.
+- El registro de empresas no las verifica automáticamente: un administrador debe aprobarlas.
+- Una lista vacía `[]` de FastAPI es un estado válido y no debe reemplazarse por datos ficticios.
+- Las finanzas siguen limitadas a universitarios adultos según el backend.
+- El correo SMTP y Gemini son opcionales para esta interfaz; no se requieren para navegar por el catálogo.
 
-La billetera registra datos ingresados por el estudiante, sin banco ni decisiones crediticias. Las operaciones administrativas de organizaciones y aprobación de reglas de becas cuentan con endpoints en el backend, pero no todas tienen pantalla web.
+## Producción / Vercel
 
-## Desarrollo local
+Para producción, el frontend debe usar `VITE_API_BASE_URL=https://TU_BACKEND_PUBLICO/api/` y FastAPI debe admitir la dirección HTTPS del frontend en `CORS_ORIGINS`. El proxy Vite solo opera en desarrollo local. Verifica el login, permisos y los endpoints antes de publicar.
 
-Desde esta carpeta:
+## Verificaciones
 
-1. Instala dependencias con `npm install`.
-2. Inicia Vite con `npm run dev`.
-3. Abre la dirección local que indique Vite, normalmente `http://localhost:5173`.
+En esta entrega se validó la **sintaxis de 56 archivos JS/TS** con TypeScript y la estructura de los imports relativos. El empaquetado fue revisado para excluir secretos y `node_modules`; **la compilación npm/Vite y las llamadas a tu instancia privada de Neon deben comprobarse en tu equipo** porque no tenemos acceso a tus servicios ni contraseña.
 
-## Configuración de API
+### Recuperación de contraseña
 
-El cliente compartido lee `VITE_API_BASE_URL` y acepta `VITE_API_URL` como alias. Si no se define ninguna, usa `http://localhost:8000/api/`. Consulta el contrato frontend/backend en [`../backend/CONTRATO_FRONTEND_v1.4.md`](../backend/CONTRATO_FRONTEND_v1.4.md).
-
-## Estructura
-
-- `src/features/landing/`: landing y demo visual local.
-- `src/features/auth/`: acceso, registro y recuperación de contraseña.
-- `src/features/company-validation/`: confirmación de cursos para empresas.
-- `src/navigation/`: navegación pública y sidebar estudiantil.
-- `src/routes/`: rutas públicas, de empresa y del espacio estudiantil.
-- `src/features/`: una feature por sección del MVP.
-- `src/shared/api/`: cliente HTTP y servicios de autenticación.
-
-Consulta [backend/README.md](../backend/README.md) para configurar la API y las cuentas de demostración.
+El login enlaza con `/recuperar-clave`. Si el backend tiene SMTP habilitado, enviará un correo con un enlace `/reset?token=...` de uso único. La interfaz no genera ni muestra tokens; cuando SMTP no está configurado, enseña el error real del servidor. Este mecanismo tampoco requiere cambiar Neon ni exponer una contraseña al frontend.

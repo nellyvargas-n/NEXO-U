@@ -14,6 +14,8 @@ export function useOpportunityFeed() {
 
   useEffect(() => {
     let isCurrent = true
+    setIsLoading(true)
+    setError('')
 
     getOpportunityFeed()
       .then((result) => {
@@ -33,10 +35,6 @@ export function useOpportunityFeed() {
     ...feed,
     isLoading,
     error,
-    retry: () => {
-      setIsLoading(true)
-      setError('')
-      setReloadKey((key) => key + 1)
-    },
+    retry: () => setReloadKey((key) => key + 1),
   }
 }

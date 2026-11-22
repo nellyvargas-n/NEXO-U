@@ -51,7 +51,7 @@ function ScholarshipResult({ simulation }) {
           <p className={`m-0 text-sm font-semibold ${isCompatible ? 'text-[#365f43]' : 'text-[#725f32]'}`}>
             {isCompatible ? `Banda orientativa: ${simulation.discount_percent}%` : 'No alcanzas los umbrales publicados'}
           </p>
-          <p className="mb-0 mt-1 text-sm leading-6 text-[#66776b]">{simulation.message}</p>
+          <p className="mb-0 mt-1 text-sm leading-6 text-[#7b8da5]">{simulation.message}</p>
         </div>
         <span className={`rounded-full px-3 py-1 text-xs font-semibold ${isCompatible ? 'bg-[#dcefdc] text-[#39704d]' : 'bg-[#f5ebca] text-[#806b35]'}`}>
           {isCompatible ? 'Cumples una banda' : 'Revisa los criterios'}
@@ -65,13 +65,13 @@ function ScholarshipResult({ simulation }) {
             <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-lg border border-[#e6ece3] bg-white px-3 py-2.5" key={`${criterion.discount_percent}-${criterion.minimum_average}-${criterion.minimum_math}`}>
               <div>
                 <p className="m-0 text-sm font-semibold text-[#344f40]">{criterion.discount_percent}% de descuento</p>
-                <p className="m-0 mt-0.5 text-xs leading-5 text-[#718075]">Promedio mínimo {criterion.minimum_average} · Matemáticas {criterion.minimum_math}</p>
+                <p className="m-0 mt-0.5 text-xs leading-5 text-[#8595a9]">Promedio mínimo {criterion.minimum_average} · Matemáticas {criterion.minimum_math}</p>
               </div>
               <div className="flex items-center gap-3">
                 <span className={`text-xs font-semibold ${criterion.meets ? 'text-[#39704d]' : 'text-[#806b35]'}`}>
                   {criterion.meets ? 'Cumples' : 'Aún no cumples'}
                 </span>
-                {criterion.official_url && <a className="text-xs font-semibold text-[#246b4a] underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#347a57]" href={criterion.official_url} target="_blank" rel="noreferrer">Regla oficial ↗</a>}
+                {criterion.official_url && <a className="text-xs font-semibold text-[#246b4a] underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2876d7]" href={criterion.official_url} target="_blank" rel="noreferrer">Regla oficial ↗</a>}
               </div>
             </div>
           ))}
@@ -90,12 +90,11 @@ function ScholarshipCard({ opportunity, profileReady, simulation, onSimulate }) 
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-[#edf5e9] px-3 py-1 text-xs font-semibold text-[#39704d]">Beca</span>
+            <span className="rounded-full bg-[#eaf3ff] px-3 py-1 text-xs font-semibold text-[#39704d]">Beca</span>
             {opportunity.verified_organization && <span className="text-xs font-medium text-[#567461]">✓ Emisor verificado</span>}
-            {opportunity.is_demo && <span className="rounded-full bg-[#fff4e7] px-3 py-1 text-xs font-semibold text-[#8a6030]">Ejemplo ficticio</span>}
           </div>
-          <h2 className="mt-3 font-display text-xl font-semibold leading-tight text-[#1c4033]">{opportunity.title}</h2>
-          <p className="mt-1 text-sm text-[#718075]">{opportunity.organization}</p>
+          <h2 className="mt-3 font-display text-xl font-semibold leading-tight text-[#1d3557]">{opportunity.title}</h2>
+          <p className="mt-1 text-sm text-[#8595a9]">{opportunity.organization}</p>
         </div>
         <div className="shrink-0 rounded-xl bg-[#f5f8f3] px-3 py-2 text-right">
           <p className="m-0 text-xs text-[#7b897e]">Cierre</p>
@@ -106,10 +105,10 @@ function ScholarshipCard({ opportunity, profileReady, simulation, onSimulate }) 
       <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-[#edf1eb] pt-4">
         <div className="flex flex-wrap items-center gap-4 text-sm text-[#758579]">
           {amount && <span className="font-semibold text-[#405c49]">Monto publicado: {amount}</span>}
-          {opportunity.official_url && <a className="font-semibold text-[#246b4a] underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#347a57]" href={opportunity.official_url} target="_blank" rel="noreferrer">{opportunity.is_demo ? 'Referencia del ejemplo' : 'Convocatoria oficial'} ↗</a>}
+          {opportunity.official_url && <a className="font-semibold text-[#246b4a] underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2876d7]" href={opportunity.official_url} target="_blank" rel="noreferrer">Convocatoria oficial ↗</a>}
         </div>
         <button
-          className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#1c5a42] px-4 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#347a57] disabled:cursor-not-allowed disabled:bg-[#93a99a]"
+          className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[#2475e2] px-4 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2876d7] disabled:cursor-not-allowed disabled:bg-[#93a99a]"
           disabled={!profileReady || isSimulating}
           type="button"
           onClick={() => onSimulate(opportunity.id)}
@@ -194,20 +193,20 @@ function ScholarshipsPage() {
   return (
     <div className="grid max-w-4xl gap-5">
       <div>
-        <p className="m-0 text-sm text-[#718075]">Convocatorias vigentes de organizaciones verificadas</p>
-        <h2 className="mt-1 font-display text-xl font-semibold text-[#1c4033]">Becas disponibles</h2>
-        <p className="mb-0 mt-2 max-w-2xl text-sm leading-6 text-[#66776b]">Consulta la fuente oficial y calcula una banda orientativa con los umbrales publicados y aprobados por administración.</p>
+        <p className="m-0 text-sm text-[#8595a9]">Convocatorias vigentes de organizaciones verificadas</p>
+        <h2 className="mt-1 font-display text-xl font-semibold text-[#1d3557]">Becas disponibles</h2>
+        <p className="mb-0 mt-2 max-w-2xl text-sm leading-6 text-[#7b8da5]">Consulta la fuente oficial y calcula una banda orientativa con los umbrales publicados y aprobados por administración.</p>
       </div>
 
       {!isLoading && profileState === 'school' && schoolProfile && (
         <div className="rounded-2xl border border-[#dce9d9] bg-[#f4f8f1] p-4 sm:flex sm:items-center sm:justify-between sm:gap-5">
           <div>
             <p className="m-0 text-sm font-semibold text-[#365f43]">Perfil escolar listo para simular</p>
-            <p className="mb-0 mt-1 text-sm text-[#66776b]">Tus notas se comparan con cada banda aprobada; no se muestran a las instituciones.</p>
+            <p className="mb-0 mt-1 text-sm text-[#7b8da5]">Tus notas se comparan con cada banda aprobada; no se muestran a las instituciones.</p>
           </div>
           <div className="mt-3 flex shrink-0 gap-4 sm:mt-0">
-            <p className="m-0 text-xs text-[#718075]">Promedio <strong className="ml-1 text-sm text-[#344f40]">{schoolProfile.average_grade}</strong></p>
-            <p className="m-0 text-xs text-[#718075]">Matemáticas <strong className="ml-1 text-sm text-[#344f40]">{schoolProfile.math_grade}</strong></p>
+            <p className="m-0 text-xs text-[#8595a9]">Promedio <strong className="ml-1 text-sm text-[#344f40]">{schoolProfile.average_grade}</strong></p>
+            <p className="m-0 text-xs text-[#8595a9]">Matemáticas <strong className="ml-1 text-sm text-[#344f40]">{schoolProfile.math_grade}</strong></p>
           </div>
         </div>
       )}
@@ -237,11 +236,11 @@ function ScholarshipsPage() {
       )}
 
       {isLoading ? (
-        <Surface><p className="m-0 py-4 text-sm text-[#718075]" role="status">Cargando becas y perfil…</p></Surface>
+        <Surface><p className="m-0 py-4 text-sm text-[#8595a9]" role="status">Cargando becas y perfil…</p></Surface>
       ) : error ? (
         <Surface>
           <p className="m-0 rounded-xl border border-[#f1c3c0] bg-[#fff4f2] px-4 py-3 text-sm leading-5 text-[#9b302a]" role="alert">{error}</p>
-          <button className="mt-4 min-h-11 rounded-xl border border-[#d8e2d7] px-4 text-sm font-semibold text-[#1c5a42] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#347a57]" type="button" onClick={() => setReloadKey((key) => key + 1)}>Reintentar</button>
+          <button className="mt-4 min-h-11 rounded-xl border border-[#dfe8f5] px-4 text-sm font-semibold text-[#2475e2] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2876d7]" type="button" onClick={() => setReloadKey((key) => key + 1)}>Reintentar</button>
         </Surface>
       ) : opportunities.length > 0 ? (
         <>
@@ -260,9 +259,9 @@ function ScholarshipsPage() {
         </>
       ) : (
         <Surface className="py-9 text-center">
-          <h2 className="font-display text-xl font-semibold text-[#1c4033]">No hay becas vigentes</h2>
-          <p className="mx-auto mb-0 mt-2 max-w-lg text-sm leading-6 text-[#718075]">Aquí aparecerán convocatorias abiertas publicadas por organizaciones verificadas.</p>
-          <button className="mt-4 min-h-10 rounded-xl border border-[#d8e2d7] px-4 text-sm font-semibold text-[#246b4a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#347a57]" type="button" onClick={() => setReloadKey((key) => key + 1)}>Volver a buscar</button>
+          <h2 className="font-display text-xl font-semibold text-[#1d3557]">No hay becas vigentes</h2>
+          <p className="mx-auto mb-0 mt-2 max-w-lg text-sm leading-6 text-[#8595a9]">Aquí aparecerán convocatorias abiertas publicadas por organizaciones verificadas.</p>
+          <button className="mt-4 min-h-10 rounded-xl border border-[#dfe8f5] px-4 text-sm font-semibold text-[#246b4a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2876d7]" type="button" onClick={() => setReloadKey((key) => key + 1)}>Volver a buscar</button>
         </Surface>
       )}
     </div>

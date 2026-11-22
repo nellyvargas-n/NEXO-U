@@ -1,112 +1,50 @@
 import { useEffect, useState } from 'react'
+import { FiBell, FiMenu, FiSearch, FiUser, FiArrowUpRight, FiAward, FiLogOut } from 'react-icons/fi'
 import BrandMark from '../../shared/components/BrandMark.jsx'
 import StudentSidebar from '../../navigation/components/StudentSidebar.jsx'
 import StudentPageHeading from './components/StudentPageHeading.jsx'
 import { findStudentAppRoute } from '../../routes/studentAppRoutes.js'
-import { getAccessRole, getAccessToken } from '../../shared/api/session.ts'
-import { getCurrentUser } from '../../shared/api/modules/auth.service.ts'
+import { getAccessToken, clearAccessToken } from '../../shared/api/session.ts'
 import { getStudentProfiles } from '../profile/profile.service.ts'
+import { apiRequest } from '../../shared/api/client.ts'
 
-function StudentApp({ pathname = '/app' }) {
+export default function StudentApp({ pathname = '/app' }) {
   const [menuOpen, setMenuOpen] = useState(false)
-  const [isCheckingRole, setIsCheckingRole] = useState(() => Boolean(getAccessToken() && getAccessRole() !== 'usuario'))
+  const [identity, setIdentity] = useState('Mi cuenta')
+  const [unread, setUnread] = useState(null)
   const page = findStudentAppRoute(pathname)
   const Page = page.component
+  const isExplore = pathname === '/app/oportunidades'
+  const logout = () => { clearAccessToken(); window.location.replace('/login') }
 
   useEffect(() => {
-    if (!getAccessToken()) return undefined
-
-    let isCurrent = true
-    const redirectForRole = (role) => {
-      if (role === 'admin') {
-        window.location.replace('/admin')
-        return true
-      }
-      if (role === 'empresa') {
-        window.location.replace('/empresa/cursos/validar')
-        return true
-      }
-      return false
-    }
-
-    const savedRole = getAccessRole()
-    if (savedRole) {
-      redirectForRole(savedRole)
-      return undefined
-    }
-
-    getCurrentUser()
-      .then((user) => {
-        if (isCurrent && !redirectForRole(user.role)) setIsCheckingRole(false)
-      })
-      .catch(() => {
-        if (isCurrent) setIsCheckingRole(false)
-      })
-
-    return () => { isCurrent = false }
-  }, [])
-
-  useEffect(() => {
-    if (pathname !== '/app' || !getAccessToken()) return undefined
-
-    let isCurrent = true
-    getStudentProfiles()
-      .then(({ university, school }) => {
-        if (isCurrent && !university && !school) window.location.replace('/app/perfil')
-      })
-      .catch(() => undefined)
-
-    return () => { isCurrent = false }
+    if (!getAccessToken()) { window.location.replace('/login'); return }
+    let live = true
+    getStudentProfiles().then(({ university, school }) => {
+      if (!live) return
+      const name = university?.name || school?.full_name
+      if (name) setIdentity(name)
+      if (pathname === '/app' && !university && !school) window.location.replace('/app/perfil')
+    }).catch(() => undefined)
+    apiRequest('v1/notificaciones').then((items) => { if (live && Array.isArray(items)) setUnread(items.filter(n => !n.read).length) }).catch(() => {})
+    return () => { live = false }
   }, [pathname])
 
-  if (isCheckingRole) {
-    return <main className="grid min-h-screen place-items-center bg-[#f6f8f4] px-6 text-center text-sm text-[#718075]" role="status">Verificando el tipo de cuenta…</main>
-  }
-
   return (
-    <div className="min-h-screen bg-[#f6f8f4] text-[#173b31]">
-      {menuOpen && (
-        <button
-          className="fixed inset-0 z-40 cursor-default bg-[#10281f]/35 lg:hidden"
-          type="button"
-          onClick={() => setMenuOpen(false)}
-          aria-label="Cerrar menú de navegación"
-        />
-      )}
-      <StudentSidebar pathname={page.activePath} isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
-
-      <div className="min-h-screen lg:pl-[278px]">
-        <header className="flex min-h-[72px] items-center justify-between gap-4 border-b border-[#e5ebe3] bg-[#fbfcf8] px-4 sm:px-7 lg:px-10">
-          <div className="flex min-w-0 items-center gap-3">
-            <button
-              className="grid size-10 shrink-0 place-items-center rounded-xl border border-[#e4ebe1] bg-white text-[#385647] transition hover:bg-[#f0f5ee] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#247858] lg:hidden"
-              type="button"
-              onClick={() => setMenuOpen(true)}
-              aria-label="Abrir menú de navegación"
-              aria-expanded={menuOpen}
-              aria-controls="student-sidebar"
-            >
-              <svg className="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
-            </button>
-            <div className="lg:hidden"><BrandMark href="/app" size="small" /></div>
-            <p className="hidden truncate text-sm font-medium text-[#718075] lg:block">{page.group}<span className="mx-2 text-[#c0c9c0]">/</span><span className="text-[#30483a]">{page.title}</span></p>
-          </div>
-          <a className="flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-2 text-sm font-semibold text-[#385647] transition hover:bg-[#eef4ec] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#247858]" href="/app/perfil">
-            <span className="grid size-8 place-items-center rounded-full bg-[#d8eddb] text-xs font-bold text-[#215d43]" aria-hidden="true">NU</span>
-            <span className="hidden sm:inline">Mi perfil</span>
-          </a>
+    <div className="nx-workspace nx-student-workspace">
+      {menuOpen && <button className="nx-drawer-overlay" onClick={() => setMenuOpen(false)} aria-label="Cerrar navegación" type="button" />}
+      <StudentSidebar pathname={page.activePath} isOpen={menuOpen} onClose={() => setMenuOpen(false)} identity={identity} />
+      <div className="nx-workspace-body">
+        <header className="nx-workspace-header">
+          <div className="nx-workspace-location"><button type="button" className="nx-icon-btn nx-menu-trigger" aria-label="Abrir menú" onClick={() => setMenuOpen(true)}><FiMenu /></button><span className="nx-mobile-brand"><BrandMark href="/app" size="small" /></span><span className="nx-breadcrumb">Mi espacio <span>/</span> <strong>{page.title}</strong></span></div>
+          <div className="nx-workspace-actions"><a className="nx-quick-search" href="/app/oportunidades"><FiSearch /> Buscar becas, pasantías y cursos</a><a className="nx-icon-btn nx-bell-link" href="/app/notificaciones" aria-label={unread ? `${unread} notificaciones sin leer` : 'Ver notificaciones'}><FiBell />{unread > 0 && <span className="nx-unread-count">{unread > 9 ? '9+' : unread}</span>}</a><a className="nx-workspace-action-link" href="/app/perfil" aria-label="Abrir mi perfil académico"><FiUser /><span>Mi perfil</span></a><a className="nx-workspace-action-link" href="/app/credenciales" aria-label="Registrar habilidades y credenciales"><FiAward /><span>Mis habilidades</span></a><button className="nx-workspace-logout" type="button" onClick={logout} aria-label="Cerrar sesión"><FiLogOut /><span>Cerrar sesión</span></button></div>
         </header>
-
-        <main className="mx-auto max-w-[1440px] px-4 py-7 sm:px-7 sm:py-9 lg:px-10 lg:py-10">
-          <StudentPageHeading page={page} />
-          <Page />
-          <footer className="mt-10 border-t border-[#e5ebe3] py-5 text-xs leading-5 text-[#849187]">
-            Nexo U · Prototipo de Abstracthon 2026 · Los datos de esta experiencia son de demostración.
-          </footer>
+        <main className={`nx-workspace-content ${isExplore ? 'nx-workspace-explore' : ''}`}>
+          {!isExplore && pathname !== '/app' && <StudentPageHeading page={page} />}
+          {isExplore ? <Page embedded /> : <Page />}
+          <footer className="nx-workspace-footer">NEXO U · Los resultados dependen de los requisitos y fechas publicados por cada institución. <a href="/app/privacidad">Privacidad <FiArrowUpRight /></a></footer>
         </main>
       </div>
     </div>
   )
 }
-
-export default StudentApp

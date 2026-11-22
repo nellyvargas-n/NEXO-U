@@ -28,18 +28,23 @@ export interface CurrentUser {
   active: boolean
 }
 
-export interface AuthMessage {
-  message: string
-  changed?: boolean
-}
-
-export function registerStudentAccount({ email, password }: AuthCredentials): Promise<RegisteredUser> {
+export function registerAccount(
+  { email, password }: AuthCredentials,
+  role: 'usuario' | 'empresa',
+): Promise<RegisteredUser> {
   clearAccessToken()
-
   return apiRequest<RegisteredUser>('v1/auth/register', {
     method: 'POST',
-    body: JSON.stringify({ email, password, role: 'usuario' }),
+    body: JSON.stringify({ email, password, role }),
   })
+}
+
+export function registerStudentAccount(credentials: AuthCredentials): Promise<RegisteredUser> {
+  return registerAccount(credentials, 'usuario')
+}
+
+export function registerCompanyAccount(credentials: AuthCredentials): Promise<RegisteredUser> {
+  return registerAccount(credentials, 'empresa')
 }
 
 export async function signIn({ email, password }: AuthCredentials, remember = false): Promise<AuthSession> {
@@ -54,33 +59,12 @@ export async function signIn({ email, password }: AuthCredentials, remember = fa
     throw new Error('El servidor no devolvió una sesión válida.')
   }
 
-  saveAccessToken(session.access_token, remember, session.role)
+  saveAccessToken(session.access_token, remember)
   return session
 }
 
 export function getCurrentUser(): Promise<CurrentUser> {
   return apiRequest<CurrentUser>('v1/auth/me')
-}
-
-export function requestPasswordReset(email: string): Promise<AuthMessage> {
-  return apiRequest<AuthMessage>('v1/auth/recuperar-clave/solicitar', {
-    method: 'POST',
-    body: JSON.stringify({ email }),
-  })
-}
-
-export function confirmPasswordReset(token: string, newPassword: string): Promise<AuthMessage> {
-  return apiRequest<AuthMessage>('v1/auth/recuperar-clave/confirmar', {
-    method: 'POST',
-    body: JSON.stringify({ token, new_password: newPassword }),
-  })
-}
-
-export function changePassword(currentPassword: string, newPassword: string): Promise<AuthMessage> {
-  return apiRequest<AuthMessage>('v1/auth/cambiar-clave', {
-    method: 'POST',
-    body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
-  })
 }
 
 export function getAuthErrorMessage(error: unknown): string {

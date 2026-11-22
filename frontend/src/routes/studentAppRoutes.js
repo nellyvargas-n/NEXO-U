@@ -8,6 +8,8 @@ import LearningPathsPage from '../features/learning-paths/LearningPathsPage.jsx'
 import CourseDetailPage from '../features/course-detail/CourseDetailPage.jsx'
 import CoursesPage from '../features/courses/CoursesPage.jsx'
 import WalletPage from '../features/wallet/WalletPage.jsx'
+import SavedPage from '../features/saved/SavedPage.jsx'
+import NotificationsPage from '../features/notifications/NotificationsPage.jsx'
 import PrivacyPage from '../features/privacy/PrivacyPage.jsx'
 import SettingsPage from '../features/settings/SettingsPage.jsx'
 
@@ -84,6 +86,8 @@ export const studentAppRoutes = [
     activePath: '/app/cursos',
     component: CoursesPage,
   },
+  { path: '/app/guardados', group: 'Cuenta', title: 'Guardados', description: 'Tus oportunidades guardadas en NEXO U.', activePath: '/app/guardados', component: SavedPage },
+  { path: '/app/notificaciones', group: 'Cuenta', title: 'Notificaciones', description: 'Avisos reales de tu cuenta y validaciones de cursos.', activePath: '/app/notificaciones', component: NotificationsPage },
   {
     path: '/app/billetera',
     group: 'Cuenta',
@@ -104,7 +108,7 @@ export const studentAppRoutes = [
     path: '/app/configuracion',
     group: 'Cuenta',
     title: 'Configuración',
-    description: 'Cambia tu contraseña; las preferencias visuales aún no se guardan.',
+    description: 'Gestiona tu seguridad y contraseña.',
     activePath: '/app/configuracion',
     component: SettingsPage,
   },

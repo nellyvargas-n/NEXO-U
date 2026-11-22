@@ -14,10 +14,6 @@ const requirementLabels = {
   skill: 'Habilidad',
   language: 'Idioma',
   certificate: 'Certificado',
-  city: 'Ciudad',
-  average_grade: 'Promedio mínimo',
-  math_grade: 'Nota mínima de Matemáticas',
-  graduation_year: 'Año de graduación',
 }
 
 function formatDate(value) {
@@ -50,7 +46,6 @@ function OpportunityMatchCard({ opportunity, maxRequirements = 4 }) {
               {opportunity.verified_organization && (
                 <span className="inline-flex items-center gap-1 text-xs font-medium text-[#567461]"><Icon name="check" className="size-3.5" /> Emisor verificado</span>
               )}
-              {opportunity.is_demo && <span className="rounded-full bg-[#fff4e7] px-3 py-1 text-xs font-semibold text-[#8a6030]">Ejemplo ficticio</span>}
             </div>
             <h2 className="mt-3 font-display text-xl font-semibold leading-tight text-[#1c4033]">{opportunity.title}</h2>
             <p className="mt-1 text-sm text-[#718075]">{opportunity.organization}</p>
@@ -91,16 +86,15 @@ function OpportunityMatchCard({ opportunity, maxRequirements = 4 }) {
             <ul className="mt-2 divide-y divide-[#edf1eb]">
               {visibleRequirements.map((requirement, index) => {
                 const met = requirement.status === 'cumple'
-                const notDeclared = requirement.status === 'no_declarado'
                 const suggestedCourse = requirement.courses?.[0]
                 return (
                   <li className="py-3" key={`${requirement.kind}-${requirement.required}-${index}`}>
                     <div className="flex items-center gap-2 text-sm">
-                      <span className={`grid size-6 shrink-0 place-items-center rounded-full ${met ? 'bg-[#e4f2e5] text-[#328052]' : notDeclared ? 'bg-[#f0f2ee] text-[#68766c]' : 'bg-[#fbf2dd] text-[#947333]'}`}>
-                        <Icon name={met ? 'check' : notDeclared ? 'minus' : 'plus'} className="size-3.5" />
+                      <span className={`grid size-6 shrink-0 place-items-center rounded-full ${met ? 'bg-[#e4f2e5] text-[#328052]' : 'bg-[#fbf2dd] text-[#947333]'}`}>
+                        <Icon name={met ? 'check' : 'plus'} className="size-3.5" />
                       </span>
                       <span className="font-medium text-[#344f40]">{requirementLabels[requirement.kind] ?? requirement.kind}: {requirement.required}</span>
-                      <span className={`ml-auto text-xs font-semibold ${met ? 'text-[#548164]' : notDeclared ? 'text-[#68766c]' : 'text-[#927d49]'}`}>{met ? 'Cumples' : notDeclared ? 'No declarado' : 'Pendiente'}</span>
+                      <span className={`ml-auto text-xs font-semibold ${met ? 'text-[#548164]' : 'text-[#927d49]'}`}>{met ? 'Cumples' : 'Pendiente'}</span>
                     </div>
                     {!met && suggestedCourse && (
                       <p className="mb-0 ml-8 mt-2 text-xs leading-5 text-[#718075]">Curso sugerido: <a className="font-semibold text-[#246b4a] underline-offset-4 hover:underline" href="/app/cursos">{suggestedCourse.title}</a></p>
@@ -116,7 +110,7 @@ function OpportunityMatchCard({ opportunity, maxRequirements = 4 }) {
         <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-[#edf1eb] pt-4">
           <div className="flex flex-wrap items-center gap-4 text-sm text-[#758579]">
             {amount && <span>{amount}</span>}
-            {opportunity.official_url && <a className="font-semibold text-[#246b4a] underline-offset-4 hover:underline" href={opportunity.official_url} target="_blank" rel="noreferrer">{opportunity.is_demo ? 'Referencia del ejemplo' : 'Fuente oficial'} <span aria-hidden="true">↗</span></a>}
+            {opportunity.official_url && <a className="font-semibold text-[#246b4a] underline-offset-4 hover:underline" href={opportunity.official_url} target="_blank" rel="noreferrer">Fuente oficial <span aria-hidden="true">↗</span></a>}
           </div>
           {match?.requirements?.some((requirement) => requirement.status === 'falta' && requirement.courses?.length > 0) && (
             <a className="inline-flex min-h-10 items-center gap-2 text-sm font-semibold text-[#246b4a] underline-offset-4 hover:underline" href="/app/cursos">Ver cursos <span aria-hidden="true">→</span></a>

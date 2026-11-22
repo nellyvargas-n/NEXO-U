@@ -2,12 +2,13 @@ import { useState } from 'react'
 import AuthLayout from '../components/AuthLayout.jsx'
 import PasswordField from '../components/PasswordField.jsx'
 import Icon from '../../../shared/components/Icon.jsx'
-import { getAuthErrorMessage, registerStudentAccount } from '../../../shared/api/modules/auth.service.ts'
+import { getAuthErrorMessage, registerAccount } from '../../../shared/api/modules/auth.service.ts'
 import { saveOnboardingDraft } from '../../profile/onboardingDraft.ts'
 
 const passwordMismatchMessage = 'Las contraseñas no coinciden.'
 
 function RegisterPage() {
+  const [role, setRole] = useState('usuario')
   const [error, setError] = useState('')
   const [passwordError, setPasswordError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -45,11 +46,11 @@ function RegisterPage() {
     setIsSubmitting(true)
 
     try {
-      await registerStudentAccount({ email, password })
-      if (studentType === 'school' || studentType === 'university') {
+      await registerAccount({ email, password }, role)
+      if (role === 'usuario' && (studentType === 'school' || studentType === 'university')) {
         saveOnboardingDraft({ fullName, studentType })
       }
-      window.location.assign('/login?registered=1')
+      window.location.assign(`/login?registered=1&role=${role}`)
     } catch (requestError) {
       setError(getAuthErrorMessage(requestError))
     } finally {
@@ -67,24 +68,36 @@ function RegisterPage() {
     >
       <form className="grid gap-5" onSubmit={handleSubmit} onChange={() => setError('')} aria-busy={isSubmitting}>
         <fieldset className="m-0 grid gap-3 border-0 p-0">
-          <legend className="mb-1 text-sm font-semibold text-[#344b3c]">¿Dónde estudias actualmente?</legend>
+          <legend className="mb-1 text-sm font-semibold text-[#344b3c]">¿Cómo utilizarás NEXO U?</legend>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <label className="relative cursor-pointer">
-              <input className="peer sr-only" type="radio" name="studentType" value="school" required />
-              <span className="flex min-h-12 items-center gap-2 rounded-xl border border-[#d8e2d7] bg-white px-3 py-2 text-sm text-[#526357] transition peer-checked:border-[#438c61] peer-checked:bg-[#eff7ef] peer-checked:text-[#235a3d] peer-checked:ring-2 peer-checked:ring-[#438c61]/15 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[#438c61] max-[390px]:gap-1 max-[390px]:px-2">
-                <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-[#eff6ed] text-[#347a57]"><Icon name="book-open" className="size-4" /></span>
-                <strong className="font-semibold">En el colegio</strong>
-              </span>
+            <label className="cursor-pointer rounded-xl border border-[#d8e2d7] bg-white px-4 py-3 text-sm has-[:checked]:border-[#438c61] has-[:checked]:bg-[#eff7ef]">
+              <input type="radio" name="role" value="usuario" checked={role === 'usuario'} onChange={() => setRole('usuario')} className="mr-2 accent-[#347a57]" />
+              <strong>Estudiante</strong><span className="mt-1 block text-xs text-[#6a7b6f]">Buscar becas, pasantías y cursos</span>
             </label>
-            <label className="relative cursor-pointer">
-              <input className="peer sr-only" type="radio" name="studentType" value="university" required />
-              <span className="flex min-h-12 items-center gap-2 rounded-xl border border-[#d8e2d7] bg-white px-3 py-2 text-sm text-[#526357] transition peer-checked:border-[#438c61] peer-checked:bg-[#eff7ef] peer-checked:text-[#235a3d] peer-checked:ring-2 peer-checked:ring-[#438c61]/15 peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-[#438c61] max-[390px]:gap-1 max-[390px]:px-2">
-                <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-[#eff6ed] text-[#347a57]"><Icon name="building" className="size-4" /></span>
-                <strong className="font-semibold">En la universidad</strong>
-              </span>
+            <label className="cursor-pointer rounded-xl border border-[#d8e2d7] bg-white px-4 py-3 text-sm has-[:checked]:border-[#438c61] has-[:checked]:bg-[#eff7ef]">
+              <input type="radio" name="role" value="empresa" checked={role === 'empresa'} onChange={() => setRole('empresa')} className="mr-2 accent-[#347a57]" />
+              <strong>Empresa / institución</strong><span className="mt-1 block text-xs text-[#6a7b6f]">Publicar convocatorias y cursos</span>
             </label>
           </div>
         </fieldset>
+
+        {role === 'usuario' ? (
+          <fieldset className="m-0 grid gap-3 border-0 p-0">
+            <legend className="mb-1 text-sm font-semibold text-[#344b3c]">¿Dónde estudias actualmente?</legend>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-[#d8e2d7] bg-white p-3 text-sm has-[:checked]:border-[#438c61] has-[:checked]:bg-[#eff7ef]">
+                <input type="radio" name="studentType" value="school" className="accent-[#347a57]" required={role === 'usuario'} /> En el colegio
+              </label>
+              <label className="flex cursor-pointer items-center gap-2 rounded-xl border border-[#d8e2d7] bg-white p-3 text-sm has-[:checked]:border-[#438c61] has-[:checked]:bg-[#eff7ef]">
+                <input type="radio" name="studentType" value="university" className="accent-[#347a57]" required={role === 'usuario'} /> En la universidad
+              </label>
+            </div>
+          </fieldset>
+        ) : (
+          <p className="rounded-xl border border-[#d9e7d7] bg-[#f3f8ef] px-4 py-3 text-sm leading-6 text-[#486753]">
+            Primero creas una cuenta institucional. Al iniciar sesión podrás registrar tu organización, que deberá ser verificada por un administrador antes de publicar.
+          </p>
+        )}
 
         <div className="grid gap-2">
           <label className="text-sm font-semibold text-[#344b3c]" htmlFor="register-name">Nombre completo</label>
@@ -104,7 +117,7 @@ function RegisterPage() {
         <button className="relative inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-[#1c5a42] px-5 text-base font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1c5a42] active:bg-[#174d38] disabled:cursor-wait disabled:opacity-70" type="submit" disabled={isSubmitting}>
           {isSubmitting ? 'Creando cuenta…' : 'Crear mi cuenta'} <Icon name="arrow-right" className="absolute right-5 size-5" />
         </button>
-        <p className="-mt-2 text-xs leading-5 text-[#718075]">Después de iniciar sesión, completarás tus datos académicos para activar las recomendaciones.</p>
+        <p className="-mt-2 text-xs leading-5 text-[#718075]">{role === 'usuario' ? 'Después de iniciar sesión, completarás tu perfil académico.' : 'Un administrador verificará tu institución antes de habilitar publicaciones.'}</p>
       </form>
     </AuthLayout>
   )

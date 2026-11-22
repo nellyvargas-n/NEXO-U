@@ -11,7 +11,7 @@ const credentialKinds = [
 ]
 
 const languageLevels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
-const inputClass = 'mt-2 min-h-12 w-full rounded-xl border border-[#d8e2d7] bg-white px-4 text-base text-[#253b30] outline-none focus:border-[#438c61] focus:ring-4 focus:ring-[#438c61]/15'
+const inputClass = 'mt-2 min-h-12 w-full rounded-xl border border-[#dfe8f5] bg-white px-4 text-base text-[#253b30] outline-none focus:border-[#438c61] focus:ring-4 focus:ring-[#438c61]/15'
 
 function kindLabel(kind) {
   return credentialKinds.find((item) => item.value === kind)?.label ?? kind
@@ -22,7 +22,7 @@ function getLoadError(error) {
     return { message: 'Inicia sesión con tu cuenta de estudiante para ver tus credenciales.', action: 'login' }
   }
   if (error instanceof ApiError && error.status === 404) {
-    return { message: 'Completa tu perfil escolar o universitario para consultar tus credenciales.', action: 'profile' }
+    return { message: 'Primero debes completar un perfil de colegio o universidad antes de agregar tus habilidades.', action: 'profile' }
   }
   if (error instanceof TypeError) return { message: 'No pudimos conectar con el servidor. Revisa la conexión e inténtalo otra vez.', action: 'retry' }
   return { message: error instanceof Error ? error.message : 'No se pudieron cargar tus credenciales.', action: 'retry' }
@@ -50,6 +50,8 @@ function CredentialsPage() {
 
   useEffect(() => {
     let isCurrent = true
+    setIsLoading(true)
+    setLoadError(null)
 
     getMyCredentials()
       .then((result) => {
@@ -64,12 +66,6 @@ function CredentialsPage() {
 
     return () => { isCurrent = false }
   }, [reloadKey])
-
-  function retryLoad() {
-    setIsLoading(true)
-    setLoadError(null)
-    setReloadKey((key) => key + 1)
-  }
 
   async function handleSubmit(event) {
     event.preventDefault()
@@ -90,7 +86,7 @@ function CredentialsPage() {
       setSuccessMessage('Credencial agregada. Aparecerá como declarada hasta que un emisor autorizado la verifique.')
     } catch (error) {
       if (error instanceof ApiError && error.status === 404) {
-        setSaveError('Completa primero tu perfil escolar o universitario para registrar credenciales.')
+        setSaveError('Completa primero tu perfil académico (colegio o universidad) para registrar credenciales.')
       } else if (error instanceof TypeError) {
         setSaveError('No pudimos conectar con el servidor. Inténtalo otra vez.')
       } else {
@@ -102,16 +98,16 @@ function CredentialsPage() {
   }
 
   if (isLoading) {
-    return <Surface className="max-w-4xl"><p className="m-0 py-4 text-sm text-[#718075]" role="status">Cargando tus credenciales…</p></Surface>
+    return <Surface className="max-w-4xl"><p className="m-0 py-4 text-sm text-[#8595a9]" role="status">Cargando tus credenciales…</p></Surface>
   }
 
   if (loadError) {
     return (
       <Surface className="max-w-3xl">
         <p className="m-0 rounded-xl border border-[#f1c3c0] bg-[#fff4f2] px-4 py-3 text-sm leading-5 text-[#9b302a]" role="alert">{loadError.message}</p>
-        {loadError.action === 'profile' && <a className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#1c5a42] px-4 text-sm font-semibold text-white" href="/app/perfil">Ir a mi perfil</a>}
-        {loadError.action === 'login' && <a className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#1c5a42] px-4 text-sm font-semibold text-white" href="/login">Iniciar sesión</a>}
-        {loadError.action === 'retry' && <button className="mt-4 min-h-11 rounded-xl border border-[#d8e2d7] px-4 text-sm font-semibold text-[#1c5a42]" type="button" onClick={retryLoad}>Reintentar</button>}
+        {loadError.action === 'profile' && <a className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#2475e2] px-4 text-sm font-semibold text-white" href="/app/perfil">Ir a mi perfil</a>}
+        {loadError.action === 'login' && <a className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#2475e2] px-4 text-sm font-semibold text-white" href="/login">Iniciar sesión</a>}
+        {loadError.action === 'retry' && <button className="mt-4 min-h-11 rounded-xl border border-[#dfe8f5] px-4 text-sm font-semibold text-[#2475e2]" type="button" onClick={() => setReloadKey((key) => key + 1)}>Reintentar</button>}
       </Surface>
     )
   }
@@ -119,9 +115,17 @@ function CredentialsPage() {
   return (
     <div className="grid max-w-5xl items-start gap-5 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
       <Surface>
-        <p className="m-0 text-xs font-bold tracking-[0.12em] text-[#347a57]">AGREGA UNA HABILIDAD O LOGRO</p>
-        <h2 className="mt-2 font-display text-xl font-semibold text-[#1c4033]">Registrar credencial</h2>
-        <p className="mt-2 text-sm leading-6 text-[#718075]">Puedes declarar habilidades, idiomas y certificados. El emisor correspondiente debe verificar una credencial antes de que cuente como validada.</p>
+        <p className="m-0 text-xs font-bold tracking-[0.12em] text-[#2876d7]">AGREGA UNA HABILIDAD O LOGRO</p>
+        <h2 className="mt-2 font-display text-xl font-semibold text-[#1d3557]">Registrar credencial</h2>
+        <p className="mt-2 text-sm leading-6 text-[#8595a9]">Puedes declarar habilidades, idiomas y certificados. El emisor correspondiente debe verificar una credencial antes de que cuente como validada.</p>
+        <div className="nex-credential-help">
+          <strong>¿Qué puedo registrar aquí?</strong>
+          <span><b>Habilidad:</b> Python, Excel, diseño gráfico, atención al cliente.</span>
+          <span><b>Idioma:</b> Inglés, portugués u otro, indicando tu nivel A1–C2.</span>
+          <span><b>Certificado:</b> escribe el nombre de la constancia o curso.</span>
+          <small>Por ahora registras el nombre: este formulario no permite subir archivos PDF. Una institución autorizada puede verificar las credenciales.</small>
+          <a href="/app/perfil">← Volver a mi perfil académico</a>
+        </div>
 
         <form className="mt-5 grid gap-4" onSubmit={handleSubmit} aria-busy={isSaving}>
           <label className="block text-sm font-semibold text-[#344b3c}" htmlFor="credential-kind">
@@ -154,7 +158,7 @@ function CredentialsPage() {
           {saveError && <p className="m-0 rounded-xl border border-[#f1c3c0] bg-[#fff4f2] px-4 py-3 text-sm leading-5 text-[#9b302a]" role="alert">{saveError}</p>}
           {successMessage && <p className="m-0 rounded-xl border border-[#d5e8d3] bg-[#f1f8ec] px-4 py-3 text-sm leading-5 text-[#365f43]" role="status">{successMessage}</p>}
 
-          <button className="mt-1 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#1c5a42] px-5 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1c5a42] disabled:cursor-wait disabled:opacity-70" type="submit" disabled={isSaving}>
+          <button className="mt-1 inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#2475e2] px-5 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2475e2] disabled:cursor-wait disabled:opacity-70" type="submit" disabled={isSaving}>
             {isSaving ? 'Guardando…' : 'Agregar credencial'} {!isSaving && <Icon name="arrow-right" className="size-4" />}
           </button>
         </form>
@@ -164,10 +168,10 @@ function CredentialsPage() {
         <div className="border-b border-[#edf1eb] px-5 py-5 sm:px-6">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <h2 className="font-display text-lg font-semibold text-[#1c4033]">Mis credenciales</h2>
-              <p className="mt-1 text-sm text-[#718075]">{credentials.length} {credentials.length === 1 ? 'registro' : 'registros'} en tu perfil</p>
+              <h2 className="font-display text-lg font-semibold text-[#1d3557]">Mis credenciales</h2>
+              <p className="mt-1 text-sm text-[#8595a9]">{credentials.length} {credentials.length === 1 ? 'registro' : 'registros'} en tu perfil</p>
             </div>
-            <button className="min-h-10 rounded-lg px-3 text-sm font-semibold text-[#347a57] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#347a57]" type="button" onClick={retryLoad}>Actualizar</button>
+            <button className="min-h-10 rounded-lg px-3 text-sm font-semibold text-[#2876d7] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2876d7]" type="button" onClick={() => setReloadKey((key) => key + 1)}>Actualizar</button>
           </div>
         </div>
 
@@ -176,7 +180,7 @@ function CredentialsPage() {
             {credentials.map((credential) => (
               <li className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6" key={credential.id}>
                 <div className="min-w-0">
-                  <p className="m-0 font-semibold text-[#30483a]">{credential.value}{credential.level && <span className="ml-2 text-sm font-medium text-[#718075]">{credential.level}</span>}</p>
+                  <p className="m-0 font-semibold text-[#30483a]">{credential.value}{credential.level && <span className="ml-2 text-sm font-medium text-[#8595a9]">{credential.level}</span>}</p>
                   <p className="m-0 mt-1 text-sm text-[#7a887d]">{kindLabel(credential.kind)} · {credential.verified ? `Verificada por ${credential.issuer || 'un emisor autorizado'}` : 'Declarada por ti'}</p>
                 </div>
                 <CredentialStatus credential={credential} />
@@ -185,9 +189,9 @@ function CredentialsPage() {
           </ul>
         ) : (
           <div className="px-5 py-10 text-center sm:px-6">
-            <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#edf5e9] text-[#347a57]" aria-hidden="true"><Icon name="check" /></span>
-            <h3 className="mt-4 font-display text-lg font-semibold text-[#1c4033]">Aún no registraste credenciales</h3>
-            <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[#718075]">Agrega una habilidad o idioma para que el sistema pueda compararlo con los requisitos de las oportunidades.</p>
+            <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#eaf3ff] text-[#2876d7]" aria-hidden="true"><Icon name="check" /></span>
+            <h3 className="mt-4 font-display text-lg font-semibold text-[#1d3557]">Aún no registraste credenciales</h3>
+            <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[#8595a9]">Agrega una habilidad o idioma para que el sistema pueda compararlo con los requisitos de las oportunidades.</p>
           </div>
         )}
       </Surface>
