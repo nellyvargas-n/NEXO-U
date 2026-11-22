@@ -12,6 +12,8 @@ class Settings(BaseSettings):
     jwt_exp_minutes: int = Field(default=60, ge=5, le=10080,
                                  validation_alias=AliasChoices("JWT_EXP_MINUTES", "ACCESS_TOKEN_EXPIRE_MINUTES"))
     demo_mode: bool = False
+    gemini_api_key: str = ""
+    gemini_model: str = "gemini-2.5-flash"
     environment: Literal["development", "testing", "production"] = "development"
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

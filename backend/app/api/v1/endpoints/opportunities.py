@@ -1,2 +1,7 @@
-"""Adaptador legado: handlers reales definidos en secure_workspace.py."""
-from app.api.v1.endpoints.secure_workspace import publish, add_requirement
+"""Punto de importación para las rutas reales en institution_features.py.
+
+El router principal registra cada ruta una sola vez, evitando duplicados.
+"""
+from .institution_features import public_opportunities, my_opportunities
+
+__all__ = ['public_opportunities', 'my_opportunities']

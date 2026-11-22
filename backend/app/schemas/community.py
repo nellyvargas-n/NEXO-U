@@ -1,2 +1,10 @@
-"""Modelos Pydantic que valida la API actual."""
-from app.api.v1.endpoints.community_features import PostIn, CommentIn
+"""Publicaciones públicas moderables, sin perfiles bancarios."""
+from datetime import datetime
+from pydantic import BaseModel
+
+class PostRead(BaseModel):
+    id: int
+    title: str
+    body: str
+    created_at: datetime
+    visible: bool

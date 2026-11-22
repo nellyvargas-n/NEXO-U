@@ -1,2 +1,15 @@
-"""Modelos Pydantic que valida la API actual."""
-from app.api.v1.endpoints.secure_workspace import ProfileIn
+"""Matching determinista: compatible no implica admisión o beca concedida."""
+from pydantic import BaseModel, Field
+from app.schemas.requirement import RequirementRead
+
+class MatchingOpportunity(BaseModel):
+    opportunity_id: int
+    title: str
+    deadline: str
+    met: int = Field(ge=0)
+    total: int = Field(gt=0)
+    percent: int = Field(ge=0, le=100)
+    eligible: bool
+    profile_type: str
+    is_demo: bool = False
+    requirements: list[dict]

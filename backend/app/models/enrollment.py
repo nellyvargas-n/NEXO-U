@@ -1,2 +1,3 @@
-"""Compatibilidad con la estructura original: modelos persistentes en un único esquema."""
-from app.models.entities import Enrollment
+"""Importación pública de modelos ORM existentes sin crear tablas duplicadas."""
+from .entities import Enrollment
+__all__ = ["Enrollment"]

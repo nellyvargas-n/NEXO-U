@@ -1,2 +1,9 @@
-"""Modelos Pydantic que valida la API actual."""
-from app.api.v1.endpoints.community_features import EventIn
+"""Eventos publicados por organizaciones verificadas."""
+from datetime import datetime
+from pydantic import BaseModel, HttpUrl
+
+class PublicEvent(BaseModel):
+    id: int
+    title: str
+    starts_at: datetime
+    public_url: HttpUrl | None = None

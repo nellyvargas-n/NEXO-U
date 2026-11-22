@@ -95,3 +95,6 @@ router.include_router(community_features_router)
 
 from app.api.v1.endpoints.frontend_api import router as frontend_router
 router.include_router(frontend_router)
+
+from app.api.v1.endpoints.ai import router as guidance_router
+router.include_router(guidance_router)

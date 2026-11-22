@@ -1,2 +1,3 @@
-"""Compatibilidad con la estructura original: modelos persistentes en un único esquema."""
-from app.models.extended import CommunityEvent
+"""Importación pública de modelos ORM existentes sin crear tablas duplicadas."""
+from .extended import CommunityEvent
+__all__ = ["CommunityEvent"]

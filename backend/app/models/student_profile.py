@@ -1,2 +1,4 @@
-"""Compatibilidad con la estructura original: modelos persistentes en un único esquema."""
-from app.models.entities import Profile
+"""Importación pública de modelos ORM existentes sin crear tablas duplicadas."""
+from .entities import Profile
+from .extended import SchoolProfile
+__all__ = ["Profile", "SchoolProfile"]

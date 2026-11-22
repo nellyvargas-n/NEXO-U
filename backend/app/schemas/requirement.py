@@ -1,2 +1,9 @@
-"""Modelos Pydantic que valida la API actual."""
-from app.api.v1.endpoints.secure_workspace import RequirementIn
+"""Reglas visibles del emisor: operador explícito para idioma B1, semestre, etc."""
+from pydantic import BaseModel
+
+class RequirementRead(BaseModel):
+    kind: str
+    operator: str
+    required: str
+    required_level: str | None = None
+    status: str

@@ -1,2 +1,6 @@
-"""Compatibilidad de servicios; la API activa implementa la lógica en app.api.v1.endpoints.student_features."""
-from app.api.v1.endpoints.student_features import upsert_budget
+"""Cálculo puro de presupuesto mensual privado, sin solicitudes externas."""
+from decimal import Decimal
+
+
+def available_budget(limit_bob: Decimal, expenses_bob: Decimal) -> Decimal:
+    return Decimal(limit_bob) - Decimal(expenses_bob)

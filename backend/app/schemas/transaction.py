@@ -1,2 +1,4 @@
-"""Modelos Pydantic que valida la API actual."""
-from app.api.v1.endpoints.student_features import EntryIn
+"""Contrato histórico de movimiento; las finanzas nuevas usan FinanceEntryRead."""
+from app.schemas.finance import FinanceEntryRead
+TransactionRead = FinanceEntryRead
+__all__ = ['TransactionRead']

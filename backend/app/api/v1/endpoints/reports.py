@@ -1,2 +1,7 @@
-"""Adaptador legado: handlers reales definidos en institution_features.py."""
-from app.api.v1.endpoints.institution_features import stats, admin_stats
+"""Punto de importación para las rutas reales en institution_features.py.
+
+El router principal registra cada ruta una sola vez, evitando duplicados.
+"""
+from .institution_features import admin_stats, stats
+
+__all__ = ['admin_stats', 'stats']

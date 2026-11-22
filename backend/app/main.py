@@ -18,12 +18,12 @@ async def lifespan(app:FastAPI):
         with SessionLocal() as db: seed(db)
     yield
 
-app=FastAPI(title="NEXO U | API Neon | 3 roles",version="1.2.0",lifespan=lifespan)
+app=FastAPI(title="NEXO U | API Neon | 3 roles",version="1.3.0",lifespan=lifespan)
 app.add_middleware(CORSMiddleware,allow_origins=[x.strip() for x in settings.cors_origins.split(",")],allow_credentials=True,allow_methods=["*"],allow_headers=["*"])
 app.include_router(router)
 
 @app.get("/health")
-def health():return {"status":"ok","service":"NEXO-U","version":"1.2.0"}
+def health():return {"status":"ok","service":"NEXO-U","version":"1.3.0"}
 
 
 @app.get("/ready")
@@ -59,7 +59,7 @@ def ready():
 @app.get("/README.md",response_class=PlainTextResponse,include_in_schema=False)
 @app.get("/readme",response_class=PlainTextResponse,include_in_schema=False)
 def readme():
-    return "NEXO U Backend v1.2\n\nDocumentación: /docs\nSalud: /health\nNeon: /ready\nAPI: /api/v1/meta\nInstrucciones completas en backend/README.md dentro del ZIP.\n"
+    return "NEXO U Backend v1.3\n\nDocumentación: /docs\nSalud: /health\nNeon: /ready\nAPI: /api/v1/meta\nInstrucciones completas en backend/README.md dentro del ZIP.\n"
 
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
 def home():

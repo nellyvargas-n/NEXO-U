@@ -1,2 +1,7 @@
-"""Adaptador legado: handlers reales definidos en secure_workspace.py."""
-from app.api.v1.endpoints.secure_workspace import upsert_profile, my_profile
+"""Punto de importación para las rutas reales en secure_workspace.py.
+
+El router principal registra cada ruta una sola vez, evitando duplicados.
+"""
+from .secure_workspace import my_profile, upsert_profile
+
+__all__ = ['my_profile', 'upsert_profile']

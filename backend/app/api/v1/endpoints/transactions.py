@@ -1,2 +1,3 @@
-"""Adaptador legado: handlers reales definidos en student_features.py."""
-from app.api.v1.endpoints.student_features import create_entry, get_entries
+"""Rutas financieras reales registradas desde student_features.py."""
+from .student_features import get_entries, create_entry, delete_entry
+__all__ = ["get_entries", "create_entry", "delete_entry"]

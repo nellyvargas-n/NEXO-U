@@ -1,2 +1,7 @@
-"""Adaptador legado: handlers reales definidos en role_access.py."""
-from app.api.v1.endpoints.role_access import list_users, change_user, verify_org
+"""Punto de importación para las rutas reales en role_access.py.
+
+El router principal registra cada ruta una sola vez, evitando duplicados.
+"""
+from .role_access import list_users, change_user, verify_org
+
+__all__ = ['list_users', 'change_user', 'verify_org']

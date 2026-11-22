@@ -1,2 +1,3 @@
-"""Compatibilidad con la estructura original: modelos persistentes en un único esquema."""
-from app.models.access import AppUser
+"""Importación pública de modelos ORM existentes sin crear tablas duplicadas."""
+from .access import AppUser
+__all__ = ["AppUser"]

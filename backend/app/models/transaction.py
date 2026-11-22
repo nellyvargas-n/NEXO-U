@@ -1,2 +1,4 @@
-"""Compatibilidad con la estructura original: modelos persistentes en un único esquema."""
-from app.models.extended import FinanceEntry
+"""Importación pública de modelos ORM existentes sin crear tablas duplicadas."""
+from .entities import Transaction
+from .extended import FinanceEntry
+__all__ = ["Transaction", "FinanceEntry"]

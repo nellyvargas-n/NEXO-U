@@ -1,2 +1,7 @@
-"""Adaptador legado: handlers reales definidos en secure_workspace.py."""
-from app.api.v1.endpoints.secure_workspace import add_credential, my_credentials
+"""Punto de importación para las rutas reales en secure_workspace.py.
+
+El router principal registra cada ruta una sola vez, evitando duplicados.
+"""
+from .secure_workspace import my_credentials, add_credential, remove_credential
+
+__all__ = ['my_credentials', 'add_credential', 'remove_credential']
