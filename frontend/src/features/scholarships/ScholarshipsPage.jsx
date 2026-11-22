@@ -93,7 +93,7 @@ function ScholarshipCard({ opportunity, profileReady, simulation, onSimulate }) 
           <div className="flex flex-wrap items-center gap-2">
             <span className="rounded-full bg-[#eaf3ff] px-3 py-1 text-xs font-semibold text-[#39704d]">Beca</span>
             {opportunity.verified_organization && <span className="text-xs font-medium text-[#567461]">✓ Emisor verificado</span>}
-            {opportunity.is_curated && <span className="rounded-full bg-[#f4f1e8] px-3 py-1 text-xs font-medium text-[#75633b]">{opportunity.source_kind === 'canal_oficial' ? 'Canal oficial consultado' : 'Fuente institucional consultada'}</span>}
+            {opportunity.is_curated && opportunity.source_kind !== 'canal_oficial' && <span className="rounded-full bg-[#f4f1e8] px-3 py-1 text-xs font-medium text-[#75633b]">Fuente institucional consultada</span>}
           </div>
           <h2 className="mt-3 font-display text-xl font-semibold leading-tight text-[#1d3557]">{opportunity.title}</h2>
           <p className="mt-1 text-sm text-[#8595a9]">{opportunity.organization}</p>

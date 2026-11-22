@@ -31,7 +31,8 @@ function formatAmount(value) {
 function sourceLabel(opportunity) {
   if (opportunity.source_kind === 'demostracion') return 'Oferta de demostración'
   if (opportunity.source_kind === 'bolsa_trabajo') return 'Bolsa de trabajo consultada'
-  if (opportunity.is_curated) return opportunity.source_kind === 'canal_oficial' ? 'Canal oficial consultado' : 'Fuente institucional consultada'
+  if (opportunity.source_kind === 'canal_oficial') return null
+  if (opportunity.is_curated) return 'Fuente institucional consultada'
   return opportunity.verified_organization ? 'Emisor verificado' : 'Emisor sin verificar'
 }
 
@@ -67,7 +68,7 @@ function OpportunityMatchCard({ opportunity, maxRequirements = 4 }) {
               {opportunity.verified_organization && (
                 <span className="inline-flex items-center gap-1 text-xs font-medium text-[#567461]"><Icon name="check" className="size-3.5" /> Emisor verificado</span>
               )}
-              {opportunity.is_curated && <span className="rounded-full bg-[#f4f1e8] px-3 py-1 text-xs font-medium text-[#75633b]">{sourceLabel(opportunity)}</span>}
+              {opportunity.is_curated && sourceLabel(opportunity) && <span className="rounded-full bg-[#f4f1e8] px-3 py-1 text-xs font-medium text-[#75633b]">{sourceLabel(opportunity)}</span>}
             </div>
             <h2 className="mt-3 font-display text-xl font-semibold leading-tight text-[#1c4033]">{opportunity.title}</h2>
             <p className="mt-1 text-sm text-[#718075]">{opportunity.organization}</p>

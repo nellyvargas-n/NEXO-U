@@ -39,7 +39,7 @@ function CourseCardWithEnrollment({
 
       {!course.enrollment && needsCheckout && enrollmentAction === 'ready' && (
         <button className="inline-flex min-h-11 w-full items-center justify-center rounded-xl bg-[#1d684d] px-4 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#438c61]" onClick={() => setCheckoutOpen(true)} type="button">
-          Pagar e inscribirme
+          Inscribirme
         </button>
       )}
       {!course.enrollment && needsCheckout && enrollmentAction === 'login' && <a className="inline-flex min-h-11 items-center justify-center rounded-xl border border-[#dfe8f5] px-4 text-sm font-semibold text-[#246b4a]" href="/login">Iniciar sesión para pagar</a>}
