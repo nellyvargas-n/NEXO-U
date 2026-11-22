@@ -37,9 +37,9 @@ function AdminScholarshipBandsPage() {
 
   return (
     <>
-      <AdminPageHeading eyebrow="SUPERVISIÓN" title="Revisión de bandas de beca" description="Contrasta cada banda con las reglas oficiales antes de aprobarla para las simulaciones de estudiantes." />
+      <AdminPageHeading eyebrow="SUPERVISIÓN" title="Bandas de beca" />
       <div className="mb-5">
-        <AdminNotice tone="warning">La API de pendientes solo entrega el porcentaje y la fuente oficial. No incluye el promedio mínimo ni la nota mínima de Matemática, así que la aprobación queda deshabilitada hasta que el backend entregue esos umbrales.</AdminNotice>
+        <AdminNotice tone="warning">No se puede aprobar: la API no incluye el promedio mínimo ni la nota mínima de Matemática.</AdminNotice>
       </div>
       {error ? <AdminNotice>{error}</AdminNotice> : null}
       {actionError ? <div className="mb-4"><AdminNotice>{actionError}</AdminNotice></div> : null}

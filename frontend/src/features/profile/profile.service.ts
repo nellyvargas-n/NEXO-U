@@ -3,6 +3,7 @@ import { ApiError, apiRequest } from '../../shared/api/client.ts'
 export interface UniversityProfile {
   id?: number
   name: string
+  institution_name?: string
   career: string
   semester: number
   age: number

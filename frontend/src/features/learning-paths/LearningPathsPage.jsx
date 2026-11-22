@@ -39,9 +39,7 @@ function LearningPathsPage() {
   return (
     <div className="grid max-w-5xl gap-5">
       <Surface className="bg-[#f8faf6]">
-        <p className="m-0 text-sm font-semibold text-[#3a7653]">Rutas para requisitos pendientes</p>
-        <h2 className="mt-2 font-display text-xl font-semibold tracking-[-0.03em] text-[#1d3557]">Cursos sugeridos por tus oportunidades</h2>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-[#7b8da5]">Las sugerencias vienen del motor de matching y solo se muestran aquí si el curso también está publicado en el catálogo público.</p>
+        <h2 className="font-display text-xl font-semibold tracking-[-0.03em] text-[#1d3557]">Cursos para tus requisitos pendientes</h2>
       </Surface>
 
       {matchNotice && <p className="m-0 rounded-xl border border-[#e8dfbd] bg-[#fff9e9] px-4 py-3 text-sm leading-5 text-[#75633b]" role="status">{matchNotice}</p>}
@@ -63,8 +61,7 @@ function LearningPathsPage() {
         </div>
       ) : (
         <Surface className="py-9 text-center">
-          <h2 className="font-display text-xl font-semibold text-[#1d3557]">No hay una ruta pública sugerida todavía</h2>
-          <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-[#8595a9]">Cuando el matching encuentre un requisito pendiente que pueda cubrir un curso público, la recomendación aparecerá aquí.</p>
+          <h2 className="font-display text-xl font-semibold text-[#1d3557]">Aún no hay cursos sugeridos</h2>
           <a className="mt-4 inline-flex min-h-10 items-center justify-center rounded-xl border border-[#dfe8f5] px-4 text-sm font-semibold text-[#246b4a]" href="/app/cursos">Explorar el catálogo</a>
         </Surface>
       )}

@@ -14,9 +14,8 @@ function App() {
     return <Page pathname={route.pathname} />
   }
 
-  if (route.layout === 'company' || route.layout === 'admin') {
-    return <Page />
-  }
+  if (route.layout === 'admin') return <Page pathname={route.pathname} />
+  if (route.layout === 'company') return <Page pathname={route.pathname} />
 
   return (
     <div className="nx-public-page min-h-screen overflow-x-clip">

@@ -60,27 +60,27 @@ function AdminApp({ pathname = '/admin' }) {
   }
 
   return (
-    <div className="min-h-screen bg-[#f6f8f4] text-[#173b31]">
+    <div className="nx-workspace nx-role-workspace nx-admin-app min-h-screen">
       {menuOpen ? <button className="fixed inset-0 z-40 cursor-default bg-[#10281f]/35 lg:hidden" type="button" onClick={() => setMenuOpen(false)} aria-label="Cerrar menú de navegación" /> : null}
       <AdminSidebar pathname={page.path} isOpen={menuOpen} onClose={() => setMenuOpen(false)} />
-      <div className="min-h-screen lg:pl-[278px]">
-        <header className="flex min-h-[72px] items-center justify-between gap-4 border-b border-[#e5ebe3] bg-[#fbfcf8] px-4 sm:px-7 lg:px-10">
+      <div className="nx-workspace-body">
+        <header className="nx-workspace-header nx-admin-header">
           <div className="flex min-w-0 items-center gap-3">
-            <button className="grid size-10 shrink-0 place-items-center rounded-xl border border-[#e4ebe1] bg-white text-[#385647] hover:bg-[#f0f5ee] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#247858] lg:hidden" type="button" onClick={() => setMenuOpen(true)} aria-label="Abrir menú de navegación" aria-expanded={menuOpen} aria-controls="admin-sidebar">
+            <button className="nx-icon-btn nx-menu-trigger" type="button" onClick={() => setMenuOpen(true)} aria-label="Abrir menú de navegación" aria-expanded={menuOpen} aria-controls="admin-sidebar">
               <FiMenu className="size-5" aria-hidden="true" />
             </button>
-            <div className="lg:hidden"><BrandMark href="/admin" size="small" /></div>
-            <p className="hidden truncate text-sm font-medium text-[#718075] lg:block">{page.group}<span className="mx-2 text-[#c0c9c0]">/</span><span className="text-[#30483a]">{page.title}</span></p>
+            <div className="nx-mobile-brand"><BrandMark href="/admin" size="small" /></div>
+            <p className="nx-breadcrumb">{page.group}<span>/</span><strong>{page.title}</strong></p>
           </div>
-          <span className="flex min-h-10 shrink-0 items-center gap-2 rounded-xl px-2 text-sm font-semibold text-[#385647]">
-            <span className="grid size-8 place-items-center rounded-full bg-[#d8eddb] text-xs font-bold text-[#215d43]" aria-hidden="true">AD</span>
+          <span className="nx-admin-identity flex min-h-10 shrink-0 items-center gap-2 rounded-xl px-2 text-sm font-semibold">
+            <span className="grid size-8 place-items-center rounded-full text-xs font-bold" aria-hidden="true">AD</span>
             <span className="hidden sm:inline">Admin #{currentUserId}</span>
           </span>
         </header>
 
-        <main className="mx-auto max-w-[1440px] px-4 py-7 sm:px-7 sm:py-9 lg:px-10 lg:py-10">
+        <main className="nx-workspace-content nx-role-main nx-admin-content">
           <Page currentUserId={currentUserId} />
-          <footer className="mt-10 border-t border-[#e5ebe3] py-5 text-xs leading-5 text-[#849187]">Nexo U · Consola de administración</footer>
+          <footer className="nx-admin-footer mt-10 border-t py-5 text-xs leading-5">Nexo U · Consola de administración</footer>
         </main>
       </div>
     </div>

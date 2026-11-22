@@ -11,10 +11,10 @@ const cards = [
 ]
 
 const shortcuts = [
-  { href: '/admin/organizaciones', title: 'Verificar organizaciones', description: 'Revisa las organizaciones pendientes antes de habilitar sus publicaciones.' },
-  { href: '/admin/usuarios', title: 'Gestionar cuentas', description: 'Consulta el estado y el rol de las cuentas registradas.' },
-  { href: '/admin/becas', title: 'Revisar bandas de becas', description: 'Inspecciona las bandas que esperan una decisión administrativa.' },
-  { href: '/admin/auditoria', title: 'Consultar auditoría', description: 'Revisa las acciones administrativas registradas por la API.' },
+  { href: '/admin/organizaciones', title: 'Verificar organizaciones' },
+  { href: '/admin/usuarios', title: 'Gestionar cuentas' },
+  { href: '/admin/becas', title: 'Revisar bandas de beca' },
+  { href: '/admin/auditoria', title: 'Abrir auditoría' },
 ]
 
 function AdminDashboardPage() {
@@ -31,7 +31,7 @@ function AdminDashboardPage() {
 
   return (
     <>
-      <AdminPageHeading eyebrow="CENTRO DE CONTROL" title="Resumen administrativo" description="Supervisa las cuentas, organizaciones y publicaciones que forman parte de Nexo U." />
+      <AdminPageHeading eyebrow="CENTRO DE CONTROL" title="Resumen administrativo" />
       {error ? <AdminNotice>{error}</AdminNotice> : !summary ? <AdminLoading /> : (
         <div className="grid gap-5">
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
@@ -47,7 +47,6 @@ function AdminDashboardPage() {
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <h2 className="m-0 font-display text-xl font-semibold text-[#1c4033]">Accesos de supervisión</h2>
-                <p className="mb-0 mt-2 text-sm leading-6 text-[#718075]">Las decisiones se registran en la auditoría administrativa.</p>
               </div>
               <span className="rounded-full bg-[#fff5de] px-3 py-1.5 text-xs font-semibold text-[#84662b]">{summary.pending_verification} por verificar</span>
             </div>
@@ -55,7 +54,6 @@ function AdminDashboardPage() {
               {shortcuts.map((shortcut) => (
                 <a className="group rounded-xl border border-[#e4ebe1] p-4 transition-colors hover:bg-[#f7faf5] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#438c61]" href={shortcut.href} key={shortcut.href}>
                   <span className="block text-sm font-semibold text-[#245d43]">{shortcut.title}<span aria-hidden="true" className="ml-2 transition-transform group-hover:translate-x-0.5">→</span></span>
-                  <span className="mt-1 block text-sm leading-5 text-[#718075]">{shortcut.description}</span>
                 </a>
               ))}
             </div>

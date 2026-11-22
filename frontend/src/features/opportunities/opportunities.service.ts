@@ -9,6 +9,11 @@ export interface PublicOpportunity {
   amount_bob: number
   organization: string
   verified_organization: boolean
+  is_curated?: boolean
+  source_kind?: string | null
+  source_url?: string | null
+  source_checked_on?: string | null
+  summary?: string | null
 }
 
 export interface MatchRequirement {
@@ -19,7 +24,7 @@ export interface MatchRequirement {
   courses: Array<{
     id: number
     title: string
-    ends_on: string
+    ends_on: string | null
     cost_bob: number
   }>
 }

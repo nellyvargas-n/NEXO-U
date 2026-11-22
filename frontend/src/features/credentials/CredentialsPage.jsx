@@ -50,8 +50,6 @@ function CredentialsPage() {
 
   useEffect(() => {
     let isCurrent = true
-    setIsLoading(true)
-    setLoadError(null)
 
     getMyCredentials()
       .then((result) => {
@@ -66,6 +64,12 @@ function CredentialsPage() {
 
     return () => { isCurrent = false }
   }, [reloadKey])
+
+  function reloadCredentials() {
+    setIsLoading(true)
+    setLoadError(null)
+    setReloadKey((key) => key + 1)
+  }
 
   async function handleSubmit(event) {
     event.preventDefault()
@@ -107,7 +111,7 @@ function CredentialsPage() {
         <p className="m-0 rounded-xl border border-[#f1c3c0] bg-[#fff4f2] px-4 py-3 text-sm leading-5 text-[#9b302a]" role="alert">{loadError.message}</p>
         {loadError.action === 'profile' && <a className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#2475e2] px-4 text-sm font-semibold text-white" href="/app/perfil">Ir a mi perfil</a>}
         {loadError.action === 'login' && <a className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#2475e2] px-4 text-sm font-semibold text-white" href="/login">Iniciar sesión</a>}
-        {loadError.action === 'retry' && <button className="mt-4 min-h-11 rounded-xl border border-[#dfe8f5] px-4 text-sm font-semibold text-[#2475e2]" type="button" onClick={() => setReloadKey((key) => key + 1)}>Reintentar</button>}
+        {loadError.action === 'retry' && <button className="mt-4 min-h-11 rounded-xl border border-[#dfe8f5] px-4 text-sm font-semibold text-[#2475e2]" type="button" onClick={reloadCredentials}>Reintentar</button>}
       </Surface>
     )
   }
@@ -115,17 +119,8 @@ function CredentialsPage() {
   return (
     <div className="grid max-w-5xl items-start gap-5 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
       <Surface>
-        <p className="m-0 text-xs font-bold tracking-[0.12em] text-[#2876d7]">AGREGA UNA HABILIDAD O LOGRO</p>
         <h2 className="mt-2 font-display text-xl font-semibold text-[#1d3557]">Registrar credencial</h2>
-        <p className="mt-2 text-sm leading-6 text-[#8595a9]">Puedes declarar habilidades, idiomas y certificados. El emisor correspondiente debe verificar una credencial antes de que cuente como validada.</p>
-        <div className="nex-credential-help">
-          <strong>¿Qué puedo registrar aquí?</strong>
-          <span><b>Habilidad:</b> Python, Excel, diseño gráfico, atención al cliente.</span>
-          <span><b>Idioma:</b> Inglés, portugués u otro, indicando tu nivel A1–C2.</span>
-          <span><b>Certificado:</b> escribe el nombre de la constancia o curso.</span>
-          <small>Por ahora registras el nombre: este formulario no permite subir archivos PDF. Una institución autorizada puede verificar las credenciales.</small>
-          <a href="/app/perfil">← Volver a mi perfil académico</a>
-        </div>
+        <p className="mt-2 text-sm leading-6 text-[#8595a9]">Las credenciales declaradas quedan pendientes hasta que las verifique un emisor.</p>
 
         <form className="mt-5 grid gap-4" onSubmit={handleSubmit} aria-busy={isSaving}>
           <label className="block text-sm font-semibold text-[#344b3c}" htmlFor="credential-kind">
@@ -171,7 +166,7 @@ function CredentialsPage() {
               <h2 className="font-display text-lg font-semibold text-[#1d3557]">Mis credenciales</h2>
               <p className="mt-1 text-sm text-[#8595a9]">{credentials.length} {credentials.length === 1 ? 'registro' : 'registros'} en tu perfil</p>
             </div>
-            <button className="min-h-10 rounded-lg px-3 text-sm font-semibold text-[#2876d7] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2876d7]" type="button" onClick={() => setReloadKey((key) => key + 1)}>Actualizar</button>
+            <button className="min-h-10 rounded-lg px-3 text-sm font-semibold text-[#2876d7] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2876d7]" type="button" onClick={reloadCredentials}>Actualizar</button>
           </div>
         </div>
 
@@ -191,7 +186,6 @@ function CredentialsPage() {
           <div className="px-5 py-10 text-center sm:px-6">
             <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-[#eaf3ff] text-[#2876d7]" aria-hidden="true"><Icon name="check" /></span>
             <h3 className="mt-4 font-display text-lg font-semibold text-[#1d3557]">Aún no registraste credenciales</h3>
-            <p className="mx-auto mt-2 max-w-sm text-sm leading-6 text-[#8595a9]">Agrega una habilidad o idioma para que el sistema pueda compararlo con los requisitos de las oportunidades.</p>
           </div>
         )}
       </Surface>

@@ -311,7 +311,7 @@ function WalletPage() {
         <div>
           <p className="m-0 text-xs font-bold tracking-[0.12em] text-[#2876d7]">MÓDULO FINANCIERO PRIVADO</p>
           <h2 className="mt-1 font-display text-xl font-semibold text-[#1d3557]">Mi billetera</h2>
-          <p className="mb-0 mt-2 max-w-2xl text-sm leading-6 text-[#7b8da5]">Organiza tus movimientos, define límites por categoría y registra pagos previstos. No se conecta a bancos.</p>
+          <p className="mb-0 mt-2 max-w-2xl text-sm leading-6 text-[#7b8da5]">Movimientos, presupuestos y pagos previstos. No conecta con bancos.</p>
         </div>
         <button className={secondaryButtonClass} type="button" onClick={() => setReloadKey((key) => key + 1)}>Actualizar datos</button>
       </div>
@@ -463,7 +463,7 @@ function WalletPage() {
 
       <Surface className="bg-[#f8faf6]">
         <h2 className="font-display text-lg font-semibold text-[#1d3557]">Privacidad de tus datos</h2>
-        <p className="mb-0 mt-2 text-sm leading-6 text-[#7b8da5]">Los movimientos, presupuestos y obligaciones se consultan en tu cuenta y no se comparten con organizaciones. Este módulo no está conectado a bancos y no ofrece asesoramiento financiero.</p>
+        <p className="mb-0 mt-2 text-sm leading-6 text-[#7b8da5]">Tus datos financieros no se comparten con organizaciones.</p>
       </Surface>
     </div>
   )

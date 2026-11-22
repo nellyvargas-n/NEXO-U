@@ -34,14 +34,13 @@ function AdminAuditPage() {
 
   return (
     <>
-      <AdminPageHeading eyebrow="SUPERVISIÓN" title="Auditoría administrativa" description="Consulta las acciones administrativas recientes y sus registros de origen." />
+      <AdminPageHeading eyebrow="SUPERVISIÓN" title="Auditoría" />
       {error ? <AdminNotice>{error}</AdminNotice> : null}
       {isLoading ? <AdminLoading>Consultando auditoría…</AdminLoading> : !error ? (
         <AdminSurface>
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="m-0 font-display text-xl font-semibold text-[#1c4033]">Actividad reciente</h2>
-              <p className="mb-0 mt-1 text-sm text-[#718075]">Se muestran hasta 100 registros, del más reciente al más antiguo.</p>
             </div>
             <button className={adminSecondaryButton} type="button" onClick={() => { setError(''); setIsLoading(true); setReloadKey((key) => key + 1) }}>Actualizar</button>
           </div>

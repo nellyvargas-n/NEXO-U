@@ -3,16 +3,17 @@ import BrandMark from '../../shared/components/BrandMark.jsx'
 import { clearAccessToken } from '../../shared/api/session.ts'
 
 const groups = [
-  { label:'Mi espacio', items:[['Dashboard','/app',FiHome],['Oportunidades','/app/oportunidades',FiSearch],['Becas','/app/oportunidades/becas',FiAward],['Pasantías','/app/oportunidades/pasantias',FiBriefcase]] },
+  { label:'Explora', items:[['Resumen','/app',FiHome],['Oportunidades','/app/oportunidades',FiSearch]] },
+  { label:'Convocatorias', items:[['Becas','/app/oportunidades/becas',FiAward],['Pasantías','/app/oportunidades/pasantias',FiBriefcase],['Guardados','/app/guardados',FiBookmark]] },
   { label:'Formación', items:[['Cursos','/app/cursos',FiBookOpen],['Rutas de aprendizaje','/app/rutas',FiLayers],['Habilidades y credenciales','/app/credenciales',FiAward]] },
-  { label:'Cuenta', items:[['Guardados','/app/guardados',FiBookmark],['Notificaciones','/app/notificaciones',FiBell],['Mi perfil académico','/app/perfil',FiUser],['Billetera','/app/billetera',FiCreditCard],['Configuración','/app/configuracion',FiSettings],['Privacidad','/app/privacidad',FiShield]] },
+  { label:'Mi cuenta', items:[['Perfil académico','/app/perfil',FiUser],['Billetera','/app/billetera',FiCreditCard],['Notificaciones','/app/notificaciones',FiBell],['Privacidad','/app/privacidad',FiShield],['Configuración','/app/configuracion',FiSettings]] },
 ]
 function StudentSidebar({ pathname, isOpen, onClose, identity = 'Mi cuenta' }) {
-  return <aside id="student-sidebar" className={`nx-student-sidebar ${isOpen ? 'translate-x-0' : '-translate-x-full'}`} aria-label="Navegación estudiantil">
+  return <aside id="student-sidebar" className={`nx-student-sidebar${isOpen ? ' is-open' : ''}`} aria-label="Navegación estudiantil">
     <div className="nx-sidebar-brand"><BrandMark href="/app" /><button className="nx-sidebar-close" onClick={onClose} aria-label="Cerrar menú" type="button"><FiX/></button></div>
     <div className="nx-sidebar-identity"><small>MI ESPACIO ESTUDIANTIL</small><strong>{identity}</strong></div>
-    <nav className="nx-sidebar-nav">{groups.map(group=><section key={group.label}><h2>{group.label}</h2><ul>{group.items.map(([label, href, Icon])=><li key={href}><a className={pathname===href?'nx-active':''} href={href} onClick={onClose} aria-current={pathname===href?'page':undefined}><Icon/><span>{label}</span></a></li>)}</ul></section>)}</nav>
-    <div className="nx-sidebar-foot"><button type="button" onClick={()=>{clearAccessToken();window.location.assign('/login')}}><FiLogOut/> Cerrar sesión</button><small>© NEXO U · Tu futuro empieza aquí.</small></div>
+    <nav className="nx-sidebar-nav">{groups.map(group=><section key={group.label}><h2>{group.label}</h2><ul>{group.items.map(([label, href, Icon])=>{const active=pathname===href||(href!=='/app'&&pathname.startsWith(`${href}/`));return <li key={href}><a className={active?'nx-active':''} href={href} onClick={onClose} aria-current={active?'page':undefined}><Icon/><span>{label}</span></a></li>})}</ul></section>)}</nav>
+    <div className="nx-sidebar-foot"><button type="button" onClick={()=>{clearAccessToken();window.location.assign('/login')}}><FiLogOut/> Cerrar sesión</button></div>
   </aside>
 }
 export default StudentSidebar
