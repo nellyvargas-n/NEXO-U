@@ -21,6 +21,13 @@ export interface RegisteredUser {
   active: boolean
 }
 
+export interface CurrentUser {
+  id: number
+  email: string
+  role: AuthRole
+  active: boolean
+}
+
 export interface AuthMessage {
   message: string
   changed?: boolean
@@ -47,8 +54,12 @@ export async function signIn({ email, password }: AuthCredentials, remember = fa
     throw new Error('El servidor no devolvió una sesión válida.')
   }
 
-  saveAccessToken(session.access_token, remember)
+  saveAccessToken(session.access_token, remember, session.role)
   return session
+}
+
+export function getCurrentUser(): Promise<CurrentUser> {
+  return apiRequest<CurrentUser>('v1/auth/me')
 }
 
 export function requestPasswordReset(email: string): Promise<AuthMessage> {

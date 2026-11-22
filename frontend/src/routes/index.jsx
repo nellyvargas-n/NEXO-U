@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- route metadata and resolver intentionally live together. */
 import LandingPage from '../features/landing/LandingPage.jsx'
 import RegisterPage from '../features/auth/pages/RegisterPage.jsx'
 import SignInPage from '../features/auth/pages/SignInPage.jsx'
@@ -5,6 +6,8 @@ import RequestPasswordResetPage from '../features/auth/pages/RequestPasswordRese
 import ResetPasswordPage from '../features/auth/pages/ResetPasswordPage.jsx'
 import StudentApp from '../features/student-app/StudentApp.jsx'
 import CompanyCourseValidationPage from '../features/company-validation/CompanyCourseValidationPage.jsx'
+import AdminApp from '../features/admin/AdminApp.jsx'
+import { adminAppRoutes } from '../features/admin/adminAppRoutes.js'
 import { studentAppRoutes } from './studentAppRoutes.js'
 
 function NotFoundPage() {
@@ -27,6 +30,12 @@ export const routes = [
   { path: '/recuperar-clave', currentPage: 'login', layout: 'public', component: RequestPasswordResetPage },
   { path: '/reset', currentPage: 'login', layout: 'public', component: ResetPasswordPage },
   { path: '/empresa/cursos/validar', currentPage: 'company-validation', layout: 'company', component: CompanyCourseValidationPage },
+  ...adminAppRoutes.map(({ path }) => ({
+    path,
+    currentPage: 'admin',
+    layout: 'admin',
+    component: AdminApp,
+  })),
   ...studentAppRoutes.map(({ path }) => ({
     path,
     currentPage: 'student',

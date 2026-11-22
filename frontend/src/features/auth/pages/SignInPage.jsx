@@ -29,6 +29,10 @@ function SignInPage() {
         window.location.assign('/empresa/cursos/validar')
         return
       }
+      if (session.role === 'admin') {
+        window.location.assign('/admin')
+        return
+      }
       const isNewRegistration = new URLSearchParams(window.location.search).get('registered') === '1'
       window.location.assign(isNewRegistration ? '/app/perfil?setup=1' : '/app')
     } catch (requestError) {

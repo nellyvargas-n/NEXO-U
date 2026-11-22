@@ -13,6 +13,10 @@ function App() {
     return <Page />
   }
 
+  if (route.layout === 'admin') {
+    return <Page pathname={route.pathname} />
+  }
+
   return (
     <div className="min-h-screen overflow-x-clip bg-[#fbfcf8]">
       <PublicNavbar currentPage={route.currentPage} />

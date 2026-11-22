@@ -53,14 +53,13 @@ function CompanyCourseValidationPage() {
 
   useEffect(() => {
     let isCurrent = true
-    setIsLoading(true)
-    setLoadError(null)
 
     getCompanyCourseData()
       .then((data) => {
         if (!isCurrent) return
         setOrganizations(data.organizations)
         setCourses(data.courses)
+        if (data.courses.some((course) => course.organization?.verified)) setIsLoadingEnrollments(true)
         setSelectedCourseId((current) => {
           const eligible = data.courses.find((course) => course.organization?.verified)
           return current && data.courses.some((course) => String(course.id) === current && course.organization?.verified)
@@ -81,15 +80,8 @@ function CompanyCourseValidationPage() {
   useEffect(() => {
     let isCurrent = true
 
-    if (!selectedCourseId) {
-      setEnrollments([])
-      setIsLoadingEnrollments(false)
-      setEnrollmentLoadError('')
-      return () => { isCurrent = false }
-    }
+    if (!selectedCourseId) return () => { isCurrent = false }
 
-    setIsLoadingEnrollments(true)
-    setEnrollmentLoadError('')
     getCompanyCourseEnrollments(Number(selectedCourseId))
       .then((result) => {
         if (isCurrent) setEnrollments(result)
@@ -110,6 +102,18 @@ function CompanyCourseValidationPage() {
   const pendingEnrollments = enrollments.filter((enrollment) => !enrollment.completed)
   const completedEnrollments = enrollments.filter((enrollment) => enrollment.completed)
 
+  function retryCompanyData() {
+    setIsLoading(true)
+    setLoadError(null)
+    setReloadKey((key) => key + 1)
+  }
+
+  function reloadEnrollments() {
+    setIsLoadingEnrollments(true)
+    setEnrollmentLoadError('')
+    setEnrollmentReloadKey((key) => key + 1)
+  }
+
   async function handleSubmit(event) {
     event.preventDefault()
     setValidationError('')
@@ -122,6 +126,7 @@ function CompanyCourseValidationPage() {
         ? 'Esta inscripción ya estaba marcada como completada.'
         : 'Finalización validada. La credencial quedó verificada y el estudiante puede volver a consultar su compatibilidad.')
       setSelectedStudentUserId('')
+      setIsLoadingEnrollments(true)
       setEnrollmentReloadKey((key) => key + 1)
     } catch (error) {
       setValidationError(getValidationError(error))
@@ -161,7 +166,7 @@ function CompanyCourseValidationPage() {
           <Surface className="max-w-3xl">
             <p className="m-0 rounded-xl border border-[#f1c3c0] bg-[#fff4f2] px-4 py-3 text-sm leading-5 text-[#9b302a]" role="alert">{loadError.message}</p>
             {loadError.action === 'login' && <a className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#1c5a42] px-4 text-sm font-semibold text-white" href="/login">Iniciar sesión</a>}
-            {loadError.action === 'retry' && <button className="mt-4 min-h-11 rounded-xl border border-[#d8e2d7] px-4 text-sm font-semibold text-[#1c5a42]" type="button" onClick={() => setReloadKey((key) => key + 1)}>Reintentar</button>}
+            {loadError.action === 'retry' && <button className="mt-4 min-h-11 rounded-xl border border-[#d8e2d7] px-4 text-sm font-semibold text-[#1c5a42]" type="button" onClick={retryCompanyData}>Reintentar</button>}
           </Surface>
         ) : (
           <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)]">
@@ -178,7 +183,7 @@ function CompanyCourseValidationPage() {
                 <div className="mt-6 grid gap-5">
                   <label className="block text-sm font-semibold text-[#344b3c]" htmlFor="company-course">
                     Curso de tu organización
-                    <select className={fieldClass} id="company-course" value={selectedCourseId} onChange={(event) => { setSelectedCourseId(event.target.value); setSelectedStudentUserId(''); setValidationError(''); setValidationMessage('') }} required>
+                    <select className={fieldClass} id="company-course" value={selectedCourseId} onChange={(event) => { setIsLoadingEnrollments(true); setEnrollmentLoadError(''); setSelectedCourseId(event.target.value); setSelectedStudentUserId(''); setValidationError(''); setValidationMessage('') }} required>
                       {eligibleCourses.map((course) => (
                         <option key={course.id} value={course.id}>{course.title} · {course.organization?.name}</option>
                       ))}
@@ -201,7 +206,7 @@ function CompanyCourseValidationPage() {
                         <h3 className="m-0 text-sm font-semibold text-[#344b3c]">Inscripciones del curso</h3>
                         <p className="mb-0 mt-1 text-xs leading-5 text-[#718075]">La lista incluye únicamente estudiantes inscritos en este curso.</p>
                       </div>
-                      <button className="min-h-9 rounded-lg px-2 text-xs font-semibold text-[#347a57] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#347a57]" type="button" onClick={() => setEnrollmentReloadKey((key) => key + 1)} disabled={isLoadingEnrollments}>Actualizar lista</button>
+                      <button className="min-h-9 rounded-lg px-2 text-xs font-semibold text-[#347a57] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#347a57]" type="button" onClick={reloadEnrollments} disabled={isLoadingEnrollments}>Actualizar lista</button>
                     </div>
 
                     {isLoadingEnrollments ? (
@@ -209,7 +214,7 @@ function CompanyCourseValidationPage() {
                     ) : enrollmentLoadError ? (
                       <div className="mt-4 rounded-xl border border-[#f1c3c0] bg-[#fff4f2] p-4">
                         <p className="m-0 text-sm leading-5 text-[#9b302a]" role="alert">{enrollmentLoadError}</p>
-                        <button className="mt-3 min-h-9 rounded-lg border border-[#edc9c5] px-3 text-sm font-semibold text-[#9b302a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c75c52]" type="button" onClick={() => setEnrollmentReloadKey((key) => key + 1)}>Reintentar</button>
+                        <button className="mt-3 min-h-9 rounded-lg border border-[#edc9c5] px-3 text-sm font-semibold text-[#9b302a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c75c52]" type="button" onClick={reloadEnrollments}>Reintentar</button>
                       </div>
                     ) : pendingEnrollments.length > 0 ? (
                       <form className="mt-4 grid gap-4" onSubmit={handleSubmit} aria-busy={isSubmitting}>
@@ -264,7 +269,7 @@ function CompanyCourseValidationPage() {
                     <h2 className="font-display text-lg font-semibold text-[#1c4033]">Tus organizaciones</h2>
                     <p className="mt-1 text-sm text-[#718075]">{organizations.length} {organizations.length === 1 ? 'organización' : 'organizaciones'} · {verifiedOrganizations.length} verificadas</p>
                   </div>
-                  <button className="min-h-9 rounded-lg px-2 text-xs font-semibold text-[#347a57] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#347a57]" type="button" onClick={() => setReloadKey((key) => key + 1)}>Actualizar</button>
+                  <button className="min-h-9 rounded-lg px-2 text-xs font-semibold text-[#347a57] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#347a57]" type="button" onClick={retryCompanyData}>Actualizar</button>
                 </div>
                 {organizations.length > 0 ? (
                   <ul className="mt-4 grid gap-3">

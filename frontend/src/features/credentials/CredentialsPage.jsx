@@ -50,8 +50,6 @@ function CredentialsPage() {
 
   useEffect(() => {
     let isCurrent = true
-    setIsLoading(true)
-    setLoadError(null)
 
     getMyCredentials()
       .then((result) => {
@@ -66,6 +64,12 @@ function CredentialsPage() {
 
     return () => { isCurrent = false }
   }, [reloadKey])
+
+  function retryLoad() {
+    setIsLoading(true)
+    setLoadError(null)
+    setReloadKey((key) => key + 1)
+  }
 
   async function handleSubmit(event) {
     event.preventDefault()
@@ -107,7 +111,7 @@ function CredentialsPage() {
         <p className="m-0 rounded-xl border border-[#f1c3c0] bg-[#fff4f2] px-4 py-3 text-sm leading-5 text-[#9b302a]" role="alert">{loadError.message}</p>
         {loadError.action === 'profile' && <a className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#1c5a42] px-4 text-sm font-semibold text-white" href="/app/perfil">Ir a mi perfil</a>}
         {loadError.action === 'login' && <a className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#1c5a42] px-4 text-sm font-semibold text-white" href="/login">Iniciar sesión</a>}
-        {loadError.action === 'retry' && <button className="mt-4 min-h-11 rounded-xl border border-[#d8e2d7] px-4 text-sm font-semibold text-[#1c5a42]" type="button" onClick={() => setReloadKey((key) => key + 1)}>Reintentar</button>}
+        {loadError.action === 'retry' && <button className="mt-4 min-h-11 rounded-xl border border-[#d8e2d7] px-4 text-sm font-semibold text-[#1c5a42]" type="button" onClick={retryLoad}>Reintentar</button>}
       </Surface>
     )
   }
@@ -163,7 +167,7 @@ function CredentialsPage() {
               <h2 className="font-display text-lg font-semibold text-[#1c4033]">Mis credenciales</h2>
               <p className="mt-1 text-sm text-[#718075]">{credentials.length} {credentials.length === 1 ? 'registro' : 'registros'} en tu perfil</p>
             </div>
-            <button className="min-h-10 rounded-lg px-3 text-sm font-semibold text-[#347a57] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#347a57]" type="button" onClick={() => setReloadKey((key) => key + 1)}>Actualizar</button>
+            <button className="min-h-10 rounded-lg px-3 text-sm font-semibold text-[#347a57] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#347a57]" type="button" onClick={retryLoad}>Actualizar</button>
           </div>
         </div>
 

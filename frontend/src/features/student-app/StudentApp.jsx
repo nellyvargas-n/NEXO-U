@@ -3,13 +3,48 @@ import BrandMark from '../../shared/components/BrandMark.jsx'
 import StudentSidebar from '../../navigation/components/StudentSidebar.jsx'
 import StudentPageHeading from './components/StudentPageHeading.jsx'
 import { findStudentAppRoute } from '../../routes/studentAppRoutes.js'
-import { getAccessToken } from '../../shared/api/session.ts'
+import { getAccessRole, getAccessToken } from '../../shared/api/session.ts'
+import { getCurrentUser } from '../../shared/api/modules/auth.service.ts'
 import { getStudentProfiles } from '../profile/profile.service.ts'
 
 function StudentApp({ pathname = '/app' }) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [isCheckingRole, setIsCheckingRole] = useState(() => Boolean(getAccessToken() && getAccessRole() !== 'usuario'))
   const page = findStudentAppRoute(pathname)
   const Page = page.component
+
+  useEffect(() => {
+    if (!getAccessToken()) return undefined
+
+    let isCurrent = true
+    const redirectForRole = (role) => {
+      if (role === 'admin') {
+        window.location.replace('/admin')
+        return true
+      }
+      if (role === 'empresa') {
+        window.location.replace('/empresa/cursos/validar')
+        return true
+      }
+      return false
+    }
+
+    const savedRole = getAccessRole()
+    if (savedRole) {
+      redirectForRole(savedRole)
+      return undefined
+    }
+
+    getCurrentUser()
+      .then((user) => {
+        if (isCurrent && !redirectForRole(user.role)) setIsCheckingRole(false)
+      })
+      .catch(() => {
+        if (isCurrent) setIsCheckingRole(false)
+      })
+
+    return () => { isCurrent = false }
+  }, [])
 
   useEffect(() => {
     if (pathname !== '/app' || !getAccessToken()) return undefined
@@ -23,6 +58,10 @@ function StudentApp({ pathname = '/app' }) {
 
     return () => { isCurrent = false }
   }, [pathname])
+
+  if (isCheckingRole) {
+    return <main className="grid min-h-screen place-items-center bg-[#f6f8f4] px-6 text-center text-sm text-[#718075]" role="status">Verificando el tipo de cuenta…</main>
+  }
 
   return (
     <div className="min-h-screen bg-[#f6f8f4] text-[#173b31]">

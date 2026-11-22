@@ -1,4 +1,6 @@
 import BrandMark from '../../shared/components/BrandMark.jsx'
+import { clearAccessToken } from '../../shared/api/session.ts'
+import { FiLogOut } from 'react-icons/fi'
 
 const groups = [
   {
@@ -59,6 +61,11 @@ function SidebarIcon({ name }) {
 }
 
 function StudentSidebar({ pathname, isOpen, onClose }) {
+  function handleSignOut() {
+    clearAccessToken()
+    window.location.assign('/login')
+  }
+
   return (
     <aside
       id="student-sidebar"
@@ -122,6 +129,14 @@ function StudentSidebar({ pathname, isOpen, onClose }) {
       </nav>
 
       <div className="shrink-0 border-t border-[#e8ede6] px-5 py-4">
+        <button
+          className="mb-3 flex min-h-11 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-semibold text-[#53685c] transition-colors hover:bg-[#f0f5ee] hover:text-[#214d39] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#247858]"
+          type="button"
+          onClick={handleSignOut}
+        >
+          <FiLogOut className="size-[18px] shrink-0" aria-hidden="true" />
+          <span>Cerrar sesión</span>
+        </button>
         <p className="text-[13px] leading-5 text-[#87948a]">Las credenciales declaradas necesitan confirmación de un emisor autorizado.</p>
       </div>
     </aside>
