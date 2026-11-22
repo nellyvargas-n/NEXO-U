@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { FiLogOut, FiX } from 'react-icons/fi'
 import BrandMark from '../../shared/components/BrandMark.jsx'
 import { clearAccessToken } from '../../shared/api/session.ts'
+import { navigate } from '../../shared/navigation/navigation.js'
 
 function WorkspaceSidebar({
   id,
@@ -18,7 +19,7 @@ function WorkspaceSidebar({
 
   function signOut() {
     clearAccessToken()
-    window.location.assign('/login')
+    navigate('/login', { replace: true })
   }
 
   return (

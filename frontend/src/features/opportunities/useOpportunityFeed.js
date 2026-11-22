@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getOpportunityFeed } from './opportunities.service.ts'
+import { useAutoRefresh } from '../../shared/hooks/useAutoRefresh.js'
 
 function getErrorMessage(error) {
   if (error instanceof TypeError) return 'No pudimos conectar con el servidor. Revisa la conexión e inténtalo otra vez.'
@@ -10,14 +11,17 @@ export function useOpportunityFeed() {
   const [feed, setFeed] = useState({ opportunities: [], matchNotice: '' })
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
-  const [reloadKey, setReloadKey] = useState(0)
+  const refreshKey = useAutoRefresh()
 
   useEffect(() => {
     let isCurrent = true
 
     getOpportunityFeed()
       .then((result) => {
-        if (isCurrent) setFeed(result)
+        if (isCurrent) {
+          setFeed(result)
+          setError('')
+        }
       })
       .catch((requestError) => {
         if (isCurrent) setError(getErrorMessage(requestError))
@@ -27,16 +31,12 @@ export function useOpportunityFeed() {
       })
 
     return () => { isCurrent = false }
-  }, [reloadKey])
+  }, [refreshKey])
 
   return {
     ...feed,
     isLoading,
     error,
-    retry: () => {
-      setIsLoading(true)
-      setError('')
-      setReloadKey((key) => key + 1)
-    },
+    refreshKey,
   }
 }

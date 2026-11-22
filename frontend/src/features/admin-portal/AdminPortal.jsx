@@ -3,6 +3,8 @@ import BrandMark from '../../shared/components/BrandMark.jsx'
 import { getCurrentUser } from '../../shared/api/modules/auth.service.ts'
 import { clearAccessToken } from '../../shared/api/session.ts'
 import { apiRequest } from '../../shared/api/client.ts'
+import { navigate } from '../../shared/navigation/navigation.js'
+import { useAutoRefresh } from '../../shared/hooks/useAutoRefresh.js'
 
 const actionClass = 'min-h-10 rounded-xl border border-[#c8e0d1] bg-white px-4 py-2 text-sm font-semibold text-[#21684c] transition hover:bg-[#eaf4ec] disabled:opacity-50'
 function Box({title,children}) { return <section className="nx-role-card rounded-2xl border bg-white p-5 shadow-sm sm:p-6"><h2 className="mb-4 text-lg font-bold text-[#193e31]">{title}</h2>{children}</section> }
@@ -15,6 +17,7 @@ export default function AdminPortal() {
   const [error,setError] = useState('')
   const [notice,setNotice] = useState('')
   const [busy,setBusy] = useState(false)
+  const refreshKey = useAutoRefresh()
 
   const refresh=useCallback(async () => {
     const [us,orgs,stats] = await Promise.all([
@@ -36,6 +39,17 @@ export default function AdminPortal() {
     return ()=> {live=false}
   },[refresh])
 
+  useEffect(() => {
+    if (access !== 'ready' || refreshKey === 0) return undefined
+    let live = true
+    const refreshTimer = window.setTimeout(() => {
+      refresh()
+        .then(() => { if (live) setError('') })
+        .catch((e) => { if (live) setError(e.message || 'No se pudo actualizar el panel.') })
+    }, 0)
+    return () => { live = false; window.clearTimeout(refreshTimer) }
+  },[access,refresh,refreshKey])
+
   async function update(promise, success) {
     setBusy(true);setError('');setNotice('')
     try {await promise();await refresh();setNotice(success)}
@@ -44,7 +58,7 @@ export default function AdminPortal() {
   }
 
   return <div className="nx-role-workspace nx-admin-workspace min-h-screen">
-    <header className="nx-role-topbar"><div className="mx-auto flex min-h-[74px] max-w-7xl flex-wrap items-center justify-between gap-3 px-5 py-3"><BrandMark href="/" size="small" /><div className="flex items-center gap-4"><span className="text-xs font-bold uppercase tracking-widest text-[#438b6b]">Administración segura</span><button type="button" className={actionClass} onClick={()=>{clearAccessToken();window.location.assign('/login')}}>Cerrar sesión</button></div></div></header>
+    <header className="nx-role-topbar"><div className="mx-auto flex min-h-[74px] max-w-7xl flex-wrap items-center justify-between gap-3 px-5 py-3"><BrandMark href="/" size="small" /><div className="flex items-center gap-4"><span className="text-xs font-bold uppercase tracking-widest text-[#438b6b]">Administración segura</span><button type="button" className={actionClass} onClick={()=>{clearAccessToken();navigate('/login',{replace:true})}}>Cerrar sesión</button></div></div></header>
     <main className="nx-role-main mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6">
       <div><p className="text-xs font-bold uppercase tracking-[0.18em] text-[#468b69]">NEXO U · Administración</p><h1 className="mt-2 text-3xl font-bold sm:text-4xl">Centro de control</h1><p className="mt-2 text-sm text-[#677a6e]">Verifica instituciones y controla las cuentas sin acceder a saldos personales.</p></div>
       <nav className="nx-role-tabs" aria-label="Secciones de administración"><a href="#verificaciones">Verificar instituciones</a><a href="#cuentas">Cuentas y accesos</a><a href="/explorar">Portal público ↗</a></nav>
@@ -56,7 +70,6 @@ export default function AdminPortal() {
         <div className="nx-role-stats grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           {[[summary?.users,'Usuarios'],[summary?.organizations,'Organizaciones'],[summary?.pending_verification,'Por verificar'],[summary?.opportunities,'Oportunidades'],[summary?.courses,'Cursos']].map(([count,name])=><div key={name} className="nx-role-stat rounded-2xl border bg-white p-5"><p className="text-xs font-bold uppercase tracking-wider text-[#718678]">{name}</p><p className="mt-2 text-3xl font-bold text-[#1d684e]">{count ?? '—'}</p></div>)}
         </div>
-        <div className="flex justify-end"><button className={actionClass} onClick={() => update(async()=>{},'Panel actualizado')} disabled={busy}>Actualizar datos</button></div>
         <div id="verificaciones"><Box title="Verificación de organizaciones">
           <p className="mb-4 text-sm text-[#667b6c]">Comprueba fuera de la plataforma la identidad de cada institución antes de aprobarla. Las aprobadas pueden publicar cursos y convocatorias.</p>
           <div className="grid gap-3">{organizations.length ? organizations.map(o=><div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-[#f3f7f3] p-4" key={o.id}><div><p className="font-semibold text-[#2d5641]">{o.name}</p><p className="text-xs text-[#7c8a80]">Organización #{o.id} · Propietario #{o.owner_user_id} · {o.verified ? 'Verificada' : 'Pendiente'}</p></div><button className={actionClass} type="button" disabled={busy} onClick={()=>update(()=>apiRequest(`v1/admin/organizaciones/${o.id}/verificacion`,{method:'PATCH',body:JSON.stringify({verified:!o.verified})}),o.verified?'Verificación revocada.':'Organización verificada.')}>{o.verified?'Revocar verificación':'Verificar organización'}</button></div>) : <p className="text-sm text-[#738478]">Aún no hay organizaciones registradas.</p>}</div>

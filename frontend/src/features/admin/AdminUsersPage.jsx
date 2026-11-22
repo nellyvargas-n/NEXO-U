@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getAdminErrorMessage, getAdminUsers, setUserActive } from './admin.service.ts'
 import { AdminEmpty, AdminLoading, AdminNotice, AdminPageHeading, AdminStatus, AdminSurface, adminPrimaryButton, adminSecondaryButton } from './components/AdminUI.jsx'
+import { useAutoRefresh } from '../../shared/hooks/useAutoRefresh.js'
 
 const roleNames = { usuario: 'Estudiante', empresa: 'Empresa', admin: 'Administración' }
 
@@ -11,16 +12,16 @@ function AdminUsersPage({ currentUserId }) {
   const [actionError, setActionError] = useState('')
   const [success, setSuccess] = useState('')
   const [workingId, setWorkingId] = useState(null)
-  const [reloadKey, setReloadKey] = useState(0)
+  const refreshKey = useAutoRefresh()
 
   useEffect(() => {
     let isCurrent = true
     getAdminUsers()
-      .then((result) => { if (isCurrent) setUsers(result) })
+      .then((result) => { if (isCurrent) { setUsers(result); setError('') } })
       .catch((requestError) => { if (isCurrent) setError(getAdminErrorMessage(requestError)) })
       .finally(() => { if (isCurrent) setIsLoading(false) })
     return () => { isCurrent = false }
-  }, [reloadKey])
+  }, [refreshKey])
 
   async function toggleActive(user) {
     const active = !user.active
@@ -50,7 +51,6 @@ function AdminUsersPage({ currentUserId }) {
             <div>
               <h2 className="m-0 font-display text-xl font-semibold text-[#1c4033]">Cuentas registradas</h2>
             </div>
-            <button className={adminSecondaryButton} type="button" onClick={() => { setError(''); setIsLoading(true); setReloadKey((key) => key + 1) }}>Actualizar</button>
           </div>
           {users.length === 0 ? <AdminEmpty>No hay cuentas registradas.</AdminEmpty> : (
             <div className="overflow-x-auto">

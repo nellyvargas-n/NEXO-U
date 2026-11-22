@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { FiAward, FiBookOpen, FiBookmark, FiBriefcase, FiCalendar, FiCheckCircle, FiChevronRight, FiRefreshCw, FiTarget, FiArrowUpRight, FiSearch, FiUser, FiPlusCircle } from 'react-icons/fi'
+import { FiAward, FiBookOpen, FiBookmark, FiBriefcase, FiCalendar, FiCheckCircle, FiChevronRight, FiTarget, FiArrowUpRight, FiSearch, FiUser, FiPlusCircle } from 'react-icons/fi'
 import { getStudentProfiles } from '../profile/profile.service.ts'
 import { apiRequest } from '../../shared/api/client.ts'
 import { sortOpportunitiesByMatch } from '../opportunities/opportunities.service.ts'
@@ -26,7 +26,7 @@ function OpportunityRow({ opportunity }) {
   </article>
 }
 export default function SummaryPage() {
-  const { opportunities, matchNotice, isLoading, error, retry } = useOpportunityFeed()
+  const { opportunities, matchNotice, isLoading, error, refreshKey } = useOpportunityFeed()
   const [aux, setAux] = useState({ profile:null, enrollments:null, saved:null, notifications:null, credentials:null })
   useEffect(()=> {
     let active = true
@@ -43,7 +43,7 @@ export default function SummaryPage() {
       setAux({ profile:profiles?.university || profiles?.school || null, enrollments:value(1),saved:value(2),notifications:value(3), credentials:value(4) })
     })
     return ()=>{active=false}
-  },[])
+  },[refreshKey])
   const ranked = useMemo(()=>sortOpportunitiesByMatch(opportunities),[opportunities])
   const applicable = opportunities.filter(o => o.match?.eligible && o.match?.total>0).length
   const metrics=[
@@ -66,7 +66,7 @@ export default function SummaryPage() {
       <div className="nex-metrics">{metrics.map(({label,value,icon:Icon})=><div className="nex-metric" key={label}><div className="nex-metric-icon"><Icon/></div><div><strong>{value}</strong><span>{label}</span></div></div>)}</div>
       {matchNotice && <div className="nex-info-message">{matchNotice}</div>}
       <section className="nex-main-card"><div className="nex-section-heading"><div><span className="nex-eyebrow">TUS POSIBILIDADES</span><h2>Oportunidades destacadas</h2></div><a href="/app/oportunidades">Ver todas <FiChevronRight/></a></div>
-        {isLoading ? <div className="nex-no-data">Cargando…</div> : error ? <div className="nex-no-data">{error}<button onClick={retry} type="button"><FiRefreshCw/> Reintentar</button></div> : ranked.length ? ranked.slice(0,3).map(o=><OpportunityRow key={o.id} opportunity={o}/>) : <div className="nex-no-data"><FiSearch/><strong>No hay convocatorias vigentes</strong><a href="/app/perfil">Completar perfil <FiChevronRight/></a></div>}
+        {isLoading ? <div className="nex-no-data">Cargando…</div> : error ? <div className="nex-no-data">{error}</div> : ranked.length ? ranked.slice(0,3).map(o=><OpportunityRow key={o.id} opportunity={o}/>) : <div className="nex-no-data"><FiSearch/><strong>No hay convocatorias vigentes</strong><a href="/app/perfil">Completar perfil <FiChevronRight/></a></div>}
       </section>
     </div><aside className="nex-dashboard-right">
       <section className="nex-side-card"><div className="nex-side-title"><FiTarget/><h2>Tu perfil</h2></div><div className="nex-profile-progress"><div className="nex-progress-ring" style={{'--progress':`${completion}%`}}><span>{completion}%</span></div><div><strong>Perfil académico</strong><p>{aux.profile?'Datos listos para el match.':'Completa tus datos.'}</p><a href="/app/perfil">{aux.profile?'Editar perfil':'Completar perfil'} <FiChevronRight/></a></div></div></section>

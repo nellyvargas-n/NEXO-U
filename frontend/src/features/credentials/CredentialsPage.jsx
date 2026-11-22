@@ -3,6 +3,7 @@ import { ApiError } from '../../shared/api/client.ts'
 import Icon from '../../shared/components/Icon.jsx'
 import Surface from '../student-app/components/Surface.jsx'
 import { addCredential, getMyCredentials } from './credentials.service.ts'
+import { useAutoRefresh } from '../../shared/hooks/useAutoRefresh.js'
 
 const credentialKinds = [
   { value: 'skill', label: 'Habilidad' },
@@ -46,14 +47,17 @@ function CredentialsPage() {
   const [loadError, setLoadError] = useState(null)
   const [saveError, setSaveError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
-  const [reloadKey, setReloadKey] = useState(0)
+  const refreshKey = useAutoRefresh()
 
   useEffect(() => {
     let isCurrent = true
 
     getMyCredentials()
       .then((result) => {
-        if (isCurrent) setCredentials(result)
+        if (isCurrent) {
+          setCredentials(result)
+          setLoadError(null)
+        }
       })
       .catch((error) => {
         if (isCurrent) setLoadError(getLoadError(error))
@@ -63,13 +67,7 @@ function CredentialsPage() {
       })
 
     return () => { isCurrent = false }
-  }, [reloadKey])
-
-  function reloadCredentials() {
-    setIsLoading(true)
-    setLoadError(null)
-    setReloadKey((key) => key + 1)
-  }
+  }, [refreshKey])
 
   async function handleSubmit(event) {
     event.preventDefault()
@@ -111,7 +109,6 @@ function CredentialsPage() {
         <p className="m-0 rounded-xl border border-[#f1c3c0] bg-[#fff4f2] px-4 py-3 text-sm leading-5 text-[#9b302a]" role="alert">{loadError.message}</p>
         {loadError.action === 'profile' && <a className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#2475e2] px-4 text-sm font-semibold text-white" href="/app/perfil">Ir a mi perfil</a>}
         {loadError.action === 'login' && <a className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#2475e2] px-4 text-sm font-semibold text-white" href="/login">Iniciar sesión</a>}
-        {loadError.action === 'retry' && <button className="mt-4 min-h-11 rounded-xl border border-[#dfe8f5] px-4 text-sm font-semibold text-[#2475e2]" type="button" onClick={reloadCredentials}>Reintentar</button>}
       </Surface>
     )
   }
@@ -161,12 +158,9 @@ function CredentialsPage() {
 
       <Surface className="p-0">
         <div className="border-b border-[#edf1eb] px-5 py-5 sm:px-6">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <h2 className="font-display text-lg font-semibold text-[#1d3557]">Mis credenciales</h2>
-              <p className="mt-1 text-sm text-[#8595a9]">{credentials.length} {credentials.length === 1 ? 'registro' : 'registros'} en tu perfil</p>
-            </div>
-            <button className="min-h-10 rounded-lg px-3 text-sm font-semibold text-[#2876d7] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2876d7]" type="button" onClick={reloadCredentials}>Actualizar</button>
+          <div>
+            <h2 className="font-display text-lg font-semibold text-[#1d3557]">Mis credenciales</h2>
+            <p className="mt-1 text-sm text-[#8595a9]">{credentials.length} {credentials.length === 1 ? 'registro' : 'registros'} en tu perfil</p>
           </div>
         </div>
 

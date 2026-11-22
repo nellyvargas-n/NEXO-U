@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getAdminErrorMessage, getPendingScholarshipBands, reviewScholarshipBand } from './admin.service.ts'
 import { AdminEmpty, AdminLoading, AdminNotice, AdminPageHeading, AdminSurface, adminSecondaryButton } from './components/AdminUI.jsx'
+import { useAutoRefresh } from '../../shared/hooks/useAutoRefresh.js'
 
 function AdminScholarshipBandsPage() {
   const [bands, setBands] = useState([])
@@ -9,16 +10,16 @@ function AdminScholarshipBandsPage() {
   const [actionError, setActionError] = useState('')
   const [success, setSuccess] = useState('')
   const [workingId, setWorkingId] = useState(null)
-  const [reloadKey, setReloadKey] = useState(0)
+  const refreshKey = useAutoRefresh()
 
   useEffect(() => {
     let isCurrent = true
     getPendingScholarshipBands()
-      .then((result) => { if (isCurrent) setBands(result) })
+      .then((result) => { if (isCurrent) { setBands(result); setError('') } })
       .catch((requestError) => { if (isCurrent) setError(getAdminErrorMessage(requestError)) })
       .finally(() => { if (isCurrent) setIsLoading(false) })
     return () => { isCurrent = false }
-  }, [reloadKey])
+  }, [refreshKey])
 
   async function review(band, approved) {
     setActionError('')
@@ -51,7 +52,6 @@ function AdminScholarshipBandsPage() {
               <h2 className="m-0 font-display text-xl font-semibold text-[#1c4033]">Bandas pendientes</h2>
               <p className="mb-0 mt-1 text-sm text-[#718075]">{bands.length} bandas por revisar</p>
             </div>
-            <button className={adminSecondaryButton} type="button" onClick={() => { setError(''); setIsLoading(true); setReloadKey((key) => key + 1) }}>Actualizar</button>
           </div>
           {bands.length === 0 ? <AdminEmpty>No hay bandas de beca pendientes de revisión.</AdminEmpty> : (
             <div className="grid gap-3">

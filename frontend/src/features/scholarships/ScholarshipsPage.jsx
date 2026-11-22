@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ApiError } from '../../shared/api/client.ts'
 import { getStudentProfiles } from '../profile/profile.service.ts'
 import Surface from '../student-app/components/Surface.jsx'
 import { getPublicScholarships, simulateScholarship } from './scholarships.service.ts'
+import { useAutoRefresh } from '../../shared/hooks/useAutoRefresh.js'
 
 function formatDate(value) {
   if (!value) return 'Fecha por confirmar'
@@ -135,17 +136,17 @@ function ScholarshipsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [simulations, setSimulations] = useState({})
-  const [reloadKey, setReloadKey] = useState(0)
+  const refreshKey = useAutoRefresh()
+  const isInitialLoad = useRef(true)
 
   useEffect(() => {
     let isCurrent = true
 
     async function loadScholarships() {
-      setIsLoading(true)
-      setError('')
-      setProfileState('loading')
-      setSchoolProfile(null)
-      setOpportunities([])
+      if (isInitialLoad.current) {
+        setIsLoading(true)
+        setProfileState('loading')
+      }
 
       const [scholarshipsResult, profilesResult] = await Promise.allSettled([
         getPublicScholarships(),
@@ -156,6 +157,7 @@ function ScholarshipsPage() {
 
       if (scholarshipsResult.status === 'fulfilled') {
         setOpportunities(scholarshipsResult.value)
+        setError('')
       } else {
         setError(getLoadError(scholarshipsResult.reason))
       }
@@ -176,13 +178,13 @@ function ScholarshipsPage() {
         setSchoolProfile(null)
       }
 
-      setSimulations({})
+      isInitialLoad.current = false
       setIsLoading(false)
     }
 
     loadScholarships()
     return () => { isCurrent = false }
-  }, [reloadKey])
+  }, [refreshKey])
 
   async function handleSimulate(opportunityId) {
     setSimulations((current) => ({ ...current, [opportunityId]: { state: 'loading' } }))
@@ -235,7 +237,6 @@ function ScholarshipsPage() {
       {!isLoading && profileState === 'error' && (
         <div className="rounded-xl border border-[#f1c3c0] bg-[#fff4f2] px-4 py-3">
           <p className="m-0 text-sm leading-5 text-[#9b302a]" role="alert">No pudimos confirmar tu perfil escolar. Reintenta antes de simular una beca.</p>
-          <button className="mt-3 min-h-9 rounded-lg border border-[#edc9c5] px-3 text-sm font-semibold text-[#9b302a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#c75c52]" type="button" onClick={() => setReloadKey((key) => key + 1)}>Reintentar</button>
         </div>
       )}
 
@@ -244,7 +245,6 @@ function ScholarshipsPage() {
       ) : error ? (
         <Surface>
           <p className="m-0 rounded-xl border border-[#f1c3c0] bg-[#fff4f2] px-4 py-3 text-sm leading-5 text-[#9b302a]" role="alert">{error}</p>
-          <button className="mt-4 min-h-11 rounded-xl border border-[#dfe8f5] px-4 text-sm font-semibold text-[#2475e2] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2876d7]" type="button" onClick={() => setReloadKey((key) => key + 1)}>Reintentar</button>
         </Surface>
       ) : opportunities.length > 0 ? (
         <>
@@ -264,7 +264,6 @@ function ScholarshipsPage() {
       ) : (
         <Surface className="py-9 text-center">
           <h2 className="font-display text-xl font-semibold text-[#1d3557]">No hay becas vigentes</h2>
-          <button className="mt-4 min-h-10 rounded-xl border border-[#dfe8f5] px-4 text-sm font-semibold text-[#246b4a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2876d7]" type="button" onClick={() => setReloadKey((key) => key + 1)}>Volver a buscar</button>
         </Surface>
       )}
     </div>

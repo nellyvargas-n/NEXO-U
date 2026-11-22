@@ -5,6 +5,7 @@ import BrandMark from '../../shared/components/BrandMark.jsx'
 import WorkspaceSidebar from '../../navigation/components/WorkspaceSidebar.jsx'
 import Surface from '../student-app/components/Surface.jsx'
 import { getCompanyCourseData, validateCourseCompletion } from './company-validation.service.ts'
+import { useAutoRefresh } from '../../shared/hooks/useAutoRefresh.js'
 
 const fieldClass = 'mt-2 min-h-12 w-full rounded-xl border border-[#dfe8f5] bg-white px-4 text-base text-[#253b30] outline-none focus:border-[#438c61] focus:ring-4 focus:ring-[#438c61]/15'
 
@@ -39,7 +40,7 @@ function CompanyCourseValidationPage() {
   const [loadError, setLoadError] = useState(null)
   const [validationError, setValidationError] = useState('')
   const [validationMessage, setValidationMessage] = useState('')
-  const [reloadKey, setReloadKey] = useState(0)
+  const refreshKey = useAutoRefresh()
 
   useEffect(() => {
     let isCurrent = true
@@ -49,6 +50,7 @@ function CompanyCourseValidationPage() {
         if (!isCurrent) return
         setOrganizations(data.organizations)
         setCourses(data.courses)
+        setLoadError(null)
         setSelectedCourseId((current) => {
           const eligible = data.courses.find((course) => course.organization?.verified)
           return current && data.courses.some((course) => String(course.id) === current && course.organization?.verified)
@@ -64,13 +66,7 @@ function CompanyCourseValidationPage() {
       })
 
     return () => { isCurrent = false }
-  }, [reloadKey])
-
-  function reloadCourses() {
-    setIsLoading(true)
-    setLoadError(null)
-    setReloadKey((key) => key + 1)
-  }
+  }, [refreshKey])
 
   const eligibleCourses = courses.filter((course) => course.organization?.verified)
   const selectedCourse = eligibleCourses.find((course) => String(course.id) === selectedCourseId)
@@ -127,7 +123,6 @@ function CompanyCourseValidationPage() {
           <Surface className="max-w-3xl">
             <p className="m-0 rounded-xl border border-[#f1c3c0] bg-[#fff4f2] px-4 py-3 text-sm leading-5 text-[#9b302a]" role="alert">{loadError.message}</p>
             {loadError.action === 'login' && <a className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-[#2475e2] px-4 text-sm font-semibold text-white" href="/login">Iniciar sesión</a>}
-            {loadError.action === 'retry' && <button className="mt-4 min-h-11 rounded-xl border border-[#dfe8f5] px-4 text-sm font-semibold text-[#2475e2]" type="button" onClick={reloadCourses}>Reintentar</button>}
           </Surface>
         ) : (
           <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1.2fr)_minmax(280px,0.8fr)]">
@@ -181,13 +176,8 @@ function CompanyCourseValidationPage() {
 
             <div className="grid gap-5">
               <Surface>
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h2 className="font-display text-lg font-semibold text-[#1d3557]">Tus organizaciones</h2>
-                    <p className="mt-1 text-sm text-[#8595a9]">{organizations.length} {organizations.length === 1 ? 'organización' : 'organizaciones'} · {verifiedOrganizations.length} verificadas</p>
-                  </div>
-                  <button className="min-h-9 rounded-lg px-2 text-xs font-semibold text-[#2876d7] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2876d7]" type="button" onClick={reloadCourses}>Actualizar</button>
-                </div>
+                <h2 className="font-display text-lg font-semibold text-[#1d3557]">Tus organizaciones</h2>
+                <p className="mt-1 text-sm text-[#8595a9]">{organizations.length} {organizations.length === 1 ? 'organización' : 'organizaciones'} · {verifiedOrganizations.length} verificadas</p>
                 {organizations.length > 0 ? (
                   <ul className="mt-4 grid gap-3">
                     {organizations.map((organization) => (

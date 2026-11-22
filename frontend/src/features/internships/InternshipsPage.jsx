@@ -9,7 +9,7 @@ function isInternship(category) {
 }
 
 function InternshipsPage() {
-  const { opportunities, matchNotice, isLoading, error, retry } = useOpportunityFeed()
+  const { opportunities, matchNotice, isLoading, error } = useOpportunityFeed()
   const internships = sortOpportunitiesByMatch(opportunities.filter((opportunity) => isInternship(opportunity.category)))
 
   if (isLoading) {
@@ -20,7 +20,6 @@ function InternshipsPage() {
     return (
       <Surface className="max-w-4xl">
         <p className="m-0 rounded-xl border border-[#f1c3c0] bg-[#fff4f2] px-4 py-3 text-sm leading-5 text-[#9b302a]" role="alert">{error}</p>
-        <button className="mt-4 min-h-11 rounded-xl border border-[#dfe8f5] px-4 text-sm font-semibold text-[#2475e2] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2876d7]" type="button" onClick={retry}>Reintentar</button>
       </Surface>
     )
   }
@@ -31,7 +30,6 @@ function InternshipsPage() {
         <div>
           <h2 className="m-0 font-display text-xl font-semibold text-[#1d3557]">{internships.length} {internships.length === 1 ? 'pasantía disponible' : 'pasantías disponibles'}</h2>
         </div>
-        <button className="min-h-10 rounded-xl border border-[#dfe8f5] px-4 text-sm font-semibold text-[#2475e2] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2876d7]" type="button" onClick={retry}>Actualizar</button>
       </div>
 
       {matchNotice && <p className="m-0 rounded-xl border border-[#e8dfbd] bg-[#fff9e9] px-4 py-3 text-sm leading-5 text-[#75633b]" role="status">{matchNotice}</p>}
@@ -44,7 +42,6 @@ function InternshipsPage() {
         <Surface className="py-9 text-center">
           <h2 className="font-display text-xl font-semibold text-[#1d3557]">No hay pasantías vigentes</h2>
           <div className="mt-4 flex flex-wrap justify-center gap-3">
-            <button className="min-h-10 rounded-xl border border-[#dfe8f5] px-4 text-sm font-semibold text-[#246b4a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2876d7]" type="button" onClick={retry}>Volver a buscar</button>
             <a className="inline-flex min-h-10 items-center rounded-xl border border-[#dfe8f5] px-4 text-sm font-semibold text-[#246b4a] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2876d7]" href="/app/oportunidades">Ver todas las oportunidades</a>
           </div>
         </Surface>

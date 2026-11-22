@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ApiError } from '../../shared/api/client.ts'
 import { getAccessToken } from '../../shared/api/session.ts'
 import { getStudentProfiles } from '../profile/profile.service.ts'
@@ -14,6 +14,7 @@ import {
   markFinanceObligationPaid,
   saveFinanceBudget,
 } from './wallet.service.ts'
+import { useAutoRefresh } from '../../shared/hooks/useAutoRefresh.js'
 
 const inputClass = 'mt-2 min-h-11 w-full rounded-xl border border-[#dfe8f5] bg-white px-3 text-sm text-[#253b30] outline-none focus:border-[#438c61] focus:ring-4 focus:ring-[#438c61]/15'
 const primaryButtonClass = 'inline-flex min-h-11 items-center justify-center rounded-xl bg-[#2475e2] px-4 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2876d7] disabled:cursor-wait disabled:opacity-60'
@@ -90,6 +91,8 @@ function WalletPage() {
   const [loadError, setLoadError] = useState('')
   const [walletData, setWalletData] = useState(null)
   const [reloadKey, setReloadKey] = useState(0)
+  const refreshKey = useAutoRefresh()
+  const isInitialLoad = useRef(true)
   const [projection, setProjection] = useState({ dailyExpense: 30, reserve: 0 })
   const [projectionForm, setProjectionForm] = useState({ dailyExpense: '30', reserve: '0' })
   const [movementForm, setMovementForm] = useState({ direction: 'expense', amount: '', category: 'Alimentación', happenedOn: todayLocal() })
@@ -103,10 +106,11 @@ function WalletPage() {
     let isCurrent = true
 
     async function loadWallet() {
-      setIsLoading(true)
+      if (isInitialLoad.current) {
+        setIsLoading(true)
+        setAccessState('checking')
+      }
       setLoadError('')
-      setWalletData(null)
-      setAccessState('checking')
       let isEligible = false
 
       if (!getAccessToken()) {
@@ -158,13 +162,16 @@ function WalletPage() {
         setLoadError(isEligible ? getFinanceError(error) : getProfileError(error))
         if (!isEligible) setAccessState('profile-error')
       } finally {
-        if (isCurrent) setIsLoading(false)
+        if (isCurrent) {
+          isInitialLoad.current = false
+          setIsLoading(false)
+        }
       }
     }
 
     loadWallet()
     return () => { isCurrent = false }
-  }, [reloadKey, projection])
+  }, [reloadKey, projection, refreshKey])
 
   async function handleMovementSubmit(event) {
     event.preventDefault()
@@ -288,17 +295,15 @@ function WalletPage() {
         <p className="mt-3 rounded-xl border border-[#e8dfbd] bg-[#fff9e9] px-4 py-3 text-sm leading-6 text-[#756b4d]" role={accessState === 'profile-error' ? 'alert' : 'status'}>{accessMessages[accessState]}</p>
         {accessState === 'no-profile' || accessState === 'incomplete-profile' ? <a className={`${primaryButtonClass} mt-4`} href="/app/perfil">Completar perfil</a> : null}
         {accessState === 'unauthenticated' && <a className={`${primaryButtonClass} mt-4`} href="/login">Iniciar sesión</a>}
-        {accessState === 'profile-error' && <button className={`${secondaryButtonClass} mt-4`} type="button" onClick={() => setReloadKey((key) => key + 1)}>Reintentar</button>}
       </Surface>
     )
   }
 
-  if (loadError || !walletData) {
+  if (!walletData) {
     return (
       <Surface className="max-w-3xl">
         <h2 className="font-display text-xl font-semibold text-[#1d3557]">No se pudo cargar la billetera</h2>
         <p className="mt-3 rounded-xl border border-[#f1c3c0] bg-[#fff4f2] px-4 py-3 text-sm leading-6 text-[#9b302a]" role="alert">{loadError || 'Inténtalo de nuevo en unos momentos.'}</p>
-        <button className={`${secondaryButtonClass} mt-4`} type="button" onClick={() => setReloadKey((key) => key + 1)}>Reintentar</button>
       </Surface>
     )
   }
@@ -313,10 +318,10 @@ function WalletPage() {
           <h2 className="mt-1 font-display text-xl font-semibold text-[#1d3557]">Mi billetera</h2>
           <p className="mb-0 mt-2 max-w-2xl text-sm leading-6 text-[#7b8da5]">Movimientos, presupuestos y pagos previstos. No conecta con bancos.</p>
         </div>
-        <button className={secondaryButtonClass} type="button" onClick={() => setReloadKey((key) => key + 1)}>Actualizar datos</button>
       </div>
 
       {actionError && <p className="m-0 rounded-xl border border-[#f1c3c0] bg-[#fff4f2] px-4 py-3 text-sm leading-5 text-[#9b302a]" role="alert">{actionError}</p>}
+      {loadError && <p className="m-0 rounded-xl border border-[#f1c3c0] bg-[#fff4f2] px-4 py-3 text-sm leading-5 text-[#9b302a]" role="alert">{loadError} Mostramos tus últimos datos disponibles.</p>}
       {actionSuccess && <p className="m-0 rounded-xl border border-[#d5e8d3] bg-[#f1f8ec] px-4 py-3 text-sm leading-5 text-[#365f43]" role="status">{actionSuccess}</p>}
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">

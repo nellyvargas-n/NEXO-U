@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getAdminDashboard, getAdminErrorMessage } from './admin.service.ts'
 import { AdminLoading, AdminNotice, AdminPageHeading, AdminSurface } from './components/AdminUI.jsx'
+import { useAutoRefresh } from '../../shared/hooks/useAutoRefresh.js'
 
 const cards = [
   { key: 'users', label: 'Cuentas registradas' },
@@ -20,14 +21,15 @@ const shortcuts = [
 function AdminDashboardPage() {
   const [summary, setSummary] = useState(null)
   const [error, setError] = useState('')
+  const refreshKey = useAutoRefresh()
 
   useEffect(() => {
     let isCurrent = true
     getAdminDashboard()
-      .then((result) => { if (isCurrent) setSummary(result) })
+      .then((result) => { if (isCurrent) { setSummary(result); setError('') } })
       .catch((requestError) => { if (isCurrent) setError(getAdminErrorMessage(requestError)) })
     return () => { isCurrent = false }
-  }, [])
+  }, [refreshKey])
 
   return (
     <>

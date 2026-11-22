@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { enrollInCourse, getCourseData, getEnrollmentError } from './courses.service.ts'
+import { useAutoRefresh } from '../../shared/hooks/useAutoRefresh.js'
 
 function getErrorMessage(error) {
   if (error instanceof TypeError) return 'No pudimos conectar con el servidor. Revisa la conexión e inténtalo otra vez.'
@@ -10,7 +11,7 @@ export function useCourses() {
   const [data, setData] = useState({ courses: [], matchNotice: '', enrollmentNotice: '', enrollmentAction: 'ready' })
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
-  const [reloadKey, setReloadKey] = useState(0)
+  const refreshKey = useAutoRefresh()
   const [enrollingCourseId, setEnrollingCourseId] = useState(null)
   const [enrollmentFeedback, setEnrollmentFeedback] = useState({ courseId: null, message: '', isError: false })
 
@@ -19,7 +20,10 @@ export function useCourses() {
 
     getCourseData()
       .then((result) => {
-        if (isCurrent) setData(result)
+        if (isCurrent) {
+          setData(result)
+          setError('')
+        }
       })
       .catch((requestError) => {
         if (isCurrent) setError(getErrorMessage(requestError))
@@ -29,7 +33,7 @@ export function useCourses() {
       })
 
     return () => { isCurrent = false }
-  }, [reloadKey])
+  }, [refreshKey])
 
   async function enroll(courseId) {
     setEnrollmentFeedback({ courseId: null, message: '', isError: false })
@@ -64,10 +68,5 @@ export function useCourses() {
     enrollingCourseId,
     enrollmentFeedback,
     enroll,
-    retry: () => {
-      setIsLoading(true)
-      setError('')
-      setReloadKey((key) => key + 1)
-    },
   }
 }

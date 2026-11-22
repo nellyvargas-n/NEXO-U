@@ -4,6 +4,7 @@ import { apiRequest } from '../../shared/api/client.ts'
 import { getCurrentUser } from '../../shared/api/modules/auth.service.ts'
 import BrandMark from '../../shared/components/BrandMark.jsx'
 import WorkspaceSidebar from '../../navigation/components/WorkspaceSidebar.jsx'
+import { useAutoRefresh } from '../../shared/hooks/useAutoRefresh.js'
 
 const inputClass = 'mt-2 min-h-11 w-full rounded-xl border border-[#d6e3db] bg-white px-3 text-sm text-[#244236] outline-none focus:border-[#31926b] focus:ring-2 focus:ring-[#c8eadc]'
 const buttonClass = 'inline-flex min-h-11 items-center justify-center rounded-xl bg-[#1d684e] px-5 text-sm font-semibold text-white transition hover:bg-[#14543e] disabled:cursor-not-allowed disabled:opacity-50'
@@ -52,6 +53,7 @@ export default function CompanyPortal({ pathname = '/empresa' }) {
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [busy, setBusy] = useState(false)
+  const refreshKey = useAutoRefresh()
 
   const refresh = useCallback(async () => {
     const [orgs, ownCourses, ownOpps] = await Promise.all([
@@ -77,6 +79,17 @@ export default function CompanyPortal({ pathname = '/empresa' }) {
     }).catch((e) => { if (live) { setAccess('failed'); setError(e.message) } })
     return () => { live = false }
   }, [refresh])
+
+  useEffect(() => {
+    if (access !== 'ready' || refreshKey === 0) return undefined
+    let live = true
+    const refreshTimer = window.setTimeout(() => {
+      refresh()
+        .then(() => { if (live) setError('') })
+        .catch((e) => { if (live) setError(e.message || 'No se pudieron actualizar los datos.') })
+    }, 0)
+    return () => { live = false; window.clearTimeout(refreshTimer) }
+  }, [access, refresh, refreshKey])
 
   useEffect(() => {
     if (!selectedCourseId || access !== 'ready') return
@@ -158,7 +171,6 @@ export default function CompanyPortal({ pathname = '/empresa' }) {
           <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Panel institucional</h1>
           <p className="mt-2 text-sm text-[#657a6b]">Cursos, convocatorias y validaciones.</p>
         </div>
-        <button type="button" className="rounded-xl border border-[#bcd9c7] bg-white px-4 py-2 text-sm font-semibold text-[#21634b]" onClick={() => action(async () => {},'Datos actualizados')}>Actualizar</button>
       </div>
       {access === 'loading' && <Card title="Cargando">Validando tu sesión institucional…</Card>}
       {(access === 'denied' || access === 'failed') && <Card title="Acceso protegido"><ErrorNotice message={error || 'Solo las cuentas con rol empresa pueden acceder.'} /><a href="/login" className="mt-4 inline-flex font-semibold text-[#22684e]">Iniciar sesión</a></Card>}

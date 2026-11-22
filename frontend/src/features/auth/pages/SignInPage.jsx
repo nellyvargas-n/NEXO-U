@@ -3,6 +3,7 @@ import AuthLayout from '../components/AuthLayout.jsx'
 import PasswordField from '../components/PasswordField.jsx'
 import Icon from '../../../shared/components/Icon.jsx'
 import { getAuthErrorMessage, signIn } from '../../../shared/api/modules/auth.service.ts'
+import { navigate } from '../../../shared/navigation/navigation.js'
 
 function SignInPage() {
   const [notice, setNotice] = useState(() => (
@@ -26,15 +27,15 @@ function SignInPage() {
     try {
       const session = await signIn({ email, password }, formData.has('remember'))
       if (session.role === 'empresa') {
-        window.location.assign('/empresa')
+        navigate('/empresa', { replace: true })
         return
       }
       if (session.role === 'admin') {
-        window.location.assign('/admin')
+        navigate('/admin', { replace: true })
         return
       }
       const isNewRegistration = new URLSearchParams(window.location.search).get('registered') === '1'
-      window.location.assign(isNewRegistration ? '/app/perfil?setup=1' : '/app')
+      navigate(isNewRegistration ? '/app/perfil?setup=1' : '/app', { replace: true })
     } catch (requestError) {
       setError(getAuthErrorMessage(requestError))
     } finally {
@@ -43,7 +44,7 @@ function SignInPage() {
   }
 
   function handleForgotPassword() {
-    window.location.assign('/recuperar-clave')
+    navigate('/recuperar-clave')
   }
 
   return (

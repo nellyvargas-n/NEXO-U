@@ -6,18 +6,21 @@ import { getAccessToken } from '../../shared/api/session.ts'
 import BrandMark from '../../shared/components/BrandMark.jsx'
 import AdminSidebar from './AdminSidebar.jsx'
 import { findAdminAppRoute } from './adminAppRoutes.js'
+import { navigate } from '../../shared/navigation/navigation.js'
+import { useAutoRefresh } from '../../shared/hooks/useAutoRefresh.js'
 
 function AdminApp({ pathname = '/admin' }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [accessState, setAccessState] = useState('checking')
   const [currentUserId, setCurrentUserId] = useState(null)
+  const refreshKey = useAutoRefresh()
   const page = findAdminAppRoute(pathname)
   const Page = page.component
 
   useEffect(() => {
     let isCurrent = true
     if (!getAccessToken()) {
-      window.location.replace('/login')
+      navigate('/login', { replace: true })
       return () => { isCurrent = false }
     }
 
@@ -25,7 +28,7 @@ function AdminApp({ pathname = '/admin' }) {
       .then((user) => {
         if (!isCurrent) return
         if (user.role !== 'admin') {
-          window.location.replace(user.role === 'empresa' ? '/empresa/cursos/validar' : '/app')
+          navigate(user.role === 'empresa' ? '/empresa/cursos/validar' : '/app', { replace: true })
           return
         }
         setCurrentUserId(user.id)
@@ -34,7 +37,7 @@ function AdminApp({ pathname = '/admin' }) {
       .catch((error) => {
         if (!isCurrent) return
         if (error instanceof ApiError && error.status === 401) {
-          window.location.replace('/login')
+          navigate('/login', { replace: true })
           return
         }
         setAccessState('error')
@@ -42,6 +45,27 @@ function AdminApp({ pathname = '/admin' }) {
 
     return () => { isCurrent = false }
   }, [])
+
+  useEffect(() => {
+    if (accessState !== 'error' || refreshKey === 0) return undefined
+
+    let isCurrent = true
+    getCurrentUser()
+      .then((user) => {
+        if (!isCurrent) return
+        if (user.role !== 'admin') {
+          navigate(user.role === 'empresa' ? '/empresa/cursos/validar' : '/app', { replace: true })
+          return
+        }
+        setCurrentUserId(user.id)
+        setAccessState('allowed')
+      })
+      .catch((error) => {
+        if (isCurrent && error instanceof ApiError && error.status === 401) navigate('/login', { replace: true })
+      })
+
+    return () => { isCurrent = false }
+  }, [accessState, refreshKey])
 
   if (accessState === 'checking') {
     return <main className="grid min-h-screen place-items-center bg-[#f6f8f4] px-6 text-center text-sm text-[#718075]" role="status">Verificando permisos administrativos…</main>
@@ -52,8 +76,7 @@ function AdminApp({ pathname = '/admin' }) {
       <main className="grid min-h-screen place-items-center bg-[#f6f8f4] px-6">
         <section className="max-w-lg rounded-2xl border border-[#e4ebe1] bg-white p-6 text-center">
           <h1 className="font-display text-2xl font-semibold text-[#1c4033]">No pudimos verificar tu acceso</h1>
-          <p className="mt-3 text-sm leading-6 text-[#718075]">Revisa tu conexión e inténtalo de nuevo.</p>
-          <button className="mt-4 min-h-11 rounded-xl bg-[#1c5a42] px-4 text-sm font-semibold text-white" type="button" onClick={() => window.location.reload()}>Reintentar</button>
+          <p className="mt-3 text-sm leading-6 text-[#718075]">Revisa tu conexión.</p>
         </section>
       </main>
     )

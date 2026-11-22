@@ -19,7 +19,6 @@ function LearningPathsPage() {
     enrollingCourseId,
     enrollmentFeedback,
     enroll,
-    retry,
   } = useCourses()
   const recommendedCourses = courses.filter((course) => course.recommended)
 
@@ -31,7 +30,6 @@ function LearningPathsPage() {
     return (
       <Surface className="max-w-4xl">
         <p className="m-0 rounded-xl border border-[#f1c3c0] bg-[#fff4f2] px-4 py-3 text-sm leading-5 text-[#9b302a]" role="alert">{error}</p>
-        <button className="mt-4 min-h-11 rounded-xl border border-[#dfe8f5] px-4 text-sm font-semibold text-[#2475e2]" type="button" onClick={retry}>Reintentar</button>
       </Surface>
     )
   }

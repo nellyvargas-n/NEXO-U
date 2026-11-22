@@ -7,27 +7,30 @@ import { findStudentAppRoute } from '../../routes/studentAppRoutes.js'
 import { getAccessToken } from '../../shared/api/session.ts'
 import { getStudentProfiles } from '../profile/profile.service.ts'
 import { apiRequest } from '../../shared/api/client.ts'
+import { navigate } from '../../shared/navigation/navigation.js'
+import { useAutoRefresh } from '../../shared/hooks/useAutoRefresh.js'
 
 export default function StudentApp({ pathname = '/app' }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [identity, setIdentity] = useState('Mi cuenta')
   const [unread, setUnread] = useState(null)
+  const refreshKey = useAutoRefresh()
   const page = findStudentAppRoute(pathname)
   const Page = page.component
   const isExplore = pathname === '/app/oportunidades'
 
   useEffect(() => {
-    if (!getAccessToken()) { window.location.replace('/login'); return }
+    if (!getAccessToken()) { navigate('/login', { replace: true }); return }
     let live = true
     getStudentProfiles().then(({ university, school }) => {
       if (!live) return
       const name = university?.name || school?.full_name
       if (name) setIdentity(name)
-      if (pathname === '/app' && !university && !school) window.location.replace('/app/perfil')
+      if (pathname === '/app' && !university && !school) navigate('/app/perfil', { replace: true })
     }).catch(() => undefined)
     apiRequest('v1/notificaciones').then((items) => { if (live && Array.isArray(items)) setUnread(items.filter(n => !n.read).length) }).catch(() => {})
     return () => { live = false }
-  }, [pathname])
+  }, [pathname, refreshKey])
 
   return (
     <div className="nx-workspace nx-student-workspace">

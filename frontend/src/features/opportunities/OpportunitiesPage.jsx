@@ -3,6 +3,7 @@ import { FiArrowUpRight, FiAward, FiBookOpen, FiBookmark, FiBriefcase, FiCalenda
 import BrandMark from '../../shared/components/BrandMark.jsx'
 import { apiRequest } from '../../shared/api/client.ts'
 import { getAccessToken } from '../../shared/api/session.ts'
+import { navigate } from '../../shared/navigation/navigation.js'
 import { sortOpportunitiesByMatch } from './opportunities.service.ts'
 import { useOpportunityFeed } from './useOpportunityFeed.js'
 
@@ -25,11 +26,11 @@ function Card({item,saved,isSaving,onToggleSave}){
   </article>
 }
 export default function OpportunitiesPage({embedded=false}){
-  const {opportunities,matchNotice,isLoading,error,retry}=useOpportunityFeed()
+  const {opportunities,matchNotice,isLoading,error,refreshKey}=useOpportunityFeed()
   const [query,setQuery]=useState(''),[category,setCategory]=useState('todas'),[onlyVerified,setOnlyVerified]=useState(false),[onlyEligible,setOnlyEligible]=useState(false),[onlyFunded,setOnlyFunded]=useState(false),[sort,setSort]=useState('match'),[mobileFilters,setMobileFilters]=useState(false)
   const [savedIds,setSavedIds]=useState([]),[saveError,setSaveError]=useState(''),[busySave,setBusySave]=useState(null)
   const isSignedIn=Boolean(getAccessToken())
-  useEffect(()=>{if(!isSignedIn)return;let live=true;apiRequest('v1/usuario/guardados').then(rows=>{if(live)setSavedIds(rows.map(row=>row.opportunity_id))}).catch(()=>{});return()=>{live=false}},[isSignedIn])
+  useEffect(()=>{if(!isSignedIn)return;let live=true;apiRequest('v1/usuario/guardados').then(rows=>{if(live)setSavedIds(rows.map(row=>row.opportunity_id))}).catch(()=>{});return()=>{live=false}},[isSignedIn,refreshKey])
   const filtered=useMemo(()=>{
     const term=query.trim().toLocaleLowerCase('es')
     let list=opportunities.filter(item=>{
@@ -44,7 +45,7 @@ export default function OpportunitiesPage({embedded=false}){
     else list=sortOpportunitiesByMatch(list)
     return list
   },[opportunities,query,category,onlyVerified,onlyEligible,onlyFunded,sort])
-  async function toggleSaved(id){if(!isSignedIn){window.location.assign('/login');return}setSaveError('');setBusySave(id);try{if(savedIds.includes(id)){await apiRequest(`v1/usuario/guardados/${id}`,{method:'DELETE'});setSavedIds(rows=>rows.filter(x=>x!==id))}else{await apiRequest(`v1/usuario/guardados/${id}`,{method:'PUT'});setSavedIds(rows=>[...rows,id])}}catch(e){setSaveError(e.message||'No se pudo guardar la oportunidad')}finally{setBusySave(null)}}
+  async function toggleSaved(id){if(!isSignedIn){navigate('/login');return}setSaveError('');setBusySave(id);try{if(savedIds.includes(id)){await apiRequest(`v1/usuario/guardados/${id}`,{method:'DELETE'});setSavedIds(rows=>rows.filter(x=>x!==id))}else{await apiRequest(`v1/usuario/guardados/${id}`,{method:'PUT'});setSavedIds(rows=>[...rows,id])}}catch(e){setSaveError(e.message||'No se pudo guardar la oportunidad')}finally{setBusySave(null)}}
   const suggested=sortOpportunitiesByMatch(opportunities).slice(0,3)
   function reset(){setCategory('todas');setQuery('');setOnlyVerified(false);setOnlyFunded(false);setOnlyEligible(false)}
   return <div className={`nex-explore ${embedded?'is-embedded':''}`}>
@@ -55,7 +56,7 @@ export default function OpportunitiesPage({embedded=false}){
         <div className="nex-results"><div className="nex-explore-hero"><span>BUSCAR</span><h2>Becas, pasantías y cursos</h2><form role="search" onSubmit={e=>e.preventDefault()}><FiSearch/><input type="search" aria-label="Buscar convocatorias" placeholder="Título, institución o área…" value={query} onChange={e=>setQuery(e.target.value)}/><button type="submit">Buscar</button></form></div>
           <div className="nex-explore-tools"><strong>{isLoading?'Consultando…':`${filtered.length} ${filtered.length===1?'resultado':'resultados'}`}</strong><div><button className="nex-mobile-filters" type="button" onClick={()=>setMobileFilters(true)}><FiFilter/> Filtros</button><label>Ordenar por <select value={sort} onChange={e=>setSort(e.target.value)}><option value="match">Compatibilidad</option><option value="date">Fecha de cierre</option><option value="name">Nombre</option></select></label></div></div>
           {matchNotice&&<div className="nex-info-message">{matchNotice}</div>}{saveError&&<div className="nex-info-message" role="alert">{saveError}</div>}
-          {isLoading?<div className="nex-no-data">Cargando…</div>:error?<div className="nex-no-data">{error} <button type="button" onClick={retry}>Reintentar</button></div>:filtered.length?<div className="nex-explore-list">{filtered.map(item=><Card key={item.id} item={item} saved={savedIds.includes(item.id)} isSaving={busySave===item.id} onToggleSave={toggleSaved}/>)}</div>:<div className="nex-no-data"><FiSearch/><h3>{opportunities.length?'Sin resultados':'No hay oportunidades vigentes'}</h3><p>{opportunities.length?'Ajusta los filtros.':'Vuelve a consultar más tarde.'}</p><button type="button" onClick={reset}>Limpiar filtros</button></div>}</div>
+          {isLoading?<div className="nex-no-data">Cargando…</div>:error?<div className="nex-no-data">{error}</div>:filtered.length?<div className="nex-explore-list">{filtered.map(item=><Card key={item.id} item={item} saved={savedIds.includes(item.id)} isSaving={busySave===item.id} onToggleSave={toggleSaved}/>)}</div>:<div className="nex-no-data"><FiSearch/><h3>{opportunities.length?'Sin resultados':'No hay oportunidades vigentes'}</h3><p>{opportunities.length?'Ajusta los filtros.':'Vuelve a consultar más tarde.'}</p><button type="button" onClick={reset}>Limpiar filtros</button></div>}</div>
         <aside className="nex-suggest-column"><div className="nex-suggest-card"><h2><FiStar/> También te puede interesar</h2>{suggested.length?suggested.map(item=><div className="nex-suggest-row" key={item.id}><small>{typeName[typeFor(item.category)]||'Convocatoria'}</small><strong>{item.title}</strong><span>{item.organization||'Institución'}</span>{item.match?.total>0&&<span className="nex-suggest-match">{item.match.percent}% compatible</span>}</div>):<p>Cuando haya oportunidades publicadas, verás sugerencias aquí.</p>}</div><div className="nex-suggest-action"><FiAward/><h3>Tu perfil cuenta</h3><p>Registra tus habilidades, idiomas y estudios para recibir resultados de compatibilidad.</p><a href={isSignedIn?'/app/perfil':'/register'}>Completar perfil <FiArrowUpRight/></a></div></aside>
       </div>
     </div>

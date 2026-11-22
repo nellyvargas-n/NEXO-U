@@ -4,12 +4,14 @@ import { apiRequest } from '../../shared/api/client.ts'
 import HowItWorks from './components/HowItWorks.jsx'
 import PrivacySection from './components/PrivacySection.jsx'
 import SiteFooter from './components/SiteFooter.jsx'
+import { useAutoRefresh } from '../../shared/hooks/useAutoRefresh.js'
 const categoryName=(raw)=>{const kind=String(raw||'').toLowerCase();return kind.includes('beca')?'Beca':kind.includes('pasant')?'Pasantía':kind.includes('curso')?'Curso':'Convocatoria'}
 const dateLabel=(raw)=>raw ? new Intl.DateTimeFormat('es-BO',{dateStyle:'medium'}).format(new Date(`${String(raw).slice(0,10)}T12:00:00`)) : 'Por confirmar'
 function validLink(raw){try{return ['http:','https:'].includes(new URL(raw).protocol)}catch{return false}}
 export default function LandingPage(){
  const [opportunities,setOpportunities]=useState(null),[error,setError]=useState('')
- useEffect(()=>{let live=true;apiRequest('v1/oportunidades/publicas').then(data=>{if(live)setOpportunities(data)}).catch(e=>{if(live)setError(e.message)});return()=>{live=false}},[])
+ const refreshKey=useAutoRefresh()
+ useEffect(()=>{let live=true;apiRequest('v1/oportunidades/publicas').then(data=>{if(live){setOpportunities(data);setError('')}}).catch(e=>{if(live)setError(e.message)});return()=>{live=false}},[refreshKey])
  return <div className="nex-homepage"><main>
   <section className="nex-home-hero"><div className="nex-home-text"><span>PLATAFORMA DE OPORTUNIDADES</span><h1>Conecta tu talento con nuevas <em>oportunidades.</em></h1><p>Becas, pasantías y cursos en un solo lugar. Descubre cuáles se ajustan a tu perfil y qué necesitas para avanzar.</p><div className="nex-home-cta"><a href="/explorar">Explorar convocatorias <FiArrowRight/></a><a href="/register">Crear una cuenta <FiArrowUpRight/></a></div><div className="nex-home-trust"><span><FiCheckCircle/> Compatibilidad explicable</span><span><FiShield/> Datos privados</span></div></div><div className="nex-home-hero-img" role="img" aria-label="Vista de un campus universitario"/></section>
   <div className="nex-home-categories"><a href="/explorar"><FiAward/><strong>Becas</strong><span>Apoyo para tus estudios</span><FiArrowRight/></a><a href="/explorar"><FiBriefcase/><strong>Pasantías</strong><span>Experiencia profesional</span><FiArrowRight/></a><a href="/app/cursos"><FiBookOpen/><strong>Cursos</strong><span>Nuevas habilidades</span><FiArrowRight/></a></div>

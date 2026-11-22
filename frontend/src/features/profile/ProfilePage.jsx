@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { getAccessToken } from '../../shared/api/session.ts'
 import { getCurrentUser } from '../../shared/api/modules/auth.service.ts'
 import Surface from '../student-app/components/Surface.jsx'
 import { clearOnboardingDraft, getOnboardingDraft } from './onboardingDraft.ts'
 import { getStudentProfiles, saveSchoolProfile, saveUniversityProfile } from './profile.service.ts'
 import { boliviaCities, careerSuggestions, universityOptions, universityGroups } from './bolivia-universities.js'
+import { useAutoRefresh } from '../../shared/hooks/useAutoRefresh.js'
 
 const fieldClass = 'mt-2 min-h-12 w-full rounded-xl border border-[#dfe8f5] bg-white px-4 text-base text-[#253b30] outline-none focus:border-[#438c61] focus:ring-4 focus:ring-[#438c61]/15'
 const otherValue = '__other__'
@@ -60,6 +61,8 @@ function ProfilePage() {
   const [saveError, setSaveError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
   const [reloadKey, setReloadKey] = useState(0)
+  const refreshKey = useAutoRefresh()
+  const lastAutoRetryKey = useRef(0)
 
   useEffect(() => {
     let isCurrent = true
@@ -132,6 +135,12 @@ function ProfilePage() {
     loadProfile()
     return () => { isCurrent = false }
   }, [reloadKey])
+
+  useEffect(() => {
+    if (!loadError || !getAccessToken() || refreshKey <= lastAutoRetryKey.current) return
+    lastAutoRetryKey.current = refreshKey
+    setReloadKey((key) => key + 1)
+  }, [loadError, refreshKey])
 
   async function handleSubmit(event) {
     event.preventDefault()
@@ -214,7 +223,7 @@ function ProfilePage() {
             <div className="grid gap-4">
               <p className="m-0 rounded-xl border border-[#f1c3c0] bg-[#fff4f2] px-4 py-3 text-sm leading-5 text-[#9b302a]" role="alert">{loadError}</p>
               {getAccessToken() ? (
-                <button className="min-h-11 justify-self-start rounded-xl border border-[#dfe8f5] px-4 text-sm font-semibold text-[#2475e2] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2876d7]" type="button" onClick={() => setReloadKey((key) => key + 1)}>Reintentar</button>
+                <p className="m-0 text-sm text-[#718075]">Volveremos a consultar tu perfil automáticamente.</p>
               ) : (
                 <a className="inline-flex min-h-11 items-center justify-center justify-self-start rounded-xl bg-[#2475e2] px-4 text-sm font-semibold text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#2475e2]" href="/login">Iniciar sesión</a>
               )}

@@ -4,6 +4,7 @@ import PasswordField from '../components/PasswordField.jsx'
 import Icon from '../../../shared/components/Icon.jsx'
 import { getAuthErrorMessage, registerAccount } from '../../../shared/api/modules/auth.service.ts'
 import { saveOnboardingDraft } from '../../profile/onboardingDraft.ts'
+import { navigate } from '../../../shared/navigation/navigation.js'
 
 const passwordMismatchMessage = 'Las contraseñas no coinciden.'
 
@@ -50,7 +51,7 @@ function RegisterPage() {
       if (role === 'usuario' && (studentType === 'school' || studentType === 'university')) {
         saveOnboardingDraft({ fullName, studentType })
       }
-      window.location.assign(`/login?registered=1&role=${role}`)
+      navigate(`/login?registered=1&role=${role}`, { replace: true })
     } catch (requestError) {
       setError(getAuthErrorMessage(requestError))
     } finally {

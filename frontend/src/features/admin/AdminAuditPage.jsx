@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getAdminAudit, getAdminErrorMessage } from './admin.service.ts'
-import { AdminEmpty, AdminLoading, AdminNotice, AdminPageHeading, AdminSurface, adminSecondaryButton } from './components/AdminUI.jsx'
+import { AdminEmpty, AdminLoading, AdminNotice, AdminPageHeading, AdminSurface } from './components/AdminUI.jsx'
+import { useAutoRefresh } from '../../shared/hooks/useAutoRefresh.js'
 
 const actionNames = {
   review_scholarship_band: 'Revisión de banda de beca',
@@ -21,16 +22,16 @@ function AdminAuditPage() {
   const [records, setRecords] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
-  const [reloadKey, setReloadKey] = useState(0)
+  const refreshKey = useAutoRefresh()
 
   useEffect(() => {
     let isCurrent = true
     getAdminAudit()
-      .then((result) => { if (isCurrent) setRecords(result) })
+      .then((result) => { if (isCurrent) { setRecords(result); setError('') } })
       .catch((requestError) => { if (isCurrent) setError(getAdminErrorMessage(requestError)) })
       .finally(() => { if (isCurrent) setIsLoading(false) })
     return () => { isCurrent = false }
-  }, [reloadKey])
+  }, [refreshKey])
 
   return (
     <>
@@ -42,7 +43,6 @@ function AdminAuditPage() {
             <div>
               <h2 className="m-0 font-display text-xl font-semibold text-[#1c4033]">Actividad reciente</h2>
             </div>
-            <button className={adminSecondaryButton} type="button" onClick={() => { setError(''); setIsLoading(true); setReloadKey((key) => key + 1) }}>Actualizar</button>
           </div>
           {records.length === 0 ? <AdminEmpty>Aún no hay acciones administrativas registradas.</AdminEmpty> : (
             <div className="overflow-x-auto">
