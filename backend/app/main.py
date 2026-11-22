@@ -7,6 +7,7 @@ from app.core.database import Base,engine,SessionLocal
 from app.models import access  # noqa: F401
 from app.models import entities  # noqa: F401 — registra modelos
 from app.models import extended  # noqa: F401 — módulos ampliados
+from app.models import auth_security  # noqa: F401 — recuperación/limitación
 from app.core.seed import seed
 from app.api.v1.router import router
 from sqlalchemy import text as sql_text, inspect
@@ -18,12 +19,12 @@ async def lifespan(app:FastAPI):
         with SessionLocal() as db: seed(db)
     yield
 
-app=FastAPI(title="NEXO U | API Neon | 3 roles",version="1.3.0",lifespan=lifespan)
+app=FastAPI(title="NEXO U | API Neon | 3 roles",version="1.4.0",lifespan=lifespan)
 app.add_middleware(CORSMiddleware,allow_origins=[x.strip() for x in settings.cors_origins.split(",")],allow_credentials=True,allow_methods=["*"],allow_headers=["*"])
 app.include_router(router)
 
 @app.get("/health")
-def health():return {"status":"ok","service":"NEXO-U","version":"1.3.0"}
+def health():return {"status":"ok","service":"NEXO-U","version":"1.4.0"}
 
 
 @app.get("/ready")
@@ -40,6 +41,8 @@ def ready():
                 'credentials': {'id', 'student_user_id'},
                 'enrollments': {'id', 'student_user_id'},
                 'finance_entries': {'id', 'user_id'},
+                'auth_attempts': {'id','key_hash'},
+                'password_reset_tokens': {'id','token_hash'},
             }
             missing = []
             for table_name, fields in required.items():
@@ -49,8 +52,8 @@ def ready():
                     existing = {column['name'] for column in inspector.get_columns(table_name)}
                     missing.extend(f'{table_name}.{field}' for field in (fields - existing))
             if missing:
-                raise HTTPException(503, detail="Esquema v1.2 incompleto. Ejecuta sql/05_integracion_escolar_neon.sql en una rama de Neon antes de usar la API. Faltantes: " + ', '.join(missing))
-        return {"status":"ready","database":"connected","schema":"v1.2"}
+                raise HTTPException(503, detail="Esquema v1.4 incompleto. Ejecuta sql/07_seguridad_v14.sql en tu rama Neon de prueba (después del esquema v1.2). Faltantes: " + ', '.join(missing))
+        return {"status":"ready","database":"connected","schema":"v1.4"}
     except HTTPException:
         raise
     except Exception:
@@ -59,7 +62,7 @@ def ready():
 @app.get("/README.md",response_class=PlainTextResponse,include_in_schema=False)
 @app.get("/readme",response_class=PlainTextResponse,include_in_schema=False)
 def readme():
-    return "NEXO U Backend v1.3\n\nDocumentación: /docs\nSalud: /health\nNeon: /ready\nAPI: /api/v1/meta\nInstrucciones completas en backend/README.md dentro del ZIP.\n"
+    return "NEXO U Backend v1.4\n\nDocumentación: /docs\nSalud: /health\nNeon: /ready\nAPI: /api/v1/meta\nInstrucciones completas en backend/README.md dentro del ZIP.\n"
 
 @app.get("/", response_class=HTMLResponse, include_in_schema=False)
 def home():

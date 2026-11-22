@@ -10,7 +10,7 @@ os.environ['DEMO_MODE']='false'
 os.environ['JWT_SECRET']='test_secret_only_for_pytest_abcdefghijklmnopqrstuvwxyz_0123456789'
 
 from app.core.database import Base, engine, SessionLocal
-from app.models import entities,access,extended
+from app.models import entities,access,extended,auth_security
 from fastapi.testclient import TestClient
 from app.main import app
 

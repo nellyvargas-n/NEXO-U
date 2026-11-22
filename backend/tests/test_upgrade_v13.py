@@ -87,7 +87,7 @@ def test_contracts_validate_inputs_and_versions(client):
                       credential_kind='language',credential_value='Inglés',
                       credential_level='B1',organization='Escuela')
     assert course.credential_level == 'B1'
-    assert client.get('/api/v1/meta').json()['api_version'] == '1.3.0'
+    assert client.get('/api/v1/meta').json()['api_version'] == '1.4.0'
     routes=client.get('/openapi.json').json()['paths']
     for path in ['/api/v1/usuario/rutas','/api/v1/asistente/estado','/api/v1/usuario/match',
                  '/api/v1/empresa/cursos/{course_id}/inscripciones']:

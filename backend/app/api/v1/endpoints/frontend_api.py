@@ -18,7 +18,7 @@ router = APIRouter(tags=["Paneles para frontend React"])
 def meta():
     """Datos públicos necesarios para integrar React; no devuelve secretos."""
     return {
-        "name": "NEXO U", "api_version": "1.3.0", "api_prefix": "/api/v1",
+        "name": "NEXO U", "api_version": "1.4.0", "api_prefix": "/api/v1",
         "roles": ["usuario", "empresa", "admin"],
         "auth": {"register": "/api/v1/auth/register", "login": "/api/v1/auth/login",
                  "current_user": "/api/v1/auth/me", "scheme": "Bearer JWT"},

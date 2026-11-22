@@ -8,14 +8,14 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 from app.core.config import settings
 from app.core.database import Base
-from app.models import entities, access, extended  # noqa: F401
+from app.models import entities, access, extended, auth_security  # noqa: F401
 
 config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 if not settings.database_url:
     raise RuntimeError('Configura DATABASE_URL antes de ejecutar Alembic')
-url = settings.database_url
+url = settings.database_url_unpooled or settings.database_url
 if url.startswith('postgres://'):
     url = 'postgresql+psycopg://' + url[len('postgres://'):]
 elif url.startswith('postgresql://'):

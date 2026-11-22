@@ -1,81 +1,34 @@
-# NEXO U — Backend v1.3
+# NEXO U — Backend v1.4 (Neon, FastAPI y JWT)
 
-**FastAPI + PostgreSQL Neon + JWT (3 roles) + Docker.** Esta versión mejora
-el `backend.zip` recibido y conserva los endpoints y el esquema Neon **v1.2**.
+Este backend conserva el esquema Neon v1.2, los tres roles y los endpoints del frontend. La ampliación **v1.4** añade recuperación de contraseña por correo opcional, limitación de intentos de acceso y pruebas de integración de contratos.
 
-## Instrucciones rápidas para quien ya tiene Neon conectado
+## Instalación en la base Neon que ya tienes
 
-**Si `/ready` ya mostraba `database: connected` y `schema: v1.2`, NO borres tablas,
-NO vuelvas a ejecutar scripts SQL y NO crees otra base.**
+No borres ni recrees tablas. **En tu rama de pruebas `prueba-v12`**, ejecuta únicamente el script aditivo `sql/07_seguridad_v14.sql` y comprueba con `sql/08_comprobar_v14.sql`. Después configura el nuevo `.env` local y ejecuta:
 
-1. Guarda por separado tu `backend/.env` privado (nunca lo subas a GitHub).
-2. Descomprime este ZIP y reemplaza solamente la carpeta `backend` anterior,
-   conservando el frontend React.
-3. Copia tu `.env` privado al nuevo `backend/`.
-4. En VS Code abre una terminal en `backend` y ejecuta:
+```powershell
+cd backend
+docker compose up -d --build
+python -m scripts.smoke_api
+```
 
-   ```powershell
-   docker compose down
-   docker compose up -d --build
-   docker compose ps
-   ```
+En `http://localhost:8000/ready` debe aparecer `database: connected`, `schema: v1.4`. `http://localhost:8000/docs` muestra Swagger.
 
-5. Comprueba `http://localhost:8000/ready` y abre `http://localhost:8000/docs`.
-6. React sigue en `http://localhost:5173` (terminal dentro de frontend: `npm run dev`).
+## Seguridad y credenciales
 
-**Contraseñas:** la plantilla `.env.example` contiene solo valores de ejemplo.
-Neon `DATABASE_URL` y `JWT_SECRET` deben estar en `.env` local y cambiarse si
-alguna vez se mostraron en una captura o chat.
+El archivo `.env.example` es solo plantilla, **no** una contraseña. Copia a `.env` y configura tu `DATABASE_URL` actual y un `JWT_SECRET` nuevo. Cambia las credenciales de Neon y JWT anteriormente mostradas públicamente. Nunca las subas a GitHub. La API nunca comparte contraseñas Neon con React.
 
-## Rutas principales
+Para recuperar claves mediante correo, configura `SMTP_HOST`, `SMTP_FROM` y datos del proveedor en el servidor. Si no están configurados, el endpoint devuelve 503 y la interfaz informa que el servicio no está activo. Los tokens de recuperación se almacenan solo como hashes, vencen y son de un solo uso.
 
-- Autenticación: `POST /api/v1/auth/register`, `POST /api/v1/auth/login`,
-  `GET /api/v1/auth/me`, `POST /api/v1/auth/cambiar-clave`.
-- **Usuario:** `GET/PUT /api/v1/usuario/perfil`, perfil escolar alternativo,
-  credenciales, `GET /api/v1/usuario/match`, inscripciones, becas y finanzas
-  privadas para universitarios adultos.
-- **Empresa:** publica oportunidades/cursos, consulta inscritos **solo en sus
-  propios cursos**, valida credenciales, registra campañas y eventos.
-- **Admin:** administra usuarios, verifica organizaciones y supervisa auditoría.
-- Catálogos: `GET /api/v1/oportunidades/publicas` y `/api/v1/cursos/publicos`.
-- **Nuevas rutas de v1.3:** `GET /api/v1/asistente/estado`,
-  `POST /api/v1/usuario/asistente/preguntar`, `GET /api/v1/usuario/rutas`,
-  `GET /api/v1/usuario/match/resumen`.
+## Demo y pruebas
 
-La IA de orientación funciona **localmente con reglas**. No lee documentos,
-no cambia resultados del matching ni determina si se concede una beca.
-El cliente Gemini es **opcional y desactivado sin clave**, solo para textos
-públicos y no conectado automáticamente a la API.
+Solo en una rama de pruebas puedes usar `docker compose exec -e ALLOW_DEMO_SEED=true api python -m scripts.seed_demo_accounts`. Esto crea cuentas, oportunidades y cursos **ficticios**. No son convocatorias oficiales y quedan filtrados en `ENVIRONMENT=production`.
 
-## Pruebas locales sin tocar Neon
+Pruebas sin usar Neon:
 
 ```powershell
 python -m pip install -r requirements.txt
 python -m pytest -q
 ```
 
-Las pruebas usan SQLite temporal aislada. No demuestran que ya se haya probado
-una conexión real con TU Neon o con el frontend.
-
-## Migraciones
-
-- Rama nueva de Neon: scripts base en `sql/` (solo si necesitas una base vacía).
-- Neon existente v1.2: **no ejecutes más SQL** para instalar este ZIP.
-- `alembic/` tiene una línea base v1.2 **sin CREATE/DROP** para futuras
-  migraciones; lee `alembic/README.md` antes de usarla.
-
-## Documentación de apoyo
-
-- `INICIO_AQUI.md`: instrucciones para reemplazar el backend sin perder `.env`.
-- `CONTRATO_FRONTEND_v1.3.md`: endpoints y permisos para React.
-- `CAMBIOS_v1.3.md`: cambios reales frente al ZIP original.
-- `CREDENCIALES_EJEMPLO.md`: cómo generar cuentas **ficticias de prueba**
-  sin incrustar contraseñas en el código.
-
-### Estado y límites
-
-Para producción todavía hacen falta verificaciones de correo, recuperación de
-contraseña, limitación de solicitudes, auditoría y pruebas de integración
-contra una rama Neon. No se incluyen pagos o transferencias reales, lectura OCR
-de boletines ni IA que decida becas; esa automatización tampoco forma parte
-del MVP aprobado.
+Consulta el `README.md` de la raíz del ZIP para instalación del frontend y Vercel. Usa `alembic/README.md` si eliges migraciones versionadas en vez del SQL Editor. **No ejecutes ambos métodos para la misma revisión.**
