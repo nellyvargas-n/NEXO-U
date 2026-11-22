@@ -40,7 +40,7 @@ export const studentAppRoutes = [
     path: '/app/oportunidades/becas',
     group: 'Oportunidades',
     title: 'Becas',
-    description: 'Las becas solo muestran niveles publicados por la institución que las ofrece.',
+    description: 'Simula una banda orientativa con tu perfil escolar y umbrales oficiales aprobados.',
     activePath: '/app/oportunidades/becas',
     component: ScholarshipsPage,
   },
